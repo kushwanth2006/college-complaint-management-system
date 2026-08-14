@@ -3,7 +3,7 @@ const Database = require('better-sqlite3');
 
 // Lives at the project root (same place the earlier campusdesk.db / -shm / -wal
 // files were sitting), one level up from this db/ folder.
-const dbPath = path.join(__dirname, '..', 'campusdesk.db');
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '..', 'campusdesk.db');
 const db = new Database(dbPath);
 
 function initDb() {
