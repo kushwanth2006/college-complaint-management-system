@@ -105,26 +105,6 @@ body{
 .shell{max-width:980px; margin:0 auto; padding:36px 24px 80px;}
 .hidden{display:none !important;}
 
-/* ---------- Floating paths background (ported from FloatingPathsBackground) ---------- */
-.floating-paths-bg{
-  position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0;
-}
-.floating-paths-bg svg{ width:100%; height:100%; color:var(--ink); }
-.floating-paths-bg path{
-  fill:none;
-  stroke:currentColor;
-}
-/* Dash pattern + flow/pulse motion are set in JS (animateFloatingPaths) using
-   each path's real getTotalLength(), since fractional CSS dasharray values
-   don't scale correctly against arbitrary path geometry across browsers. */
-@media (prefers-color-scheme: dark){
-  .floating-paths-bg{ color:#fff; }
-}
-@media (prefers-reduced-motion: reduce){
-  .floating-paths-bg path{ animation:none !important; opacity:.35; }
-}
-.auth-view > *:not(.floating-paths-bg){ position:relative; z-index:1; }
-
 /* ---------- Auth screen ---------- */
 .auth-wrap{
   min-height:calc(100vh - 78px);
