@@ -1739,6 +1739,55 @@ async function bootApp() {
   }
 }
 
+/* ---------------- Floating paths background (ported from FloatingPathsBackground.tsx) ----------------
+   Same path formula / 36-path count as the original React component; rendered as
+   static SVG + CSS animation (fpFlow/fpPulse in styles.css) since this app has no
+   React/Framer Motion runtime. */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function buildFloatingPathsSvg(position) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 696 316');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  for (let i = 0; i < 36; i++) {
+    const d = `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`;
+
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke-width', String(0.5 + i * 0.03));
+    path.style.animationDelay = `-${(i * 0.55).toFixed(2)}s, -${(i * 0.16).toFixed(2)}s`;
+    svg.appendChild(path);
+  }
+  return svg;
+}
+
+// position: -1 for login/admin-login, 1 for register — mirrors how the demo used position={-1}
+const AUTH_VIEW_BG_POSITIONS = {
+  'view-login': -1,
+  'view-register': 1,
+  'view-admin-login': -1,
+};
+
+function initFloatingPathsBackgrounds() {
+  Object.entries(AUTH_VIEW_BG_POSITIONS).forEach(([viewId, position]) => {
+    const view = document.getElementById(viewId);
+    if (!view || view.querySelector('.floating-paths-bg')) return;
+    const bg = document.createElement('div');
+    bg.className = 'floating-paths-bg';
+    bg.appendChild(buildFloatingPathsSvg(position));
+    view.insertBefore(bg, view.firstChild);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initFloatingPathsBackgrounds();
   Promise.all([bootApp(), waitForPageLoad()]).finally(hidePageLoader);
 });
