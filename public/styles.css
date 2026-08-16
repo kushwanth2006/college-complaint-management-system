@@ -118,7 +118,7 @@ body{
 }
 @keyframes fpFlow{
   from{ stroke-dashoffset:0; }
-  to{ stroke-dashoffset:-2.4; }
+  to{ stroke-dashoffset:-1.2; } /* one full loop of the 0.3+0.9 dash pattern (pathLength normalized to 1) */
 }
 @keyframes fpPulse{
   0%,100%{ opacity:.28; }
