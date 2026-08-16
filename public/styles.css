@@ -113,22 +113,15 @@ body{
 .floating-paths-bg path{
   fill:none;
   stroke:currentColor;
-  stroke-dasharray:0.3 0.9;
-  animation:fpFlow 22s linear infinite, fpPulse 6s ease-in-out infinite;
 }
-@keyframes fpFlow{
-  from{ stroke-dashoffset:0; }
-  to{ stroke-dashoffset:-1.2; } /* one full loop of the 0.3+0.9 dash pattern (pathLength normalized to 1) */
-}
-@keyframes fpPulse{
-  0%,100%{ opacity:.28; }
-  50%{ opacity:.6; }
-}
+/* Dash pattern + flow/pulse motion are set in JS (animateFloatingPaths) using
+   each path's real getTotalLength(), since fractional CSS dasharray values
+   don't scale correctly against arbitrary path geometry across browsers. */
 @media (prefers-color-scheme: dark){
   .floating-paths-bg{ color:#fff; }
 }
 @media (prefers-reduced-motion: reduce){
-  .floating-paths-bg path{ animation:none; opacity:.35; }
+  .floating-paths-bg path{ animation:none !important; opacity:.35; }
 }
 .auth-view > *:not(.floating-paths-bg){ position:relative; z-index:1; }
 
