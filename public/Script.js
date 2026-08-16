@@ -1763,12 +1763,6 @@ function buildFloatingPathsSvg(position) {
     const path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('d', d);
     path.setAttribute('stroke-width', String(0.5 + i * 0.03));
-    // Normalizes the path's length to 1 unit regardless of its actual on-screen
-    // length, so the dasharray/dashoffset values in CSS (fractions of 1) produce
-    // a visible, consistent flow instead of an imperceptible shift on a path
-    // that's hundreds of SVG units long.
-    path.setAttribute('pathLength', '1');
-    path.style.animationDelay = `-${(i * 0.55).toFixed(2)}s, -${(i * 0.16).toFixed(2)}s`;
     svg.appendChild(path);
   }
   return svg;
@@ -1789,6 +1783,50 @@ function initFloatingPathsBackgrounds() {
     bg.className = 'floating-paths-bg';
     bg.appendChild(buildFloatingPathsSvg(position));
     view.insertBefore(bg, view.firstChild);
+    animateFloatingPaths(bg);
+  });
+}
+
+// Drives the "flowing dash" motion with each path's real, computed length
+// (via getTotalLength(), only available once the SVG is attached to the DOM).
+// This avoids relying on SVG2 pathLength normalization, which isn't reliably
+// supported for arbitrary <path> geometry across browsers.
+function animateFloatingPaths(bgEl) {
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const paths = bgEl.querySelectorAll('path');
+  paths.forEach((path, i) => {
+    let len;
+    try {
+      len = path.getTotalLength();
+    } catch (e) {
+      return; // getTotalLength unsupported/failed — leave path as a static line
+    }
+    if (!len) return;
+
+    const dash = len * 0.22;   // visible "comet" segment: ~22% of the path
+    const gap = len * 0.78;    // rest of the loop is empty
+    path.style.strokeDasharray = `${dash} ${gap}`;
+    path.style.opacity = '0.3';
+
+    if (reduceMotion) {
+      path.style.opacity = '0.35';
+      return;
+    }
+
+    const duration = 16000 + Math.random() * 10000; // 16–26s, matches original's 20±10s
+    path.animate(
+      [
+        { strokeDashoffset: 0, opacity: 0.3 },
+        { offset: 0.5, opacity: 0.6 },
+        { strokeDashoffset: -(dash + gap), opacity: 0.3 },
+      ],
+      {
+        duration,
+        iterations: Infinity,
+        easing: 'linear',
+        delay: -((i * duration) / paths.length), // stagger so paths aren't in lockstep
+      }
+    );
   });
 }
 
