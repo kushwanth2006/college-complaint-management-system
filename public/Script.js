@@ -1763,6 +1763,11 @@ function buildFloatingPathsSvg(position) {
     const path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('d', d);
     path.setAttribute('stroke-width', String(0.5 + i * 0.03));
+    // Normalizes the path's length to 1 unit regardless of its actual on-screen
+    // length, so the dasharray/dashoffset values in CSS (fractions of 1) produce
+    // a visible, consistent flow instead of an imperceptible shift on a path
+    // that's hundreds of SVG units long.
+    path.setAttribute('pathLength', '1');
     path.style.animationDelay = `-${(i * 0.55).toFixed(2)}s, -${(i * 0.16).toFixed(2)}s`;
     svg.appendChild(path);
   }
