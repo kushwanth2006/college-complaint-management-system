@@ -187,12 +187,12 @@
     <form id="loginForm" onsubmit="handleLogin(event);">
       <div class="field">
         <label>College ID</label>
-        <input type="text" id="loginCollegeId" placeholder="VTU28243" maxlength="8" required>
+        <input type="text" id="loginCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
       </div>
       <div class="field">
         <label>Password</label>
         <div class="pw-wrap">
-          <input type="password" id="loginPassword" placeholder="••••••••" required>
+          <input type="password" id="loginPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('loginPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -212,29 +212,30 @@
     <h2>Create your account</h2>
     <p class="auth-sub">Register with your college ID to start raising complaints.</p>
     <form id="registerForm" onsubmit="handleRegister(event);">
-      <div class="field"><label>Full name</label><input type="text" id="regName" placeholder="Kushwanth Reddy" required></div>
-      <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@veltech.edu.in" required></div>
+      <div class="field"><label>Full name</label><input type="text" id="regName" placeholder="EX: Kushwanth Reddy" required></div>
+      <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="EX: VTU28243@veltech.edu.in" required></div>
       <div class="field">
         <label>College ID</label>
-        <input type="text" id="regCollegeId" placeholder="VTU28243" maxlength="8" required oninput="validateCollegeIdField(this)">
+        <input type="text" id="regCollegeId" placeholder="EX: VTU28243" maxlength="8" required oninput="validateCollegeIdField(this)">
         <div class="field-hint" id="regCollegeIdHint">Starts with <b>VTU</b>, followed by 5 characters (8 total).</div>
       </div>
       <div class="field">
         <label>Hostel</label>
         <select id="regHostel" required>
           <option value="" disabled selected>Select your hostel</option>
-          <option value="Leaders">🏆 Leaders</option>
-          <option value="Kings">👑 Kings</option>
-          <option value="Queens">👑 Queens</option>
-          <option value="B3">🛏️ B3</option>
-          <option value="IGH">🏢 IGH</option>
-          <option value="VVH">🏢 VVH</option>
+          <option value="B3">B3</option>
+          <option value="Leaders">Leaders</option>
+          <option value="Prince">Prince</option>
+          <option value="Kings">Kings</option>
+          <option value="Queens">Queens</option>
+          <option value="IGH">IGH</option>
+          <option value="VVH">VVH</option>
         </select>
       </div>
       <div class="field">
         <label>Password</label>
         <div class="pw-wrap">
-          <input type="password" id="regPassword" placeholder="••••••••" required>
+          <input type="password" id="regPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('regPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -255,7 +256,7 @@
     <form id="forgotForm" onsubmit="handleForgot(event);">
       <div class="field">
         <label>College ID</label>
-        <input type="text" id="forgotCollegeId" placeholder="VTU28243" maxlength="8" required>
+        <input type="text" id="forgotCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
       </div>
       <button class="btn btn-primary auth-submit" type="submit" id="forgotSubmitBtn">Send code</button>
     </form>
@@ -297,7 +298,7 @@
       <div class="field">
         <label>New password</label>
         <div class="pw-wrap">
-          <input type="password" id="newPassword" placeholder="••••••••" required>
+          <input type="password" id="newPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('newPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -306,7 +307,7 @@
       <div class="field">
         <label>Confirm new password</label>
         <div class="pw-wrap">
-          <input type="password" id="confirmPassword" placeholder="••••••••" required>
+          <input type="password" id="confirmPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('confirmPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -383,7 +384,7 @@
       <div class="field">
         <label>Password</label>
         <div class="pw-wrap">
-          <input type="password" id="adminLoginPassword" placeholder="••••••••" required>
+          <input type="password" id="adminLoginPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminLoginPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -407,7 +408,7 @@
       <div class="field"><label>Email</label><input type="email" id="adminRegEmail" placeholder="you@veltech.edu.in" required></div>
       <div class="field">
         <label>College ID</label>
-        <input type="text" id="adminRegCollegeId" placeholder="TTS12345" maxlength="8" required oninput="validateStaffCollegeIdField(this, 'adminRegCollegeIdHint')">
+        <input type="text" id="adminRegCollegeId" placeholder="EX: TTS28243" maxlength="8" required oninput="validateStaffCollegeIdField(this, 'adminRegCollegeIdHint')">
         <div class="field-hint" id="adminRegCollegeIdHint">Starts with <b>TTS</b>, followed by 5 characters (8 total).</div>
       </div>
       <div class="field">
@@ -420,7 +421,7 @@
       <div class="field">
         <label>Password</label>
         <div class="pw-wrap">
-          <input type="password" id="adminRegPassword" placeholder="••••••••" required>
+          <input type="password" id="adminRegPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminRegPassword', this)">
             <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -497,7 +498,7 @@
     <form id="superAdminLoginForm" onsubmit="handleSuperAdminLogin(event);">
       <div class="field">
         <label>Super admin key</label>
-        <input type="password" id="superAdminKey" placeholder="••••••••" required>
+        <input type="password" id="superAdminKey" placeholder="" required>
       </div>
       <button class="btn btn-primary auth-submit" type="submit">Unlock</button>
     </form>
@@ -572,7 +573,7 @@
         <form id="superAdminSearchForm" class="credential-search-form" onsubmit="handleSuperAdminPeopleSearch(event);">
           <div class="field" style="flex:1; margin-bottom:0;">
             <label>College ID</label>
-            <input type="text" id="superAdminSearchInput" placeholder="e.g. VTU12345 or TTS12345" autocomplete="off">
+            <input type="text" id="superAdminSearchInput" placeholder="e.g. VTU28243 or TTS28243" autocomplete="off">
             <div class="field-hint">You can also type just part of the ID — matching students and staff will both show up.</div>
           </div>
           <button class="btn btn-primary" type="submit" style="align-self:flex-start; margin-top:22px;">Search</button>
