@@ -594,7 +594,30 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 
 /* ---- Views ---- */
 .view{width:100%;}
-.auth-view{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; position:relative;}
+.auth-view{
+  --dot-x:50%; --dot-y:50%;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:60px 20px; position:relative; isolation:isolate; overflow:hidden;
+}
+/* Campus signal map: a quiet dot grid that responds locally to the pointer. */
+.auth-view::before,
+.auth-view::after{
+  content:""; position:absolute; inset:0; z-index:-2; pointer-events:none;
+  background-image:radial-gradient(circle, rgba(23,74,112,.18) 1.25px, transparent 1.6px);
+  background-size:24px 24px;
+  background-position:12px 12px;
+}
+.auth-view::after{
+  z-index:-1;
+  background-image:radial-gradient(circle, rgba(20,108,154,.92) 1.8px, transparent 2.3px);
+  opacity:.9;
+  -webkit-mask-image:radial-gradient(circle 150px at var(--dot-x) var(--dot-y), #000 0, rgba(0,0,0,.82) 38%, transparent 100%);
+  mask-image:radial-gradient(circle 150px at var(--dot-x) var(--dot-y), #000 0, rgba(0,0,0,.82) 38%, transparent 100%);
+  transition:opacity .22s ease;
+}
+.auth-view:not(.dot-field-active)::after{opacity:0;}
+.auth-view > *{position:relative; z-index:1;}
+.auth-card{background:rgba(255,253,247,.96); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);}
 .auth-back{
   position:absolute; top:24px; left:24px; font-size:13px; font-weight:600; color:var(--text-soft);
   transition:color .15s ease; padding-bottom:3px; display:inline-block;
@@ -883,4 +906,11 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 :focus-visible{outline:3px solid var(--brass); outline-offset:3px;}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important;}
+}
+
+@media (hover:none), (pointer:coarse){
+  .auth-view::after{display:none;}
+}
+@media (prefers-reduced-motion:reduce){
+  .auth-view::after{transition:none;}
 }
