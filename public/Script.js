@@ -1714,6 +1714,22 @@ function initAuthDotFields() {
   });
 }
 
+/* Brighten only the dots near the pointer on authentication views. CSS draws
+   the grid; JavaScript supplies the pointer position, keeping the effect light. */
+function initAuthDotFields() {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+  document.querySelectorAll('.auth-view').forEach(view => {
+    view.addEventListener('pointerenter', () => view.classList.add('dot-field-active'));
+    view.addEventListener('pointerleave', () => view.classList.remove('dot-field-active'));
+    view.addEventListener('pointermove', event => {
+      const rect = view.getBoundingClientRect();
+      view.style.setProperty('--dot-x', `${event.clientX - rect.left}px`);
+      view.style.setProperty('--dot-y', `${event.clientY - rect.top}px`);
+    });
+  });
+}
+
 async function bootApp() {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeMobileNav();
