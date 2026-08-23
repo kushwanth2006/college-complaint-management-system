@@ -5,6 +5,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./db/database');
 const { sendOtpEmail } = require('./lib/mailer');
+const { analyzeComplaint } = require('./lib/complaint-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -160,7 +161,13 @@ async function publicComplaint(c) {
     studentName: c.student_name || null,
     studentCollegeId: c.student_college_id || null,
     studentEmail: c.student_email || null,
-    studentHostel: c.student_hostel || null
+    studentHostel: c.student_hostel || null,
+    aiCategory: c.ai_category || null,
+    aiConfidence: c.ai_confidence || null,
+    aiPriority: c.ai_priority || null,
+    aiPriorityReason: c.ai_priority_reason || null,
+    aiSummary: c.ai_summary || null,
+    possibleDuplicate: c.possible_duplicate || null
   };
 }
 
@@ -380,6 +387,13 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
   res.json({ complaints: await Promise.all(rows.map(publicComplaint)) });
 });
 
+app.post('/api/complaints/analyze', requireAuth, async (req, res) => {
+  const { title, description } = req.body || {};
+  if (!title || !description) return res.status(400).json({ error: 'Add a subject and description first.' });
+  const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  res.json({ analysis: analyzeComplaint({ title, description, complaints }) });
+});
+
 app.post('/api/complaints', requireAuth, async (req, res) => {
   const { category, title, description, photo } = req.body || {};
 
@@ -392,11 +406,14 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
 
   const code = await genComplaintCode();
   const routing = await getRoutingDetails(category);
+  const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  const analysis = analyzeComplaint({ title, description, complaints });
 
   const info = await db.run(
-    `INSERT INTO complaints (complaint_code, user_id, category, title, description, officer, stage_index, note, photo)
-     VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?) RETURNING id`
-  , code, req.session.userId, category, String(title).trim(), String(description).trim(), routing.officer, routing.note, photo || null);
+    `INSERT INTO complaints (complaint_code, user_id, category, title, description, officer, stage_index, note, photo, ai_category, ai_confidence, ai_priority, ai_priority_reason, ai_summary, possible_duplicate)
+     VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`
+  , code, req.session.userId, category, String(title).trim(), String(description).trim(), routing.officer, routing.note, photo || null,
+    analysis.category, analysis.confidence, analysis.priority, analysis.reason, analysis.summary, analysis.duplicate);
 
   const row = await db.get('SELECT * FROM complaints WHERE id = ?', info.lastInsertRowid);
   res.status(201).json({ complaint: await publicComplaint(row) });

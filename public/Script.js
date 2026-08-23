@@ -704,6 +704,7 @@ function renderTicketList() {
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
         </div>
         <p class="tk-desc">${escapeHtml(t.description)}</p>
+        ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
         <div class="admin-controls"><button class="btn btn-ghost small btn-delete" onclick="deleteStudentComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button></div>
@@ -801,6 +802,8 @@ function openNewComplaintForm() {
       <label>Details</label>
       <textarea id="ncDesc" rows="4" placeholder="What happened, where, and when?"></textarea>
     </div>
+    <button type="button" class="btn btn-ghost ai-analyze-btn" onclick="analyzeNewComplaint()">Analyze with AI</button>
+    <div id="ncAiResult" class="ai-result" aria-live="polite"></div>
     <div class="field">
       <label>Photo (optional)</label>
       <div class="photo-drop" id="ncPhotoDrop" onclick="document.getElementById('ncPhotoInput').click()">Click to attach a photo</div>
@@ -811,6 +814,30 @@ function openNewComplaintForm() {
       <button class="btn btn-primary" onclick="submitNewComplaint()">Submit complaint</button>
     </div>
   `);
+}
+
+async function analyzeNewComplaint() {
+  const title = document.getElementById('ncTitle').value.trim();
+  const description = document.getElementById('ncDesc').value.trim();
+  if (!title || !description) { showToast('Add a subject and description first.'); return; }
+  const button = document.querySelector('.ai-analyze-btn');
+  setBtnLoading(button, true);
+  try {
+    const { analysis } = await api('/api/complaints/analyze', { method: 'POST', body: { title, description } });
+    document.getElementById('ncCategory').value = analysis.category;
+    document.getElementById('ncAiResult').innerHTML = `
+      <strong>AI suggestion</strong>
+      <span>Category: ${escapeHtml(analysis.category)} (${analysis.confidence}% confidence)</span>
+      <span>Priority: ${escapeHtml(analysis.priority)}</span>
+      <span>Summary: ${escapeHtml(analysis.summary)}</span>
+      ${analysis.duplicate ? `<span>Possible duplicate: ${escapeHtml(analysis.duplicate.complaintCode)} (${analysis.duplicate.similarity}% similar)</span>` : '<span>No similar open complaint found.</span>'}
+      <small>You can change the suggested category before submitting.</small>`;
+    document.getElementById('ncAiResult').classList.add('show');
+  } catch (err) {
+    showToast(err.message);
+  } finally {
+    setBtnLoading(button, false);
+  }
 }
 
 function handleNcPhoto(evt) {
@@ -1157,6 +1184,7 @@ function renderAdminTicketList() {
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
         </div>
         <p class="tk-desc">${escapeHtml(t.description)}</p>
+        ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span>${t.possibleDuplicate ? ` · Possible duplicate: ${escapeHtml(t.possibleDuplicate.complaintCode)}` : ''}</div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
         <div class="admin-controls">
