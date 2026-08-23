@@ -722,6 +722,6 @@ initDb()
     });
   })
   .catch((err) => {
-    console.error('Could not initialize PostgreSQL:', err);
+    console.error('Could not initialize MongoDB:', err);
     process.exit(1);
   });
