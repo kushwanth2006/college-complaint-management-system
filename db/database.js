@@ -45,7 +45,7 @@ async function nextId(name) {
 }
 
 function tableFrom(sql) {
-  const match = sql.match(/\bFROM\s+(users|admins|complaints|password_resets)\b/i);
+  const match = sql.match(/\bFROM\s+(users|admins|complaints|password_resets|complaint_history|feedback)\b/i);
   if (!match) throw new Error(`Unsupported MongoDB query: ${sql}`);
   return match[1].toLowerCase();
 }
@@ -56,6 +56,7 @@ function selectFilter(sql, params) {
   if (/user_id = \? AND reset_token = \?/i.test(sql)) return { user_id: Number(params[0]), reset_token: params[1] };
   if (/user_id = \? AND otp_used = 0/i.test(sql)) return { user_id: Number(params[0]), otp_used: 0 };
   if (/complaint_code = \?/i.test(sql)) return { complaint_code: params[0] };
+  if (/complaint_id = \?/i.test(sql)) return { complaint_id: Number(params[0]) };
   if (/college_id = \?/i.test(sql)) return { college_id: params[0] };
   if (/email = \?/i.test(sql)) return { email: params[0] };
   if (/user_id = \?/i.test(sql)) return { user_id: Number(params[0]) };
@@ -160,7 +161,9 @@ async function initDb() {
     collection('admins').createIndex({ college_id: 1 }, { unique: true, sparse: true }),
     collection('complaints').createIndex({ complaint_code: 1 }, { unique: true }),
     collection('complaints').createIndex({ user_id: 1 }),
-    collection('password_resets').createIndex({ user_id: 1 })
+    collection('password_resets').createIndex({ user_id: 1 }),
+    collection('complaint_history').createIndex({ complaint_id: 1 }),
+    collection('feedback').createIndex({ complaint_id: 1 }, { unique: true })
   ]);
 }
 

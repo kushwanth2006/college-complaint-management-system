@@ -5,7 +5,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./db/database');
 const { sendOtpEmail } = require('./lib/mailer');
-const { analyzeComplaint } = require('./lib/complaint-ai');
+const { analyzeComplaint, similarity } = require('./lib/complaint-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +46,7 @@ const HOSTELS = ['Leaders', 'Kings', 'Queens', 'B3', 'IGH', 'VVH'];
 
 const OTP_TTL_MS = 10 * 60 * 1000;   // 10 minutes
 const RESET_TOKEN_TTL_MS = 10 * 60 * 1000;
+const SLA_HOURS = { Critical: 2, High: 8, Medium: 24, Low: 72 };
 
 /* ---------------- helpers ---------------- */
 
@@ -168,6 +169,14 @@ async function publicComplaint(c) {
     aiPriorityReason: c.ai_priority_reason || null,
     aiSummary: c.ai_summary || null,
     possibleDuplicate: c.possible_duplicate || null
+    , location: c.location || null
+    , aiKeywords: c.ai_keywords || []
+    , aiDetectedLocation: c.ai_detected_location || null
+    , aiSuggestedResolution: c.ai_suggested_resolution || []
+    , slaDeadline: c.sla_deadline || null
+    , overdue: c.sla_deadline ? Date.now() > new Date(c.sla_deadline).getTime() && c.stage_index < 3 : false
+    , feedback: c.feedback || null
+    , studentUpdates: c.student_updates || []
   };
 }
 
@@ -395,7 +404,7 @@ app.post('/api/complaints/analyze', requireAuth, async (req, res) => {
 });
 
 app.post('/api/complaints', requireAuth, async (req, res) => {
-  const { category, title, description, photo } = req.body || {};
+  const { category, title, description, location, photo } = req.body || {};
 
   if (!title || !description || !category) {
     return res.status(400).json({ error: 'Category, subject, and details are all required.' });
@@ -408,15 +417,53 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
   const routing = await getRoutingDetails(category);
   const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
   const analysis = analyzeComplaint({ title, description, complaints });
+  const slaDeadline = new Date(Date.now() + SLA_HOURS[analysis.priority] * 60 * 60 * 1000);
 
   const info = await db.run(
-    `INSERT INTO complaints (complaint_code, user_id, category, title, description, officer, stage_index, note, photo, ai_category, ai_confidence, ai_priority, ai_priority_reason, ai_summary, possible_duplicate)
-     VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`
-  , code, req.session.userId, category, String(title).trim(), String(description).trim(), routing.officer, routing.note, photo || null,
-    analysis.category, analysis.confidence, analysis.priority, analysis.reason, analysis.summary, analysis.duplicate);
+    `INSERT INTO complaints (complaint_code, user_id, category, title, description, location, officer, stage_index, note, photo, ai_category, ai_confidence, ai_priority, ai_priority_reason, ai_summary, ai_keywords, ai_detected_location, ai_suggested_resolution, possible_duplicate, sla_deadline)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`
+  , code, req.session.userId, category, String(title).trim(), String(description).trim(), String(location || '').trim() || analysis.entities.location,
+    routing.officer, routing.note, photo || null, analysis.category, analysis.confidence, analysis.priority, analysis.reason, analysis.summary,
+    analysis.entities.keywords, analysis.entities.location, analysis.suggestedResolution, analysis.duplicate, slaDeadline);
+
+  await db.run(
+    'INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)',
+    info.lastInsertRowid, null, 'Submitted', req.session.userId, 'Complaint submitted and analyzed.'
+  );
 
   const row = await db.get('SELECT * FROM complaints WHERE id = ?', info.lastInsertRowid);
   res.status(201).json({ complaint: await publicComplaint(row) });
+});
+
+app.get('/api/complaints/:code/history', requireAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint || complaint.user_id !== req.session.userId) return res.status(404).json({ error: 'Complaint not found.' });
+  const history = await db.all('SELECT * FROM complaint_history WHERE complaint_id = ? ORDER BY id DESC', complaint.id);
+  res.json({ history });
+});
+
+app.post('/api/complaints/:code/information', requireAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  const message = String(req.body?.message || '').trim();
+  if (!complaint || complaint.user_id !== req.session.userId) return res.status(404).json({ error: 'Complaint not found.' });
+  if (!message) return res.status(400).json({ error: 'Additional information is required.' });
+  const updates = [...(complaint.student_updates || []), { message, createdAt: new Date() }];
+  await db.run('UPDATE complaints SET student_updates = ? WHERE id = ?', updates, complaint.id);
+  await db.run('INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)', complaint.id, null, null, req.session.userId, `Student added information: ${message}`);
+  res.json({ ok: true });
+});
+
+app.post('/api/complaints/:code/feedback', requireAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  const rating = Number(req.body?.rating); const comments = String(req.body?.comments || '').trim();
+  if (!complaint || complaint.user_id !== req.session.userId) return res.status(404).json({ error: 'Complaint not found.' });
+  if (complaint.stage_index < 3) return res.status(400).json({ error: 'Feedback is available after resolution.' });
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ error: 'Rating must be between 1 and 5.' });
+  if (await db.get('SELECT * FROM feedback WHERE complaint_id = ?', complaint.id)) return res.status(409).json({ error: 'Feedback already submitted.' });
+  await db.run('INSERT INTO feedback (complaint_id, user_id, rating, comments) VALUES (?, ?, ?, ?)', complaint.id, req.session.userId, rating, comments);
+  await db.run('UPDATE complaints SET feedback = ?, stage_index = ? WHERE id = ?', { rating, comments }, 4, complaint.id);
+  await db.run('INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)', complaint.id, 'Resolved', 'Closed', req.session.userId, 'Student submitted feedback and closed the complaint.');
+  res.json({ ok: true });
 });
 
 app.delete('/api/complaints/:code', requireAuth, async (req, res) => {
@@ -536,17 +583,43 @@ app.patch('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
     return res.status(403).json({ error: 'This complaint isn\u2019t routed to your department.' });
   }
 
-  const { stageIndex, note } = req.body || {};
+  const { stageIndex, note, category, priority } = req.body || {};
   const idx = Number(stageIndex);
-  if (!Number.isInteger(idx) || idx < 0 || idx > 3) {
+  if (!Number.isInteger(idx) || idx < 0 || idx > 4) {
     return res.status(400).json({ error: 'Invalid stage.' });
   }
+  if (category && !CATEGORIES.includes(category)) return res.status(400).json({ error: 'Invalid category.' });
+  if (priority && !Object.hasOwn(SLA_HOURS, priority)) return res.status(400).json({ error: 'Invalid priority.' });
 
   const finalNote = note && String(note).trim() ? String(note).trim() : complaint.note;
-  await db.run('UPDATE complaints SET stage_index = ?, note = ? WHERE id = ?', idx, finalNote, complaint.id);
+  const finalCategory = category || complaint.category;
+  const finalPriority = priority || complaint.ai_priority;
+  await db.run('UPDATE complaints SET stage_index = ?, note = ?, category = ?, ai_priority = ?, ai_reviewed = ? WHERE id = ?', idx, finalNote, finalCategory, finalPriority, true, complaint.id);
+  if (idx !== complaint.stage_index) {
+    const stages = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
+    await db.run('INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)', complaint.id, stages[complaint.stage_index], stages[idx], req.admin.id, finalNote);
+  }
 
   const updated = await db.get('SELECT * FROM complaints WHERE id = ?', complaint.id);
   res.json({ complaint: await publicComplaint(updated) });
+});
+
+app.get('/api/admin/complaints/:code/history', requireAdminAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
+  const history = await db.all('SELECT * FROM complaint_history WHERE complaint_id = ? ORDER BY id DESC', complaint.id);
+  res.json({ history });
+});
+
+app.get('/api/admin/complaints/:code/recommendations', requireAdminAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
+  const rows = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  const text = `${complaint.title} ${complaint.description}`;
+  const similar = rows.filter(row => row.id !== complaint.id && row.stage_index >= 3)
+    .map(row => ({ id: row.complaint_code, title: row.title, category: row.category, resolution: row.note, similarity: Math.round(similarity(text, `${row.title} ${row.description}`) * 100) }))
+    .filter(row => row.similarity >= 25).sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+  res.json({ similar, suggestedResolution: complaint.ai_suggested_resolution || [], suggestedResponse: `Your complaint regarding “${complaint.title}” has been acknowledged and assigned to the ${complaint.category} department. The team is reviewing the issue.` });
 });
 
 app.delete('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
@@ -593,6 +666,24 @@ app.get('/api/superadmin/complaints', requireSuperAdmin, async (req, res) => {
     ORDER BY c.id DESC
   `);
   res.json({ complaints: await Promise.all(rows.map(publicComplaint)) });
+});
+
+app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {
+  const rows = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  const countBy = key => rows.reduce((out, row) => ((out[row[key] || 'Unknown'] = (out[row[key] || 'Unknown'] || 0) + 1), out), {});
+  const resolved = rows.filter(row => row.stage_index >= 3);
+  const feedback = rows.map(row => row.feedback?.rating).filter(Number.isFinite);
+  res.json({
+    total: rows.length,
+    resolved: resolved.length,
+    pending: rows.length - resolved.length,
+    overdue: rows.filter(row => row.sla_deadline && Date.now() > new Date(row.sla_deadline).getTime() && row.stage_index < 3).length,
+    resolutionRate: rows.length ? Math.round(resolved.length / rows.length * 100) : 0,
+    averageFeedback: feedback.length ? Math.round(feedback.reduce((a, b) => a + b, 0) / feedback.length * 10) / 10 : null,
+    byDepartment: countBy('category'),
+    byPriority: countBy('ai_priority'),
+    byLocation: countBy('location')
+  });
 });
 
 app.delete('/api/superadmin/complaints/:code', requireSuperAdmin, async (req, res) => {

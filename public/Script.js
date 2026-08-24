@@ -8,7 +8,7 @@
 /* ---------------- Reference data (kept in sync with server.js) ---------------- */
 const CATEGORIES = ['Hostel', 'Mess', 'Academic', 'Wi-Fi & Network', 'Transport', 'Library', 'General'];
 
-const STAGES = ['Submitted', 'Routed', 'In Progress', 'Resolved'];
+const STAGES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 
 const HOSTELS = ['Leaders', 'Kings', 'Queens', 'B3', 'IGH', 'VVH'];
 
@@ -241,7 +241,7 @@ function renderHeroStage(stageIndex) {
   if (!stampEl || !trackEl || !noteEl) return;
 
   const stageName = STAGES[stageIndex];
-  const stampClass = stageIndex === 2 ? ' stage-progress' : stageIndex === 3 ? ' stage-resolved' : '';
+  const stampClass = stageIndex === 2 ? ' stage-progress' : stageIndex >= 3 ? ' stage-resolved' : '';
   stampEl.className = 'stamp' + stampClass;
   stampEl.innerHTML = `<span class="status-dot ${heroStatusDotClass(stageIndex)}"></span>${stageName}`;
 
@@ -612,7 +612,7 @@ function renderStatGrid() {
   const tickets = myTickets();
   const counts = { total: tickets.length, open: 0, progress: 0, resolved: 0 };
   tickets.forEach(t => {
-    if (t.stageIndex === 3) counts.resolved++;
+    if (t.stageIndex >= 3) counts.resolved++;
     else if (t.stageIndex === 2) counts.progress++;
     else counts.open++;
   });
@@ -669,7 +669,10 @@ function renderTicketList() {
       t.category.toLowerCase().includes(activeSearch)
     );
   }
-  tickets = [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const priorityRank = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+  tickets = [...tickets].sort((a, b) =>
+    (priorityRank[b.aiPriority] || 0) - (priorityRank[a.aiPriority] || 0) || new Date(b.createdAt) - new Date(a.createdAt)
+  );
 
   const list = document.getElementById('ticketList');
   if (tickets.length === 0) {
@@ -683,7 +686,7 @@ function renderTicketList() {
 
   list.innerHTML = tickets.map((t, i) => {
     const stageName = STAGES[t.stageIndex];
-    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex === 3 ? ' stage-resolved' : '';
+    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
     const dotClass = statusDotClass(t.stageIndex);
     const trackDots = STAGES.map((_, i) => `<span class="dot${i <= t.stageIndex ? ' on' : ''}"></span>`).join('');
 
@@ -699,6 +702,8 @@ function renderTicketList() {
               <span class="tk-cat" style="--chip-color:${(CATEGORY_META[t.category] || CATEGORY_META['General']).color}">${categoryIcon(t.category, 12)}${t.category}</span>
               <span>${fmtDate(t.createdAt)}</span>
               <span>${escapeHtml(t.officer)}</span>
+              ${t.location ? `<span>📍 ${escapeHtml(t.location)}</span>` : ''}
+              ${t.overdue ? '<span class="overdue-label">SLA overdue</span>' : ''}
             </div>
           </div>
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
@@ -707,7 +712,11 @@ function renderTicketList() {
         ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
-        <div class="admin-controls"><button class="btn btn-ghost small btn-delete" onclick="deleteStudentComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button></div>
+        <div class="admin-controls">
+          <button class="btn btn-ghost small" onclick="openComplaintHistory('${t.id.replace(/'/g, "\\'")}')">Timeline</button>
+          ${t.stageIndex >= 3 && !t.feedback ? `<button class="btn btn-primary small" onclick="openFeedbackForm('${t.id.replace(/'/g, "\\'")}')">Give feedback</button>` : ''}
+          <button class="btn btn-ghost small btn-delete" onclick="deleteStudentComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -802,6 +811,10 @@ function openNewComplaintForm() {
       <label>Details</label>
       <textarea id="ncDesc" rows="4" placeholder="What happened, where, and when?"></textarea>
     </div>
+    <div class="field">
+      <label>Location</label>
+      <input type="text" id="ncLocation" placeholder="Example: Boys Hostel Block B">
+    </div>
     <button type="button" class="btn btn-ghost ai-analyze-btn" onclick="analyzeNewComplaint()">Analyze with AI</button>
     <div id="ncAiResult" class="ai-result" aria-live="polite"></div>
     <div class="field">
@@ -861,6 +874,7 @@ async function submitNewComplaint() {
   const category = document.getElementById('ncCategory').value;
   const title = document.getElementById('ncTitle').value.trim();
   const description = document.getElementById('ncDesc').value.trim();
+  const location = document.getElementById('ncLocation').value.trim();
 
   if (!title || !description) {
     showToast('Add a subject and description first.');
@@ -872,7 +886,7 @@ async function submitNewComplaint() {
   try {
     const data = await api('/api/complaints', {
       method: 'POST',
-      body: { category, title, description, photo: stagedPhotoDataUrl }
+      body: { category, title, description, location, photo: stagedPhotoDataUrl }
     });
     ticketsCache.unshift(data.complaint);
     closeModal();
@@ -882,6 +896,33 @@ async function submitNewComplaint() {
     showToast(err.message);
     setBtnLoading(btn, false);
   }
+}
+
+async function openComplaintHistory(code) {
+  try {
+    const { history } = await api('/api/complaints/' + encodeURIComponent(code) + '/history');
+    openModal(`
+      <h3>${escapeHtml(code)} timeline</h3>
+      <div class="history-list">${history.length ? history.map(item => `
+        <div class="history-item"><strong>${escapeHtml(item.new_status || 'Information update')}</strong><span>${escapeHtml(item.remarks || '')}</span><small>${fmtDate(item.created_at)}</small></div>`).join('') : '<p>No history recorded yet.</p>'}</div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`);
+  } catch (err) { showToast(err.message); }
+}
+
+function openFeedbackForm(code) {
+  openModal(`
+    <h3>Rate the resolution</h3>
+    <p class="modal-sub">Your feedback closes ${escapeHtml(code)}.</p>
+    <div class="field"><label>Rating</label><select id="feedbackRating"><option value="5">5 - Excellent</option><option value="4">4 - Good</option><option value="3">3 - Satisfactory</option><option value="2">2 - Poor</option><option value="1">1 - Very poor</option></select></div>
+    <div class="field"><label>Comments (optional)</label><textarea id="feedbackComments" rows="3"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitFeedback('${code.replace(/'/g, "\\'")}')">Submit feedback</button></div>`);
+}
+
+async function submitFeedback(code) {
+  try {
+    await api('/api/complaints/' + encodeURIComponent(code) + '/feedback', { method: 'POST', body: { rating: Number(document.getElementById('feedbackRating').value), comments: document.getElementById('feedbackComments').value.trim() } });
+    closeModal(); await loadMyTickets(); goToDashboardHome(); showToast('Feedback submitted. Complaint closed.');
+  } catch (err) { showToast(err.message); }
 }
 
 /* Notifications modal */
@@ -1100,7 +1141,7 @@ function renderAdminStatGrid() {
   const tickets = adminTicketsCache;
   const counts = { total: tickets.length, open: 0, progress: 0, resolved: 0 };
   tickets.forEach(t => {
-    if (t.stageIndex === 3) counts.resolved++;
+    if (t.stageIndex >= 3) counts.resolved++;
     else if (t.stageIndex === 2) counts.progress++;
     else counts.open++;
   });
@@ -1152,7 +1193,10 @@ function renderAdminTicketList() {
       t.id.toLowerCase().includes(activeAdminSearch)
     );
   }
-  tickets = [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const priorityRank = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+  tickets = [...tickets].sort((a, b) =>
+    (priorityRank[b.aiPriority] || 0) - (priorityRank[a.aiPriority] || 0) || new Date(b.createdAt) - new Date(a.createdAt)
+  );
 
   const list = document.getElementById('adminTicketList');
   if (tickets.length === 0) {
@@ -1166,7 +1210,7 @@ function renderAdminTicketList() {
 
   list.innerHTML = tickets.map((t, i) => {
     const stageName = STAGES[t.stageIndex];
-    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex === 3 ? ' stage-resolved' : '';
+    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
     const dotClass = statusDotClass(t.stageIndex);
     const trackDots = STAGES.map((_, si) => `<span class="dot${si <= t.stageIndex ? ' on' : ''}"></span>`).join('');
     const safeId = t.id.replace(/[^A-Za-z0-9_-]/g, '');
@@ -1185,13 +1229,17 @@ function renderAdminTicketList() {
         </div>
         <p class="tk-desc">${escapeHtml(t.description)}</p>
         ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span>${t.possibleDuplicate ? ` · Possible duplicate: ${escapeHtml(t.possibleDuplicate.complaintCode)}` : ''}</div>` : ''}
+        ${t.location ? `<div class="tk-meta"><span>📍 ${escapeHtml(t.location)}</span>${t.overdue ? '<span class="overdue-label">SLA overdue</span>' : ''}<span>AI confidence: ${t.aiConfidence || 0}%</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
         <div class="admin-controls">
           <select id="stageSelect-${safeId}">
             ${STAGES.map((s, si) => `<option value="${si}"${si === t.stageIndex ? ' selected' : ''}>${dropdownLabel(s)}</option>`).join('')}
           </select>
+          <select id="prioritySelect-${safeId}">${['Low','Medium','High','Critical'].map(p => `<option value="${p}"${p === t.aiPriority ? ' selected' : ''}>${p} priority</option>`).join('')}</select>
+          <select id="categorySelect-${safeId}">${CATEGORIES.map(c => `<option value="${c}"${c === t.category ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}</select>
           <input type="text" id="noteInput-${safeId}" placeholder="Add an update note (optional)">
+          <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}')">AI recommendations</button>
           <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}')">Update</button>
           <button class="btn btn-ghost small btn-delete" onclick="deleteAdminComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
         </div>
@@ -1215,13 +1263,15 @@ async function submitAdminStageUpdate(code) {
   const safeId = code.replace(/[^A-Za-z0-9_-]/g, '');
   const select = document.getElementById('stageSelect-' + safeId);
   const noteInput = document.getElementById('noteInput-' + safeId);
+  const priority = document.getElementById('prioritySelect-' + safeId).value;
+  const category = document.getElementById('categorySelect-' + safeId).value;
   const stageIndex = parseInt(select.value, 10);
   const note = noteInput.value.trim();
 
   try {
     const data = await api('/api/admin/complaints/' + encodeURIComponent(code), {
       method: 'PATCH',
-      body: { stageIndex, note: note || undefined }
+      body: { stageIndex, note: note || undefined, priority, category }
     });
     const idx = adminTicketsCache.findIndex(t => t.id === code);
     if (idx !== -1) adminTicketsCache[idx] = data.complaint;
@@ -1299,7 +1349,7 @@ function renderSuperAdminComplaints() {
 
   list.innerHTML = superAdminComplaints.map(t => {
     const stageName = STAGES[t.stageIndex] || 'Submitted';
-    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex === 3 ? ' stage-resolved' : '';
+    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
     const dotClass = statusDotClass(t.stageIndex);
     const safeId = t.id.replace(/'/g, "\\'");
     const studentInfo = t.studentName ? `${escapeHtml(t.studentName)} (${escapeHtml(t.studentCollegeId || '')})` : '';
@@ -1338,7 +1388,7 @@ function openSuperAdminComplaintModal(code) {
   if (!t) return;
 
   const stageName = STAGES[t.stageIndex] || 'Submitted';
-  const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex === 3 ? ' stage-resolved' : '';
+  const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
   const dotClass = statusDotClass(t.stageIndex);
 
   const studentInfoHtml = (t.studentName || t.studentCollegeId) ? `
@@ -1724,6 +1774,21 @@ function hidePageLoader() {
   if (!loader || loader.classList.contains('hidden')) return;
   loader.classList.add('hidden');
   document.body.classList.remove('page-loading');
+}
+
+async function openAiRecommendations(code) {
+  try {
+    const data = await api('/api/admin/complaints/' + encodeURIComponent(code) + '/recommendations');
+    openModal(`
+      <h3>AI recommendations</h3>
+      <p class="modal-sub">Review these suggestions before taking action.</p>
+      <div class="detail-section-title">Suggested first actions</div>
+      <ol>${data.suggestedResolution.map(action => `<li>${escapeHtml(action)}</li>`).join('')}</ol>
+      <div class="detail-section-title">Suggested response</div><div class="detail-desc-box">${escapeHtml(data.suggestedResponse)}</div>
+      <div class="detail-section-title">Similar resolved complaints</div>
+      ${data.similar.length ? data.similar.map(item => `<div class="history-item"><strong>${escapeHtml(item.id)} · ${item.similarity}% similar</strong><span>${escapeHtml(item.title)}</span><small>Previous resolution: ${escapeHtml(item.resolution || 'Not recorded')}</small></div>`).join('') : '<p>No sufficiently similar resolved complaint was found.</p>'}
+      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`, true);
+  } catch (err) { showToast(err.message); }
 }
 
 /* Brighten only the dots near the pointer on authentication views. CSS draws

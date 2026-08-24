@@ -11,4 +11,5 @@ assert.equal(result.category, 'Wi-Fi & Network');
 assert.equal(result.priority, 'High');
 assert.equal(result.duplicate.complaintCode, 'CDT-1001');
 assert(similarity('wifi not working block c', 'block c wifi is not working') > 0.7);
+assert(similarity('Wi-Fi is not working in Hostel Block A.', 'Internet connection in Block A hostel has been down since morning.') >= 0.45);
 console.log('complaint AI checks passed');
