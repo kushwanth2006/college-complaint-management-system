@@ -563,6 +563,12 @@ function enterDashboard() {
 
   activeFilterCategory = 'All';
   activeSearch = '';
+  const shell = document.querySelector('#view-dashboard .dash-shell');
+  const menuToggle = document.querySelector('#view-dashboard .dash-menu-toggle');
+  if (shell && menuToggle) {
+    shell.classList.remove('sidebar-collapsed', 'menu-open');
+    menuToggle.setAttribute('aria-expanded', String(!window.matchMedia('(max-width: 700px)').matches));
+  }
   document.getElementById('dashWelcome').textContent = 'Welcome back, ' + currentUser.name.split(' ')[0];
   document.getElementById('dashUserName').textContent = currentUser.name;
   document.getElementById('dashUserSub').textContent = 'Student · ' + currentUser.hostel;
@@ -584,11 +590,23 @@ function initials(name) {
 function goToDashboardHome() {
   activeFilterCategory = 'All';
   activeSearch = '';
-  const searchInput = document.querySelector('.search input');
+  const searchInput = document.getElementById('complaintSearchInput');
   if (searchInput) searchInput.value = '';
   renderStatGrid();
   renderFilterRow();
   renderTicketList();
+}
+
+function toggleDashboardMenu() {
+  const shell = document.querySelector('#view-dashboard .dash-shell');
+  const toggle = document.querySelector('#view-dashboard .dash-menu-toggle');
+  if (!shell || !toggle) return;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  const stateClass = isMobile ? 'menu-open' : 'sidebar-collapsed';
+  const changedState = shell.classList.toggle(stateClass);
+  const isOpen = isMobile ? changedState : !changedState;
+  toggle.setAttribute('aria-expanded', String(isOpen));
 }
 
 /* Loaded once at login/register/session-resume, refreshed after filing a

@@ -321,7 +321,7 @@
 <!-- ================= DASHBOARD VIEW ================= -->
 <div id="view-dashboard" class="view" style="display:none;">
   <div class="dash-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" id="dashboardSidebar">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
       <a class="side-link active" href="#" id="navDashboard" onclick="goToDashboardHome(); return false;">▣ Dashboard</a>
       <a class="side-link" href="#" onclick="openNewComplaintForm(); return false;">✎ Raise complaint</a>
@@ -334,7 +334,9 @@
 
     <main class="dash-main">
       <div class="topbar">
-        <div class="search">🔍 <input placeholder="Search your complaints…" oninput="filterTickets(this.value)"></div>
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="dashboardSidebar" aria-expanded="true" onclick="toggleDashboardMenu()">
+          <span></span><span></span><span></span>
+        </button>
         <div class="top-right">
           <div class="bell" id="dashBell" onclick="openNotificationsModal()"><span class="badge" id="bellBadge"></span>🔔</div>
           <div class="user-block">
@@ -361,6 +363,11 @@
         <div class="list-head">
           <h2>Your complaints</h2>
           <div class="filter-row" id="filterRow"></div>
+        </div>
+
+        <div class="complaints-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="complaintSearchInput" type="search" placeholder="Search your complaints" aria-label="Search your complaints" oninput="filterTickets(this.value)">
         </div>
 
         <div id="ticketList"></div>
