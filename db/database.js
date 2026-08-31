@@ -57,6 +57,7 @@ function selectFilter(sql, params) {
   if (/user_id = \? AND otp_used = 0/i.test(sql)) return { user_id: Number(params[0]), otp_used: 0 };
   if (/complaint_code = \?/i.test(sql)) return { complaint_code: params[0] };
   if (/complaint_id = \?/i.test(sql)) return { complaint_id: Number(params[0]) };
+  if (/category = \?/i.test(sql)) return { category: params[0] };
   if (/college_id = \?/i.test(sql)) return { college_id: params[0] };
   if (/email = \?/i.test(sql)) return { email: params[0] };
   if (/user_id = \?/i.test(sql)) return { user_id: Number(params[0]) };
@@ -143,6 +144,7 @@ const db = {
       else if (/complaint_code = \?/i.test(where)) filter = { complaint_code: params[0] };
       else if (/user_id = \? AND otp_used = 0/i.test(where)) filter = { user_id: Number(params[0]), otp_used: 0 };
       else if (/user_id = \?/i.test(where)) filter = { user_id: Number(params[0]) };
+      else if (/complaint_id = \?/i.test(where)) filter = { complaint_id: Number(params[0]) };
       else if (/id = \?/i.test(where)) filter = { id: Number(params[0]) };
       else throw new Error(`Unsupported MongoDB delete: ${sql}`);
       const result = await collection(name).deleteMany(filter);
@@ -157,6 +159,7 @@ async function initDb() {
   database = client.db(databaseName);
   await Promise.all([
     collection('users').createIndex({ college_id: 1 }, { unique: true }),
+    collection('users').createIndex({ email: 1 }, { unique: true }),
     collection('admins').createIndex({ email: 1 }, { unique: true }),
     collection('admins').createIndex({ college_id: 1 }, { unique: true, sparse: true }),
     collection('complaints').createIndex({ complaint_code: 1 }, { unique: true }),

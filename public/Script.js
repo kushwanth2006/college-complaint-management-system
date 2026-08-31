@@ -1,6 +1,6 @@
 /* =======================================================================
    Vel Tech Complaint Box — frontend logic, backed by the real Express +
-   SQLite API in server.js (see /api/* routes). No more in-memory mock data:
+   MongoDB-backed API in server.js (see /api/* routes). No more in-memory mock data:
    every register/login/complaint call actually hits the server and persists
    to campusdesk.db.
    ======================================================================= */
@@ -105,6 +105,7 @@ let ticketsCache = [];       // this student's complaints, loaded from /api/comp
 let activeFilterCategory = 'All';
 let activeSearch = '';
 let stagedPhotoDataUrl = null;
+let modalReturnFocus = null;
 let notifSeen = false;
 let pendingReset = null;   // { collegeId, maskedEmail, resetToken? }
 
@@ -508,8 +509,8 @@ async function handleResetPassword(event) {
   const newPassword = document.getElementById('newPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
 
-  if (!newPassword || newPassword.length < 4) {
-    showToast('Password must be at least 4 characters.');
+  if (!newPassword || newPassword.length < 8) {
+    showToast('Password must be at least 8 characters.');
     return;
   }
   if (newPassword !== confirmPassword) {
@@ -563,12 +564,7 @@ function enterDashboard() {
 
   activeFilterCategory = 'All';
   activeSearch = '';
-  const shell = document.querySelector('#view-dashboard .dash-shell');
-  const menuToggle = document.querySelector('#view-dashboard .dash-menu-toggle');
-  if (shell && menuToggle) {
-    shell.classList.remove('sidebar-collapsed', 'menu-open');
-    menuToggle.setAttribute('aria-expanded', String(!window.matchMedia('(max-width: 700px)').matches));
-  }
+  syncDashboardMenuForViewport();
   document.getElementById('dashWelcome').textContent = 'Welcome back, ' + currentUser.name.split(' ')[0];
   document.getElementById('dashUserName').textContent = currentUser.name;
   document.getElementById('dashUserSub').textContent = 'Student · ' + currentUser.hostel;
@@ -600,13 +596,45 @@ function goToDashboardHome() {
 function toggleDashboardMenu() {
   const shell = document.querySelector('#view-dashboard .dash-shell');
   const toggle = document.querySelector('#view-dashboard .dash-menu-toggle');
-  if (!shell || !toggle) return;
+  const sidebar = document.getElementById('dashboardSidebar');
+  if (!shell || !toggle || !sidebar) return;
 
   const isMobile = window.matchMedia('(max-width: 700px)').matches;
   const stateClass = isMobile ? 'menu-open' : 'sidebar-collapsed';
   const changedState = shell.classList.toggle(stateClass);
   const isOpen = isMobile ? changedState : !changedState;
   toggle.setAttribute('aria-expanded', String(isOpen));
+  sidebar.setAttribute('aria-hidden', String(!isOpen));
+
+  if (isMobile && isOpen) {
+    const firstLink = sidebar.querySelector('.side-link');
+    if (firstLink) firstLink.focus();
+  }
+  if (password.length < 8) { showToast('Password must be at least 8 characters.'); return; }
+}
+
+function closeDashboardMenu({ restoreFocus = true } = {}) {
+  const shell = document.querySelector('#view-dashboard .dash-shell');
+  const toggle = document.querySelector('#view-dashboard .dash-menu-toggle');
+  const sidebar = document.getElementById('dashboardSidebar');
+  if (!shell || !toggle || !sidebar || !window.matchMedia('(max-width: 700px)').matches) return;
+
+  shell.classList.remove('menu-open');
+  toggle.setAttribute('aria-expanded', 'false');
+  sidebar.setAttribute('aria-hidden', 'true');
+  if (restoreFocus) toggle.focus();
+}
+
+function syncDashboardMenuForViewport() {
+  const shell = document.querySelector('#view-dashboard .dash-shell');
+  const toggle = document.querySelector('#view-dashboard .dash-menu-toggle');
+  const sidebar = document.getElementById('dashboardSidebar');
+  if (!shell || !toggle || !sidebar) return;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  shell.classList.remove('menu-open', 'sidebar-collapsed');
+  toggle.setAttribute('aria-expanded', String(!isMobile));
+  sidebar.setAttribute('aria-hidden', String(isMobile));
 }
 
 /* Loaded once at login/register/session-resume, refreshed after filing a
@@ -654,7 +682,7 @@ function renderFilterRow() {
   const cats = ['All', ...CATEGORIES];
   document.getElementById('filterRow').innerHTML = cats.map(c => {
     const icon = c === 'All' ? '' : categoryIcon(c, 13);
-    return `<span class="filter-pill${c === activeFilterCategory ? ' active' : ''}" onclick="setFilterCategory('${c.replace(/'/g, "\\'")}')">${icon}${c}</span>`;
+    return `<button type="button" class="filter-pill${c === activeFilterCategory ? ' active' : ''}" onclick="setFilterCategory('${c.replace(/'/g, "\\'")}')">${icon}${c}</button>`;
   }).join('');
 }
 
@@ -785,12 +813,14 @@ function escapeHtml(str) {
 
 /* ---------------- Modals ---------------- */
 function openModal(html, isWide = false) {
+  modalReturnFocus = document.activeElement;
   const content = document.getElementById('modalContent');
   content.innerHTML = html;
   content.classList.toggle('modal-lg', Boolean(isWide));
   const backdrop = document.getElementById('modalBackdrop');
   backdrop.classList.remove('closing');
   backdrop.classList.add('show');
+  setTimeout(() => content.focus(), 0);
 }
 function closeModal() {
   const backdrop = document.getElementById('modalBackdrop');
@@ -801,6 +831,8 @@ function closeModal() {
     content.innerHTML = '';
     content.classList.remove('modal-lg');
     stagedPhotoDataUrl = null;
+    if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') modalReturnFocus.focus();
+    modalReturnFocus = null;
   }, 160);
 }
 
@@ -837,7 +869,7 @@ function openNewComplaintForm() {
     <div id="ncAiResult" class="ai-result" aria-live="polite"></div>
     <div class="field">
       <label>Photo (optional)</label>
-      <div class="photo-drop" id="ncPhotoDrop" onclick="document.getElementById('ncPhotoInput').click()">Click to attach a photo</div>
+      <button type="button" class="photo-drop" id="ncPhotoDrop" onclick="document.getElementById('ncPhotoInput').click()">Click to attach a photo</button>
       <input type="file" id="ncPhotoInput" accept="image/*" style="display:none" onchange="handleNcPhoto(event)">
     </div>
     <div class="modal-actions">
@@ -874,6 +906,11 @@ async function analyzeNewComplaint() {
 function handleNcPhoto(evt) {
   const file = evt.target.files[0];
   if (!file) return;
+  if (!['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type) || file.size > 4 * 1024 * 1024) {
+    showToast('Choose a PNG, JPEG, GIF, or WebP image under 4 MB.');
+    evt.target.value = '';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = e => {
     stagedPhotoDataUrl = e.target.result;
@@ -1008,6 +1045,7 @@ async function saveSettings() {
   const password = document.getElementById('setPassword').value;
 
   if (!name || !hostel) { showToast('Name and hostel can\u2019t be empty.'); return; }
+  if (password && password.length < 8) { showToast('Password must be at least 8 characters.'); return; }
 
   const btn = document.querySelector('.modal-actions .btn-primary');
   setBtnLoading(btn, true);
@@ -1050,6 +1088,7 @@ async function handleAdminRegister(event) {
     showToast('Please fill in every field.');
     return;
   }
+  if (password.length < 8) { showToast('Password must be at least 8 characters.'); return; }
   if (!isValidStaffCollegeId(collegeId)) {
     if (collegeId.startsWith('VTU')) {
       showToast("That's a student ID. Staff must register with a TTS College ID, e.g. TTS12345.");
@@ -1182,7 +1221,7 @@ function renderAdminStatGrid() {
 function renderAdminFilterRow() {
   const stages = ['All', ...STAGES];
   document.getElementById('adminFilterRow').innerHTML = stages.map(s =>
-    `<span class="filter-pill${s === activeAdminFilterStage ? ' active' : ''}" onclick="setAdminFilterStage('${s.replace(/'/g, "\\'")}')">${s}</span>`
+    `<button type="button" class="filter-pill${s === activeAdminFilterStage ? ' active' : ''}" onclick="setAdminFilterStage('${s.replace(/'/g, "\\'")}')">${s}</button>`
   ).join('');
 }
 
@@ -1434,7 +1473,7 @@ function openSuperAdminComplaintModal(code) {
   const photoHtml = t.photo ? `
     <div class="detail-section-title">Attached Photo</div>
     <div style="text-align:center;">
-      <img src="${t.photo}" class="detail-photo-preview" alt="Complaint Attachment">
+      <img src="${escapeHtml(t.photo)}" class="detail-photo-preview" alt="Complaint attachment">
     </div>
   ` : '';
 
@@ -1565,6 +1604,7 @@ async function approveAdmin(id) {
 }
 
 async function rejectAdmin(id) {
+  if (!confirm('Reject and permanently delete this staff registration?')) return;
   try {
     await api('/api/superadmin/admins/' + id, { method: 'DELETE' });
     showToast('Registration rejected.');
@@ -1588,6 +1628,7 @@ async function reassignAdmin(id) {
 }
 
 async function revokeAdmin(id) {
+  if (!confirm('Revoke this staff account\u2019s access?')) return;
   try {
     await api('/api/superadmin/admins/' + id, { method: 'PATCH', body: { status: 'pending' } });
     showToast('Access revoked — account is back in the pending list.');
@@ -1843,8 +1884,28 @@ function initAuthDotFields() {
 
 async function bootApp() {
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeMobileNav();
+    const modal = document.getElementById('modalContent');
+    const modalOpen = document.getElementById('modalBackdrop').classList.contains('show');
+    if (event.key === 'Tab' && modalOpen) {
+      const focusable = [...modal.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled);
+      if (focusable.length) {
+        const first = focusable[0]; const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    }
+    if (event.key === 'Escape') {
+      if (document.getElementById('modalBackdrop').classList.contains('show')) closeModal();
+      closeMobileNav();
+      closeDashboardMenu();
+    }
   });
+  document.querySelectorAll('#dashboardSidebar .side-link').forEach(link => {
+    link.addEventListener('click', () => closeDashboardMenu({ restoreFocus: false }));
+  });
+  const dashboardBreakpoint = window.matchMedia('(max-width: 700px)');
+  dashboardBreakpoint.addEventListener('change', syncDashboardMenuForViewport);
+  syncDashboardMenuForViewport();
   renderCategoryChips();
   startHeroDemo();
   startScrollReveals();

@@ -2,6 +2,7 @@ const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./db/database');
 const { sendOtpEmail } = require('./lib/mailer');
@@ -13,7 +14,12 @@ const PORT = process.env.PORT || 3000;
 // Gate for the super admin panel that approves staff accounts and assigns
 // departments. Change this via env var in any real deployment — same spirit
 // as SESSION_SECRET above.
+const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction && (!process.env.SESSION_SECRET || !process.env.SUPERADMIN_KEY)) {
+  throw new Error('SESSION_SECRET and SUPERADMIN_KEY must be set in production.');
+}
 const SUPERADMIN_KEY = process.env.SUPERADMIN_KEY || 'campusdesk-superadmin-dev-key';
+const MIN_PASSWORD_LENGTH = 8;
 
 // Photos are sent as base64 data URLs in the JSON body, so the default
 // ~100kb express.json() limit is too small — bump it.
@@ -21,13 +27,43 @@ app.use(express.json({ limit: '5mb' }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'campusdesk-dev-secret-change-me',
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI, dbName: process.env.MONGODB_DB || 'college_complaints', collectionName: 'sessions' }),
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction,
     maxAge: 1000 * 60 * 60 * 8 // 8 hour session
   }
 }));
+
+if (isProduction) app.set('trust proxy', 1);
+
+// Reject cross-site state-changing API requests. Same-origin browser requests
+// and non-browser clients without Origin/Referer continue to work.
+app.use('/api', (req, res, next) => {
+  if (!['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) return next();
+  const source = req.get('origin') || req.get('referer');
+  if (!source) return next();
+  try {
+    if (new URL(source).host !== req.get('host')) return res.status(403).json({ error: 'Cross-site request rejected.' });
+  } catch { return res.status(403).json({ error: 'Invalid request origin.' }); }
+  next();
+});
+
+const rateBuckets = new Map();
+function rateLimit(name, max, windowMs) {
+  return (req, res, next) => {
+    const key = `${name}:${req.ip}`; const now = Date.now();
+    const bucket = rateBuckets.get(key);
+    if (!bucket || bucket.resetAt <= now) rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+    else if (++bucket.count > max) return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
+    next();
+  };
+}
+const authLimit = rateLimit('auth', 10, 15 * 60 * 1000);
+const otpLimit = rateLimit('otp', 5, 15 * 60 * 1000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -76,7 +112,7 @@ function isValidEmail(email) {
 
 async function genComplaintCode() {
   for (let i = 0; i < 20; i++) {
-    const code = 'CDT-' + Math.floor(1000 + Math.random() * 9000);
+    const code = 'CDT-' + crypto.randomInt(100000, 1000000);
     const exists = await db.get('SELECT id FROM complaints WHERE complaint_code = ?', code);
     if (!exists) return code;
   }
@@ -143,8 +179,8 @@ function requireSuperAdmin(req, res, next) {
   next();
 }
 
-async function publicComplaint(c) {
-  const routing = await getRoutingDetails(c.category);
+async function publicComplaint(c, suppliedRouting) {
+  const routing = suppliedRouting || await getRoutingDetails(c.category);
   return {
     id: c.complaint_code,
     category: c.category,
@@ -180,9 +216,26 @@ async function publicComplaint(c) {
   };
 }
 
+async function publicComplaints(rows) {
+  const routing = new Map();
+  await Promise.all([...new Set(rows.map(row => row.category))].map(async category => routing.set(category, await getRoutingDetails(category))));
+  return Promise.all(rows.map(row => publicComplaint(row, routing.get(row.category))));
+}
+
+function cleanRequired(value, maxLength = 5000) {
+  const clean = String(value ?? '').trim();
+  return clean && clean.length <= maxLength ? clean : null;
+}
+
+function validPhoto(value) {
+  if (value == null || value === '') return true;
+  if (typeof value !== 'string' || !/^data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(value)) return false;
+  return Buffer.byteLength(value, 'utf8') <= 4 * 1024 * 1024;
+}
+
 /* ---------------- auth routes ---------------- */
 
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', authLimit, async (req, res) => {
   const { name, email, collegeId, hostel, password } = req.body || {};
 
   if (!name || !email || !collegeId || !hostel || !password) {
@@ -190,7 +243,8 @@ app.post('/api/register', async (req, res) => {
   }
 
   const cleanId = String(collegeId).trim().toUpperCase();
-  const cleanEmail = String(email).trim();
+  const cleanEmail = String(email).trim().toLowerCase();
+  const cleanName = cleanRequired(name, 100);
 
   if (!isValidCollegeId(cleanId)) {
     return res.status(400).json({ error: 'College ID must start with VTU and be exactly 8 characters.' });
@@ -198,6 +252,8 @@ app.post('/api/register', async (req, res) => {
   if (!isValidEmail(cleanEmail)) {
     return res.status(400).json({ error: 'Enter a valid email address.' });
   }
+  if (!cleanName) return res.status(400).json({ error: 'Enter a valid name.' });
+  if (String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
   if (!HOSTELS.includes(hostel)) {
     return res.status(400).json({ error: 'Please select a hostel from the list.' });
   }
@@ -206,11 +262,13 @@ app.post('/api/register', async (req, res) => {
   if (existing) {
     return res.status(409).json({ error: 'An account with that College ID already exists — please log in instead.' });
   }
+  const existingEmail = await db.get('SELECT id FROM users WHERE email = ?', cleanEmail);
+  if (existingEmail) return res.status(409).json({ error: 'An account with that email already exists.' });
 
   const passwordHash = bcrypt.hashSync(password, 10);
   const info = await db.run(
     'INSERT INTO users (college_id, name, email, hostel, password_hash) VALUES (?, ?, ?, ?, ?) RETURNING id'
-  , cleanId, String(name).trim(), cleanEmail, hostel, passwordHash);
+  , cleanId, cleanName, cleanEmail, hostel, passwordHash);
 
   const user = await db.get('SELECT * FROM users WHERE id = ?', info.lastInsertRowid);
 
@@ -221,7 +279,7 @@ app.post('/api/register', async (req, res) => {
   });
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimit, async (req, res) => {
   const { collegeId, password } = req.body || {};
   if (!collegeId || !password) {
     return res.status(400).json({ error: 'College ID and password are required.' });
@@ -229,15 +287,12 @@ app.post('/api/login', async (req, res) => {
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
   if (!user) {
-    return res.status(404).json({
-      code: 'NO_ACCOUNT',
-      error: "We couldn't find an account with that College ID — please register first."
-    });
+    return res.status(401).json({ error: 'Invalid College ID or password.' });
   }
   if (!bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({
       code: 'WRONG_PASSWORD',
-      error: 'Incorrect password for that College ID. Please try again.'
+      error: 'Invalid College ID or password.'
     });
   }
 
@@ -269,18 +324,20 @@ app.patch('/api/me', requireAuth, async (req, res) => {
   if (!user) return res.status(401).json({ error: 'Session invalid.' });
 
   const { name, hostel, password } = req.body || {};
-  if (!name || !hostel) {
+  const cleanName = cleanRequired(name, 100);
+  if (!cleanName || !hostel) {
     return res.status(400).json({ error: "Name and hostel can't be empty." });
   }
   if (!HOSTELS.includes(hostel)) {
     return res.status(400).json({ error: 'Please select a hostel from the list.' });
   }
+  if (password && String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
 
   if (password) {
     const passwordHash = bcrypt.hashSync(password, 10);
-    await db.run('UPDATE users SET name = ?, hostel = ?, password_hash = ? WHERE id = ?', String(name).trim(), hostel, passwordHash, user.id);
+    await db.run('UPDATE users SET name = ?, hostel = ?, password_hash = ? WHERE id = ?', cleanName, hostel, passwordHash, user.id);
   } else {
-    await db.run('UPDATE users SET name = ?, hostel = ? WHERE id = ?', String(name).trim(), hostel, user.id);
+    await db.run('UPDATE users SET name = ?, hostel = ? WHERE id = ?', cleanName, hostel, user.id);
   }
 
   const updated = await db.get('SELECT * FROM users WHERE id = ?', user.id);
@@ -295,16 +352,16 @@ app.patch('/api/me', requireAuth, async (req, res) => {
 
 const MAX_OTP_ATTEMPTS = 5;
 
-app.post('/api/forgot', async (req, res) => {
+app.post('/api/forgot', otpLimit, async (req, res) => {
   const { collegeId } = req.body || {};
   if (!collegeId) return res.status(400).json({ error: 'College ID is required.' });
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
-  if (!user) return res.status(404).json({ error: 'No account found with that college ID.' });
+  if (!user) return res.json({ ok: true, maskedEmail: 'your registered email', emailed: true });
 
   const otp = String(crypto.randomInt(100000, 1000000));
   const mailResult = await sendOtpEmail({ to: user.email, name: user.name, otp });
-  if (!mailResult.sent) {
+  if (!mailResult.sent && !mailResult.development) {
     return res.status(503).json({ error: 'We could not send a verification code. Please try again later.' });
   }
 
@@ -319,16 +376,16 @@ app.post('/api/forgot', async (req, res) => {
     maskedEmail: maskEmail(user.email),
     // Lets the frontend show a heads-up banner in local dev when SMTP isn't
     // configured — never carries the code itself, only whether it went out.
-    emailed: true
+    emailed: mailResult.sent
   });
 });
 
-app.post('/api/forgot/verify', async (req, res) => {
+app.post('/api/forgot/verify', authLimit, async (req, res) => {
   const { collegeId, otp } = req.body || {};
   if (!collegeId || !otp) return res.status(400).json({ error: 'College ID and code are required.' });
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
-  if (!user) return res.status(404).json({ error: 'No account found with that college ID.' });
+  if (!user) return res.status(400).json({ error: 'That code is invalid or expired.' });
 
   const row = await db.get(
     'SELECT * FROM password_resets WHERE user_id = ? AND otp_used = 0 ORDER BY id DESC LIMIT 1'
@@ -364,8 +421,8 @@ app.post('/api/reset-password', async (req, res) => {
   if (!collegeId || !resetToken || !newPassword) {
     return res.status(400).json({ error: 'Missing fields.' });
   }
-  if (newPassword.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters.' });
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
   }
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
@@ -393,7 +450,7 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
     'SELECT * FROM complaints WHERE user_id = ? ORDER BY id DESC'
   , req.session.userId);
 
-  res.json({ complaints: await Promise.all(rows.map(publicComplaint)) });
+  res.json({ complaints: await publicComplaints(rows) });
 });
 
 app.post('/api/complaints/analyze', requireAuth, async (req, res) => {
@@ -406,23 +463,25 @@ app.post('/api/complaints/analyze', requireAuth, async (req, res) => {
 app.post('/api/complaints', requireAuth, async (req, res) => {
   const { category, title, description, location, photo } = req.body || {};
 
-  if (!title || !description || !category) {
+  const cleanTitle = cleanRequired(title, 200); const cleanDescription = cleanRequired(description, 5000);
+  if (!cleanTitle || !cleanDescription || !category) {
     return res.status(400).json({ error: 'Category, subject, and details are all required.' });
   }
   if (!CATEGORIES.includes(category)) {
     return res.status(400).json({ error: 'Unrecognized category.' });
   }
+  if (!validPhoto(photo)) return res.status(400).json({ error: 'Photo must be a PNG, JPEG, GIF, or WebP image under 4 MB.' });
 
   const code = await genComplaintCode();
   const routing = await getRoutingDetails(category);
   const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
-  const analysis = analyzeComplaint({ title, description, complaints });
+  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
   const slaDeadline = new Date(Date.now() + SLA_HOURS[analysis.priority] * 60 * 60 * 1000);
 
   const info = await db.run(
     `INSERT INTO complaints (complaint_code, user_id, category, title, description, location, officer, stage_index, note, photo, ai_category, ai_confidence, ai_priority, ai_priority_reason, ai_summary, ai_keywords, ai_detected_location, ai_suggested_resolution, possible_duplicate, sla_deadline)
      VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`
-  , code, req.session.userId, category, String(title).trim(), String(description).trim(), String(location || '').trim() || analysis.entities.location,
+  , code, req.session.userId, category, cleanTitle, cleanDescription, String(location || '').trim().slice(0, 200) || analysis.entities.location,
     routing.officer, routing.note, photo || null, analysis.category, analysis.confidence, analysis.priority, analysis.reason, analysis.summary,
     analysis.entities.keywords, analysis.entities.location, analysis.suggestedResolution, analysis.duplicate, slaDeadline);
 
@@ -467,6 +526,10 @@ app.post('/api/complaints/:code/feedback', requireAuth, async (req, res) => {
 });
 
 app.delete('/api/complaints/:code', requireAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint || complaint.user_id !== req.session.userId) return res.status(404).json({ error: 'Complaint not found.' });
+  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
+  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
   const result = await db.run('DELETE FROM complaints WHERE complaint_code = ? AND user_id = ?', req.params.code, req.session.userId);
   if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
@@ -477,14 +540,15 @@ app.delete('/api/complaints/:code', requireAuth, async (req, res) => {
    with no department, and only /api/superadmin/admins/:id can approve it
    and assign a department. */
 
-app.post('/api/admin/register', async (req, res) => {
+app.post('/api/admin/register', authLimit, async (req, res) => {
   const { name, email, collegeId, password, requestedDepartment } = req.body || {};
 
   if (!name || !email || !collegeId || !password || !requestedDepartment) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
-  const cleanEmail = String(email).trim();
+  const cleanEmail = String(email).trim().toLowerCase();
+  const cleanName = cleanRequired(name, 100);
   const cleanId = String(collegeId).trim().toUpperCase();
 
   if (!isValidStaffCollegeId(cleanId)) {
@@ -496,6 +560,8 @@ app.post('/api/admin/register', async (req, res) => {
   if (!isValidEmail(cleanEmail)) {
     return res.status(400).json({ error: 'Enter a valid email address.' });
   }
+  if (!cleanName) return res.status(400).json({ error: 'Enter a valid name.' });
+  if (String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
   if (!CATEGORIES.includes(requestedDepartment)) {
     return res.status(400).json({ error: 'Please select a department from the list.' });
   }
@@ -515,12 +581,12 @@ app.post('/api/admin/register', async (req, res) => {
     // This remains compatible with older databases where that column is NOT NULL;
     // `status` still prevents the account from receiving complaints or logging in.
     'INSERT INTO admins (name, email, college_id, password_hash, requested_department, department, status) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  , String(name).trim(), cleanEmail, cleanId, passwordHash, requestedDepartment, requestedDepartment, 'pending');
+  , cleanName, cleanEmail, cleanId, passwordHash, requestedDepartment, requestedDepartment, 'pending');
 
   res.status(201).json({ ok: true });
 });
 
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', authLimit, async (req, res) => {
   const { collegeId, password } = req.body || {};
   if (!collegeId || !password) {
     return res.status(400).json({ error: 'College ID and password are required.' });
@@ -528,13 +594,10 @@ app.post('/api/admin/login', async (req, res) => {
 
   const admin = await db.get('SELECT * FROM admins WHERE college_id = ?', String(collegeId).trim().toUpperCase());
   if (!admin) {
-    return res.status(404).json({
-      code: 'NO_ACCOUNT',
-      error: "We couldn't find a staff account with that College ID — please register first."
-    });
+    return res.status(401).json({ error: 'Invalid College ID or password.' });
   }
   if (!bcrypt.compareSync(password, admin.password_hash)) {
-    return res.status(401).json({ code: 'WRONG_PASSWORD', error: 'Incorrect password.' });
+    return res.status(401).json({ error: 'Invalid College ID or password.' });
   }
   if (admin.status !== 'approved') {
     return res.status(403).json({
@@ -573,7 +636,7 @@ app.get('/api/admin/complaints', requireAdminAuth, async (req, res) => {
     ORDER BY c.id DESC
   `, req.admin.department);
 
-  res.json({ complaints: await Promise.all(rows.map(publicComplaint)) });
+  res.json({ complaints: await publicComplaints(rows) });
 });
 
 app.patch('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
@@ -594,7 +657,8 @@ app.patch('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
   const finalNote = note && String(note).trim() ? String(note).trim() : complaint.note;
   const finalCategory = category || complaint.category;
   const finalPriority = priority || complaint.ai_priority;
-  await db.run('UPDATE complaints SET stage_index = ?, note = ?, category = ?, ai_priority = ?, ai_reviewed = ? WHERE id = ?', idx, finalNote, finalCategory, finalPriority, true, complaint.id);
+  const deadline = priority && priority !== complaint.ai_priority ? new Date(Date.now() + SLA_HOURS[finalPriority] * 3600000) : complaint.sla_deadline;
+  await db.run('UPDATE complaints SET stage_index = ?, note = ?, category = ?, ai_priority = ?, ai_reviewed = ?, sla_deadline = ? WHERE id = ?', idx, finalNote, finalCategory, finalPriority, true, deadline, complaint.id);
   if (idx !== complaint.stage_index) {
     const stages = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
     await db.run('INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)', complaint.id, stages[complaint.stage_index], stages[idx], req.admin.id, finalNote);
@@ -614,7 +678,7 @@ app.get('/api/admin/complaints/:code/history', requireAdminAuth, async (req, res
 app.get('/api/admin/complaints/:code/recommendations', requireAdminAuth, async (req, res) => {
   const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
   if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
-  const rows = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  const rows = await db.all('SELECT * FROM complaints WHERE category = ? ORDER BY id DESC', req.admin.department);
   const text = `${complaint.title} ${complaint.description}`;
   const similar = rows.filter(row => row.id !== complaint.id && row.stage_index >= 3)
     .map(row => ({ id: row.complaint_code, title: row.title, category: row.category, resolution: row.note, similarity: Math.round(similarity(text, `${row.title} ${row.description}`) * 100) }))
@@ -623,6 +687,10 @@ app.get('/api/admin/complaints/:code/recommendations', requireAdminAuth, async (
 });
 
 app.delete('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
+  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
+  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
   const result = await db.run('DELETE FROM complaints WHERE complaint_code = ? AND category = ?', req.params.code, req.admin.department);
   if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
@@ -633,13 +701,16 @@ app.delete('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => 
    single shared key for whoever administers the deployment, not a
    per-person login. */
 
-app.post('/api/superadmin/login', async (req, res) => {
+app.post('/api/superadmin/login', authLimit, async (req, res) => {
   const { key } = req.body || {};
   if (!key || key !== SUPERADMIN_KEY) {
     return res.status(401).json({ error: 'Incorrect super admin key.' });
   }
-  req.session.isSuperAdmin = true;
-  res.json({ ok: true });
+  req.session.regenerate(err => {
+    if (err) return res.status(500).json({ error: 'Could not start a session.' });
+    req.session.isSuperAdmin = true;
+    res.json({ ok: true });
+  });
 });
 
 app.post('/api/superadmin/logout', async (req, res) => {
@@ -665,7 +736,7 @@ app.get('/api/superadmin/complaints', requireSuperAdmin, async (req, res) => {
     LEFT JOIN users u ON c.user_id = u.id
     ORDER BY c.id DESC
   `);
-  res.json({ complaints: await Promise.all(rows.map(publicComplaint)) });
+  res.json({ complaints: await publicComplaints(rows) });
 });
 
 app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {
@@ -687,6 +758,10 @@ app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {
 });
 
 app.delete('/api/superadmin/complaints/:code', requireSuperAdmin, async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint) return res.status(404).json({ error: 'Complaint not found.' });
+  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
+  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
   const result = await db.run('DELETE FROM complaints WHERE complaint_code = ?', req.params.code);
   if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
@@ -753,7 +828,7 @@ app.patch('/api/superadmin/students/:id/credentials', requireSuperAdmin, async (
   }
 
   const cleanId = String(collegeId).trim().toUpperCase();
-  const cleanEmail = String(email).trim();
+  const cleanEmail = String(email).trim().toLowerCase();
 
   if (!isValidCollegeId(cleanId)) {
     return res.status(400).json({ error: 'College ID must start with VTU and be exactly 8 characters.' });
@@ -763,10 +838,12 @@ app.patch('/api/superadmin/students/:id/credentials', requireSuperAdmin, async (
   }
   const idConflict = await db.get('SELECT id FROM users WHERE college_id = ? AND id != ?', cleanId, student.id);
   if (idConflict) return res.status(409).json({ error: 'That College ID is already used by another student.' });
+  const emailConflict = await db.get('SELECT id FROM users WHERE email = ? AND id != ?', cleanEmail, student.id);
+  if (emailConflict) return res.status(409).json({ error: 'That email is already used by another student.' });
 
   if (password) {
-    if (String(password).length < 4) {
-      return res.status(400).json({ error: 'Password must be at least 4 characters.' });
+    if (String(password).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
     }
     const passwordHash = bcrypt.hashSync(password, 10);
     await db.run('UPDATE users SET college_id = ?, email = ?, password_hash = ? WHERE id = ?', cleanId, cleanEmail, passwordHash, student.id);
@@ -788,7 +865,7 @@ app.patch('/api/superadmin/staff/:id/credentials', requireSuperAdmin, async (req
   }
 
   const cleanId = String(collegeId).trim().toUpperCase();
-  const cleanEmail = String(email).trim();
+  const cleanEmail = String(email).trim().toLowerCase();
 
   if (!isValidStaffCollegeId(cleanId)) {
     return res.status(400).json({ error: 'College ID must start with TTS and be exactly 8 characters.' });
@@ -802,8 +879,8 @@ app.patch('/api/superadmin/staff/:id/credentials', requireSuperAdmin, async (req
   if (emailConflict) return res.status(409).json({ error: 'That email is already used by another staff account.' });
 
   if (password) {
-    if (String(password).length < 4) {
-      return res.status(400).json({ error: 'Password must be at least 4 characters.' });
+    if (String(password).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
     }
     const passwordHash = bcrypt.hashSync(password, 10);
     await db.run('UPDATE admins SET college_id = ?, email = ?, password_hash = ? WHERE id = ?', cleanId, cleanEmail, passwordHash, staff.id);

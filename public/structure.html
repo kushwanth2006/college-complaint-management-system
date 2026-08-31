@@ -321,7 +321,7 @@
 <!-- ================= DASHBOARD VIEW ================= -->
 <div id="view-dashboard" class="view" style="display:none;">
   <div class="dash-shell">
-    <aside class="sidebar" id="dashboardSidebar">
+    <aside class="sidebar" id="dashboardSidebar" aria-hidden="false">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
       <a class="side-link active" href="#" id="navDashboard" onclick="goToDashboardHome(); return false;">▣ Dashboard</a>
       <a class="side-link" href="#" onclick="openNewComplaintForm(); return false;">✎ Raise complaint</a>
@@ -331,6 +331,7 @@
       <a class="side-link" href="#" onclick="handleLogout(); return false;">← Log out</a>
       <div class="side-foot" id="dashSideFoot">Logged in as Student · College ID —</div>
     </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeDashboardMenu()"></button>
 
     <main class="dash-main">
       <div class="topbar">
@@ -338,7 +339,7 @@
           <span></span><span></span><span></span>
         </button>
         <div class="top-right">
-          <div class="bell" id="dashBell" onclick="openNotificationsModal()"><span class="badge" id="bellBadge"></span>🔔</div>
+          <button class="bell" id="dashBell" type="button" aria-label="Open notifications" onclick="openNotificationsModal()"><span class="badge" id="bellBadge"></span>🔔</button>
           <div class="user-block">
             <div class="avatar" id="dashAvatar">ST</div>
             <div>
@@ -594,7 +595,7 @@
 
 <!-- Modal -->
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
-  <div class="modal" id="modalContent"></div>
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div>
 </div>
 
 <div class="toast" id="toast"></div>

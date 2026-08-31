@@ -1,4 +1,6 @@
-# Admin System Implementation - Complete Code Changes
+# Admin System Implementation - Legacy Reference
+
+> This describes an earlier SQL/email-login implementation. The current application uses MongoDB, TTS College IDs for staff login, and super-admin approval; see `README.md` and the source for authoritative behavior.
 
 ## Overview
 Added a complete admin system with login, registration, and complaint management capabilities.
