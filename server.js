@@ -810,13 +810,13 @@ app.get('/api/superadmin/people/search', requireSuperAdmin, asyncRoute(async (re
   const q = String(req.query.collegeId || '').trim().toUpperCase();
   if (!q) return res.json({ students: [], staff: [] });
 
-  const students = await db.all(
+  const students = (await db.all(
     'SELECT * FROM users WHERE UPPER(college_id) LIKE ? ORDER BY name ASC LIMIT 25'
-  , `%${q}%`).map(publicUser);
+  , `%${q}%`)).map(publicUser);
 
-  const staff = await db.all(
+  const staff = (await db.all(
     'SELECT * FROM admins WHERE UPPER(college_id) LIKE ? ORDER BY name ASC LIMIT 25'
-  , `%${q}%`).map(publicAdmin);
+  , `%${q}%`)).map(publicAdmin);
 
   res.json({ students, staff });
 }));
