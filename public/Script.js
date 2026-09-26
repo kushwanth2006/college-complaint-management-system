@@ -654,6 +654,50 @@ function syncDashboardMenuForViewport() {
   sidebar.setAttribute('aria-hidden', String(isMobile));
 }
 
+function toggleRoleDashboardMenu(viewId) {
+  const view = document.getElementById(viewId);
+  const shell = view && view.querySelector('.role-dash-shell');
+  const toggle = view && view.querySelector('.dash-menu-toggle');
+  const sidebar = view && view.querySelector('.sidebar');
+  if (!shell || !toggle || !sidebar) return;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  const stateClass = isMobile ? 'menu-open' : 'sidebar-collapsed';
+  const changedState = shell.classList.toggle(stateClass);
+  const isOpen = isMobile ? changedState : !changedState;
+  toggle.setAttribute('aria-expanded', String(isOpen));
+  sidebar.setAttribute('aria-hidden', String(!isOpen));
+
+  if (isMobile && isOpen) sidebar.querySelector('.side-link')?.focus();
+}
+
+function closeRoleDashboardMenu(viewId, { restoreFocus = true } = {}) {
+  const view = document.getElementById(viewId);
+  const shell = view && view.querySelector('.role-dash-shell');
+  const toggle = view && view.querySelector('.dash-menu-toggle');
+  const sidebar = view && view.querySelector('.sidebar');
+  if (!shell || !toggle || !sidebar) return;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  shell.classList.remove('menu-open');
+  toggle.setAttribute('aria-expanded', String(!isMobile));
+  sidebar.setAttribute('aria-hidden', String(isMobile));
+  if (restoreFocus) toggle.focus();
+}
+
+function syncRoleDashboardMenu(viewId) {
+  const view = document.getElementById(viewId);
+  const shell = view && view.querySelector('.role-dash-shell');
+  const toggle = view && view.querySelector('.dash-menu-toggle');
+  const sidebar = view && view.querySelector('.sidebar');
+  if (!shell || !toggle || !sidebar) return;
+
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  shell.classList.remove('menu-open', 'sidebar-collapsed');
+  toggle.setAttribute('aria-expanded', String(!isMobile));
+  sidebar.setAttribute('aria-hidden', String(isMobile));
+}
+
 /* Loaded once at login/register/session-resume, refreshed after filing a
    new complaint. Filtering/searching below runs client-side against this
    cache — no need to round-trip to the server for every keystroke. */
@@ -1181,6 +1225,7 @@ function enterAdminDashboard() {
 
   activeAdminFilterStage = 'All';
   activeAdminSearch = '';
+  syncRoleDashboardMenu('view-admin-dashboard');
   document.getElementById('adminWelcome').textContent = 'Welcome back, ' + currentAdmin.name.split(' ')[0];
   document.getElementById('adminUserName').textContent = currentAdmin.name;
   document.getElementById('adminUserSub').textContent = currentAdmin.department + ' desk';
@@ -1195,7 +1240,7 @@ function enterAdminDashboard() {
 function goToAdminDashboardHome() {
   activeAdminFilterStage = 'All';
   activeAdminSearch = '';
-  const searchInput = document.querySelector('#view-admin-dashboard .search input');
+  const searchInput = document.querySelector('#view-admin-dashboard .complaints-search input');
   if (searchInput) searchInput.value = '';
   renderAdminStatGrid();
   renderAdminFilterRow();
@@ -1392,6 +1437,7 @@ async function handleSuperAdminLogout() {
 
 async function enterSuperAdminDashboard() {
   hideAllViewsExcept('view-superadmin-dashboard');
+  syncRoleDashboardMenu('view-superadmin-dashboard');
   await Promise.all([loadSuperAdminAdmins(), loadSuperAdminComplaints()]);
   renderSuperAdminAdmins();
   renderSuperAdminComplaints();
@@ -1665,6 +1711,7 @@ async function revokeAdmin(id) {
 
 function enterSuperAdminUserSearch() {
   hideAllViewsExcept('view-superadmin-search');
+  syncRoleDashboardMenu('view-superadmin-search');
   const input = document.getElementById('superAdminSearchInput');
   if (input) {
     // Keep whatever was typed last time, but don't re-render stale results

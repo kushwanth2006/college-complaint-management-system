@@ -452,18 +452,21 @@
 
 <!-- ================= DEPARTMENT STAFF DASHBOARD ================= -->
 <div id="view-admin-dashboard" class="view" style="display:none;">
-  <div class="dash-shell">
-    <aside class="sidebar">
+  <div class="dash-shell role-dash-shell">
+    <aside class="sidebar" id="adminDashboardSidebar" aria-hidden="true">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
-      <a class="side-link active" href="#" onclick="goToAdminDashboardHome(); return false;">▣ Dashboard</a>
+      <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-admin-dashboard', { restoreFocus: false }); goToAdminDashboardHome(); return false;">▣ Dashboard</a>
       <div class="side-spacer"></div>
       <a class="side-link" href="#" onclick="handleAdminLogout(); return false;">← Log out</a>
       <div class="side-foot" id="adminSideFoot">Logged in as staff</div>
     </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeRoleDashboardMenu('view-admin-dashboard')"></button>
 
     <main class="dash-main">
       <div class="topbar">
-        <div class="search">🔍 <input placeholder="Search department complaints…" oninput="filterAdminTickets(this.value)"></div>
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="adminDashboardSidebar" aria-expanded="false" onclick="toggleRoleDashboardMenu('view-admin-dashboard')">
+          <span></span><span></span><span></span>
+        </button>
         <div class="top-right">
           <div class="user-block">
             <div class="avatar" id="adminAvatar">ST</div>
@@ -490,6 +493,11 @@
           <div class="filter-row" id="adminFilterRow"></div>
         </div>
 
+        <div class="complaints-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Search department complaints" aria-label="Search department complaints" oninput="filterAdminTickets(this.value)">
+        </div>
+
         <div id="adminTicketList"></div>
       </div>
     </main>
@@ -514,19 +522,28 @@
 </div>
 
 <div id="view-superadmin-dashboard" class="view" style="display:none;">
-  <div class="dash-shell">
-    <aside class="sidebar">
+  <div class="dash-shell role-dash-shell">
+    <aside class="sidebar" id="superAdminDashboardSidebar" aria-hidden="true">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
-      <a class="side-link active" href="#">▣ Staff accounts</a>
-      <a class="side-link" href="#" onclick="enterSuperAdminUserSearch(); return false;">🔎 Manage credentials</a>
+      <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-superadmin-dashboard', { restoreFocus: false }); return false;">▣ Staff accounts</a>
+      <a class="side-link" href="#" onclick="closeRoleDashboardMenu('view-superadmin-dashboard', { restoreFocus: false }); enterSuperAdminUserSearch(); return false;">🔎 Manage credentials</a>
       <div class="side-spacer"></div>
       <a class="side-link" href="#" onclick="handleSuperAdminLogout(); return false;">← Log out</a>
       <div class="side-foot">Super admin</div>
     </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeRoleDashboardMenu('view-superadmin-dashboard')"></button>
 
     <main class="dash-main">
       <div class="topbar">
-        <div class="brand" style="font-size:15px;">Manage department staff</div>
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="superAdminDashboardSidebar" aria-expanded="false" onclick="toggleRoleDashboardMenu('view-superadmin-dashboard')">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="top-right">
+          <div class="user-block">
+            <div class="avatar">SA</div>
+            <div><div class="user-name">Super admin</div><div class="user-sub">Staff accounts</div></div>
+          </div>
+        </div>
       </div>
 
       <div class="dash-body">
@@ -555,19 +572,28 @@
 
 <!-- ================= SUPER ADMIN: MANAGE CREDENTIALS ================= -->
 <div id="view-superadmin-search" class="view" style="display:none;">
-  <div class="dash-shell">
-    <aside class="sidebar">
+  <div class="dash-shell role-dash-shell">
+    <aside class="sidebar" id="superAdminSearchSidebar" aria-hidden="true">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
-      <a class="side-link" href="#" onclick="switchView('view-superadmin-search','view-superadmin-dashboard'); enterSuperAdminDashboard(); return false;">▣ Staff accounts</a>
-      <a class="side-link active" href="#">🔎 Manage credentials</a>
+      <a class="side-link" href="#" onclick="closeRoleDashboardMenu('view-superadmin-search', { restoreFocus: false }); switchView('view-superadmin-search','view-superadmin-dashboard'); enterSuperAdminDashboard(); return false;">▣ Staff accounts</a>
+      <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-superadmin-search', { restoreFocus: false }); return false;">🔎 Manage credentials</a>
       <div class="side-spacer"></div>
       <a class="side-link" href="#" onclick="handleSuperAdminLogout(); return false;">← Log out</a>
       <div class="side-foot">Super admin</div>
     </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeRoleDashboardMenu('view-superadmin-search')"></button>
 
     <main class="dash-main">
       <div class="topbar">
-        <div class="brand" style="font-size:15px;">Manage student &amp; staff credentials</div>
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="superAdminSearchSidebar" aria-expanded="false" onclick="toggleRoleDashboardMenu('view-superadmin-search')">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="top-right">
+          <div class="user-block">
+            <div class="avatar">SA</div>
+            <div><div class="user-name">Super admin</div><div class="user-sub">Manage credentials</div></div>
+          </div>
+        </div>
       </div>
 
       <div class="dash-body">

@@ -67,6 +67,10 @@ const authLimit = rateLimit('auth', 10, 15 * 60 * 1000);
 const otpLimit = rateLimit('otp', 5, 15 * 60 * 1000);
 const analysisLimit = rateLimit('analysis', 20, 15 * 60 * 1000);
 
+const asyncRoute = (handler) => (req, res, next) => {
+  Promise.resolve(handler(req, res, next)).catch(next);
+};
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Browsers auto-request this; there's no favicon asset yet, so just
@@ -361,7 +365,7 @@ app.patch('/api/me', requireAuth, async (req, res) => {
 
 const MAX_OTP_ATTEMPTS = 5;
 
-app.post('/api/forgot', otpLimit, async (req, res) => {
+app.post('/api/forgot', otpLimit, asyncRoute(async (req, res) => {
   const { collegeId } = req.body || {};
   if (!collegeId) return res.status(400).json({ error: 'College ID is required.' });
 
@@ -380,7 +384,7 @@ app.post('/api/forgot', otpLimit, async (req, res) => {
   , user.id, bcrypt.hashSync(otp, 10), Date.now() + OTP_TTL_MS);
 
   res.json({ ok: true, emailConfigured });
-});
+}));
 
 app.post('/api/forgot/verify', authLimit, async (req, res) => {
   const { collegeId, otp } = req.body || {};
@@ -802,7 +806,7 @@ app.delete('/api/superadmin/admins/:id', requireSuperAdmin, async (req, res) => 
    deliberately a separate pair of routes from the department-approval ones
    above so credential changes never accidentally touch status/department. */
 
-app.get('/api/superadmin/people/search', requireSuperAdmin, async (req, res) => {
+app.get('/api/superadmin/people/search', requireSuperAdmin, asyncRoute(async (req, res) => {
   const q = String(req.query.collegeId || '').trim().toUpperCase();
   if (!q) return res.json({ students: [], staff: [] });
 
@@ -815,7 +819,7 @@ app.get('/api/superadmin/people/search', requireSuperAdmin, async (req, res) => 
   , `%${q}%`).map(publicAdmin);
 
   res.json({ students, staff });
-});
+}));
 
 app.patch('/api/superadmin/students/:id/credentials', requireSuperAdmin, async (req, res) => {
   const student = await db.get('SELECT * FROM users WHERE id = ?', req.params.id);
