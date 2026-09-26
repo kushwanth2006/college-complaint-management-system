@@ -1,3 +1,25 @@
+function incidentSummary(ticket) {
+  const incident = ticket.incident;
+  if (!incident) return '';
+  return `<div class="incident-summary${incident.urgent ? ' incident-urgent' : ''}"><strong>${escapeHtml(incident.id)} · ${escapeHtml(incident.title)}</strong><div>${incident.affectedStudents} students affected · ${incident.reportCount} reports consolidated${incident.urgent ? ' · Critical — immediate attention required' : ''}</div></div>`;
+}
+
+function incidentReports(ticket, tickets) {
+  if (!ticket.incident || ticket.incident.reportCount < 2) return '';
+  const members = tickets.filter(item => item.incident?.id === ticket.incident.id);
+  return `<details class="incident-summary"><summary>View ${members.length} linked reports</summary><ul>${members.map(item => `<li><strong>${escapeHtml(item.id)}</strong> · ${escapeHtml(item.title)}<p>${escapeHtml(item.description)}</p></li>`).join('')}</ul><p>Staff updates apply to all linked reports.</p></details>`;
+}
+
+function consolidateTickets(tickets) {
+  const seen = new Set();
+  return tickets.filter(ticket => {
+    const key = ticket.incident?.id || ticket.id;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /* =======================================================================
    Vel Tech Complaint Box — frontend logic, backed by the real Express +
    MongoDB-backed API in server.js (see /api/* routes). No more in-memory mock data:
@@ -744,6 +766,7 @@ function renderTicketList() {
           <div>
             <div class="tk-id mono">${t.id}</div>
             <div class="tk-title">${escapeHtml(t.title)}</div>
+              ${incidentSummary(t)}
             <div class="tk-meta">
               <span class="tk-cat" style="--chip-color:${(CATEGORY_META[t.category] || CATEGORY_META['General']).color}">${categoryIcon(t.category, 12)}${t.category}</span>
               <span>${fmtDate(t.createdAt)}</span>
@@ -1195,7 +1218,7 @@ async function loadAdminTickets() {
 }
 
 function renderAdminStatGrid() {
-  const tickets = adminTicketsCache;
+  const tickets = consolidateTickets(adminTicketsCache);
   const counts = { total: tickets.length, open: 0, progress: 0, resolved: 0 };
   tickets.forEach(t => {
     if (t.stageIndex >= 3) counts.resolved++;
@@ -1204,7 +1227,7 @@ function renderAdminStatGrid() {
   });
 
   const cards = [
-    { label: 'Total complaints', num: counts.total, dot: null },
+    { label: 'Total incidents', num: counts.total, dot: null },
     { label: 'Awaiting action', num: counts.open, dot: 'dot-red' },
     { label: 'In progress', num: counts.progress, dot: 'icon-progress' },
     { label: 'Resolved', num: counts.resolved, dot: 'dot-green' }
@@ -1255,6 +1278,7 @@ function renderAdminTicketList() {
     (priorityRank[b.aiPriority] || 0) - (priorityRank[a.aiPriority] || 0) || new Date(b.createdAt) - new Date(a.createdAt)
   );
 
+  tickets = consolidateTickets(tickets);
   const list = document.getElementById('adminTicketList');
   if (tickets.length === 0) {
     list.innerHTML = `
@@ -1280,6 +1304,8 @@ function renderAdminTicketList() {
           <div>
             <div class="tk-id mono">${t.id}</div>
             <div class="tk-title">${escapeHtml(t.title)}</div>
+              ${incidentSummary(t)}
+              ${incidentReports(t, adminTicketsCache)}
             <div class="tk-meta"><span>${fmtDate(t.createdAt)}</span></div>
           </div>
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
@@ -1297,7 +1323,7 @@ function renderAdminTicketList() {
           <select id="categorySelect-${safeId}">${CATEGORIES.map(c => `<option value="${c}"${c === t.category ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}</select>
           <input type="text" id="noteInput-${safeId}" placeholder="Add an update note (optional)">
           <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}')">AI recommendations</button>
-          <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}')">Update</button>
+          <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}')">${t.incident ? 'Update incident' : 'Update'}</button>
           <button class="btn btn-ghost small btn-delete" onclick="deleteAdminComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
         </div>
       </div>
@@ -1330,8 +1356,8 @@ async function submitAdminStageUpdate(code) {
       method: 'PATCH',
       body: { stageIndex, note: note || undefined, priority, category }
     });
-    const idx = adminTicketsCache.findIndex(t => t.id === code);
-    if (idx !== -1) adminTicketsCache[idx] = data.complaint;
+    const refreshed = await api('/api/admin/complaints');
+    adminTicketsCache = refreshed.complaints || [];
     showToast(code + ' updated.');
     renderAdminStatGrid();
     renderAdminTicketList();
@@ -1404,7 +1430,7 @@ function renderSuperAdminComplaints() {
     return;
   }
 
-  list.innerHTML = superAdminComplaints.map(t => {
+  list.innerHTML = consolidateTickets(superAdminComplaints).sort((a, b) => Number(Boolean(b.incident?.urgent)) - Number(Boolean(a.incident?.urgent))).map(t => {
     const stageName = STAGES[t.stageIndex] || 'Submitted';
     const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
     const dotClass = statusDotClass(t.stageIndex);
@@ -1422,6 +1448,7 @@ function renderSuperAdminComplaints() {
                 <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
               </div>
               <div class="tk-title">${escapeHtml(t.title)}</div>
+              ${incidentSummary(t)}
               <p class="tk-desc" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:13px; color:var(--text-soft); margin:6px 0 8px; line-height:1.5;">${escapeHtml(t.description)}</p>
               <div class="tk-meta">
                 <span class="tk-cat" style="--chip-color:${(CATEGORY_META[t.category] || CATEGORY_META['General']).color}">${categoryIcon(t.category, 12)}${escapeHtml(t.category)}</span>

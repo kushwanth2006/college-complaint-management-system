@@ -1,4 +1,5 @@
 const { MongoClient } = require('mongodb');
+const { assignIncident } = require('../lib/incidents');
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI must be set to a MongoDB Atlas connection URL.');
 
@@ -78,6 +79,27 @@ async function joinedComplaints(category) {
 }
 
 const db = {
+  async updateIncident(complaint, values, actor) {
+    const session = client.startSession();
+    try {
+      await session.withTransaction(async () => {
+        await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
+        const filter = complaint.incident_code ? { incident_code: complaint.incident_code } : { id: complaint.id };
+        const members = await collection('complaints').find(filter, { session }).toArray();
+        if (members.some(c => c.incident_urgent) && values.stage_index < 3) {
+          values.ai_priority = 'Critical';
+          values.sla_deadline = new Date(Math.min(...members.map(c => new Date(c.sla_deadline).getTime())));
+        }
+        await collection('complaints').updateMany(filter, { $set: values }, { session });
+        const stages = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
+        for (const member of members) {
+          await collection('complaint_history').insertOne({ id: await nextId('complaint_history'), created_at: new Date(), complaint_id: member.id,
+            previous_status: stages[member.stage_index], new_status: stages[values.stage_index], updated_by: actor,
+            remarks: `Incident update: ${values.note}` }, { session });
+        }
+      });
+    } finally { await session.endSession(); }
+  },
   async get(rawSql, ...params) {
     const sql = normalize(rawSql);
     const name = tableFrom(sql);
@@ -122,7 +144,33 @@ const db = {
         else if (/^\d+$/.test(token)) document[column] = Number(token);
         else document[column] = token.replace(/^['"]|['"]$/g, '');
       });
-      await collection(name).insertOne(document);
+      if (name === 'complaints') {
+        const original = { ...document };
+        const session = client.startSession();
+        try {
+          await session.withTransaction(async () => {
+            // A transaction retry must start with the original submitted report.
+            for (const key of Object.keys(document)) delete document[key];
+            Object.assign(document, original);
+            // A shared write serializes matching across concurrent server processes.
+            await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
+            const rows = await collection('complaints').find({ stage_index: { $lt: 3 }, created_at: { $gte: new Date(document.created_at.getTime() - 600000) } }, { session }).sort({ id: 1 }).toArray();
+            const group = assignIncident(document, rows);
+            const seed = group.members.find(r => r.id === group.metadata.incident_seed_id);
+            if (seed && seed.id !== document.id) {
+              document.stage_index = seed.stage_index;
+              document.note = seed.note;
+            }
+            Object.assign(document, group.metadata, { ai_priority: group.priority, sla_deadline: group.deadline });
+            if (group.metadata.incident_urgent) document.ai_priority_reason = '20 or more students reported this incident within 10 minutes. Immediate attention required.';
+            await collection(name).insertOne(document, { session });
+            await collection(name).updateMany({ incident_code: document.incident_code }, { $set: {
+              ...group.metadata, ai_priority: group.priority, sla_deadline: group.deadline,
+              ...(group.metadata.incident_urgent ? { ai_priority_reason: document.ai_priority_reason } : {})
+            } }, { session });
+          });
+        } finally { await session.endSession(); }
+      } else await collection(name).insertOne(document);
       return { changes: 1, lastInsertRowid: document.id };
     }
 
@@ -147,6 +195,26 @@ const db = {
       else if (/complaint_id = \?/i.test(where)) filter = { complaint_id: Number(params[0]) };
       else if (/id = \?/i.test(where)) filter = { id: Number(params[0]) };
       else throw new Error(`Unsupported MongoDB delete: ${sql}`);
+      if (name === 'complaints') {
+        const session = client.startSession();
+        let deletedCount = 0;
+        try {
+          await session.withTransaction(async () => {
+            await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
+            const removed = await collection(name).findOne(filter, { session });
+            const result = await collection(name).deleteMany(filter, { session });
+            deletedCount = result.deletedCount;
+            if (removed?.incident_code) {
+              const members = await collection(name).find({ incident_code: removed.incident_code }, { session }).sort({ id: 1 }).toArray();
+              if (members.length) await collection(name).updateMany({ incident_code: removed.incident_code }, { $set: {
+                incident_seed_id: members[0].id, incident_reports: members.length,
+                incident_affected: new Set(members.map(c => c.user_id)).size
+              } }, { session });
+            }
+          });
+        } finally { await session.endSession(); }
+        return { changes: deletedCount };
+      }
       const result = await collection(name).deleteMany(filter);
       return { changes: result.deletedCount, lastInsertRowid: undefined };
     }
@@ -157,6 +225,7 @@ const db = {
 async function initDb() {
   await client.connect();
   database = client.db(databaseName);
+  await collection('counters').updateOne({ _id: 'incident_lock' }, { $setOnInsert: { seq: 0 } }, { upsert: true });
   await Promise.all([
     collection('users').createIndex({ college_id: 1 }, { unique: true }),
     collection('users').createIndex({ email: 1 }, { unique: true }),
@@ -164,6 +233,8 @@ async function initDb() {
     collection('admins').createIndex({ college_id: 1 }, { unique: true, sparse: true }),
     collection('complaints').createIndex({ complaint_code: 1 }, { unique: true }),
     collection('complaints').createIndex({ user_id: 1 }),
+    collection('complaints').createIndex({ incident_code: 1 }),
+    collection('complaints').createIndex({ created_at: 1, stage_index: 1 }),
     collection('password_resets').createIndex({ user_id: 1 }),
     collection('complaint_history').createIndex({ complaint_id: 1 }),
     collection('feedback').createIndex({ complaint_id: 1 }, { unique: true })

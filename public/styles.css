@@ -938,3 +938,19 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 @media (prefers-reduced-motion:reduce){
   .auth-view::after{transition:none;}
 }
+
+.incident-summary {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--teal);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.incident-urgent { border-left-color: var(--rust); }
+.incident-urgent strong { color: var(--rust); }
+.incident-summary summary { cursor: pointer; }
+.incident-summary summary:hover { text-decoration: underline; }
+.incident-summary summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }

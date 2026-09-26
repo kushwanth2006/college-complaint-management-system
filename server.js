@@ -204,6 +204,7 @@ async function publicComplaint(c, suppliedRouting) {
     aiPriority: c.ai_priority || null,
     aiPriorityReason: c.ai_priority_reason || null,
     aiSummary: c.ai_summary || null,
+    incident: c.incident_code ? { id: c.incident_code, title: c.incident_title, affectedStudents: c.incident_affected, reportCount: c.incident_reports, urgent: c.incident_urgent } : null,
     possibleDuplicate: c.possible_duplicate || null
     , location: c.location || null
     , aiKeywords: c.ai_keywords || []
@@ -658,11 +659,8 @@ app.patch('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
   const finalCategory = category || complaint.category;
   const finalPriority = priority || complaint.ai_priority;
   const deadline = priority && priority !== complaint.ai_priority ? new Date(Date.now() + SLA_HOURS[finalPriority] * 3600000) : complaint.sla_deadline;
-  await db.run('UPDATE complaints SET stage_index = ?, note = ?, category = ?, ai_priority = ?, ai_reviewed = ?, sla_deadline = ? WHERE id = ?', idx, finalNote, finalCategory, finalPriority, true, deadline, complaint.id);
-  if (idx !== complaint.stage_index) {
-    const stages = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
-    await db.run('INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)', complaint.id, stages[complaint.stage_index], stages[idx], req.admin.id, finalNote);
-  }
+  await db.updateIncident(complaint, { stage_index: idx, note: finalNote, category: finalCategory,
+    ai_priority: finalPriority, ai_reviewed: true, sla_deadline: deadline }, req.admin.id);
 
   const updated = await db.get('SELECT * FROM complaints WHERE id = ?', complaint.id);
   res.json({ complaint: await publicComplaint(updated) });
