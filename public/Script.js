@@ -129,7 +129,7 @@ let activeSearch = '';
 let stagedPhotoDataUrl = null;
 let modalReturnFocus = null;
 let notifSeen = false;
-let pendingReset = null;   // { collegeId, maskedEmail, resetToken? }
+let pendingReset = null;   // { collegeId, resetToken? }
 
 /* ---------------- Admin / super-admin session state ---------------- */
 let currentAdmin = null;        // { id, name, email, department } — approved department staff
@@ -418,20 +418,16 @@ async function handleForgot(event) {
   btn.textContent = 'Sending…';
   try {
     const data = await api('/api/forgot', { method: 'POST', body: { collegeId } });
-    pendingReset = { collegeId, maskedEmail: data.maskedEmail };
+    pendingReset = { collegeId };
 
     const target = document.getElementById('otpEmailTarget');
-    if (target) target.textContent = data.maskedEmail;
+    if (target) target.textContent = 'your registered email';
     resetOtpBoxes();
 
-    // The code itself never comes back in this response — it only ever
-    // travels over the real email the server just sent. If SMTP isn't
-    // configured yet (local dev), the server logs it to its own terminal
-    // instead; either way the browser only learns whether sending worked.
     showToast(
-      data.emailed
-        ? 'Code sent to ' + data.maskedEmail + ' — check your inbox.'
-        : 'Email isn\u2019t configured yet — check the server terminal for the code (dev mode).'
+      data.emailConfigured
+        ? 'If an account matches, a verification code has been sent to its registered email.'
+        : 'Email is not configured yet; for local development, check the server terminal.'
     );
     switchView('view-forgot', 'view-forgot-otp');
   } catch (err) {
@@ -507,12 +503,11 @@ async function handleResendOtp() {
   if (!pendingReset) return;
   try {
     const data = await api('/api/forgot', { method: 'POST', body: { collegeId: pendingReset.collegeId } });
-    pendingReset.maskedEmail = data.maskedEmail;
     resetOtpBoxes();
     showToast(
-      data.emailed
-        ? 'New code sent to ' + data.maskedEmail + ' — check your inbox.'
-        : 'Email isn\u2019t configured yet — check the server terminal for the code (dev mode).'
+      data.emailConfigured
+        ? 'If an account matches, a new verification code has been sent to its registered email.'
+        : 'Email is not configured yet; for local development, check the server terminal.'
     );
   } catch (err) {
     showToast(err.message);
@@ -916,7 +911,7 @@ async function analyzeNewComplaint() {
       <span>Category: ${escapeHtml(analysis.category)} (${analysis.confidence}% confidence)</span>
       <span>Priority: ${escapeHtml(analysis.priority)}</span>
       <span>Summary: ${escapeHtml(analysis.summary)}</span>
-      ${analysis.duplicate ? `<span>Possible duplicate: ${escapeHtml(analysis.duplicate.complaintCode)} (${analysis.duplicate.similarity}% similar)</span>` : '<span>No similar open complaint found.</span>'}
+      ${analysis.duplicate ? `<span>Possible duplicate report found (${analysis.duplicate.similarity}% similar).</span>` : '<span>No similar open complaint found.</span>'}
       <small>You can change the suggested category before submitting.</small>`;
     document.getElementById('ncAiResult').classList.add('show');
   } catch (err) {
@@ -1311,7 +1306,7 @@ function renderAdminTicketList() {
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
         </div>
         <p class="tk-desc">${escapeHtml(t.description)}</p>
-        ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span>${t.possibleDuplicate ? ` · Possible duplicate: ${escapeHtml(t.possibleDuplicate.complaintCode)}` : ''}</div>` : ''}
+        ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span>${t.possibleDuplicate ? ` · Possible duplicate (${t.possibleDuplicate.similarity}% similar)` : ''}</div>` : ''}
         ${t.location ? `<div class="tk-meta"><span>📍 ${escapeHtml(t.location)}</span>${t.overdue ? '<span class="overdue-label">SLA overdue</span>' : ''}<span>AI confidence: ${t.aiConfidence || 0}%</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>

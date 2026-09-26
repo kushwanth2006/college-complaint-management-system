@@ -5,20 +5,21 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs');
 const { db, initDb } = require('./db/database');
-const { sendOtpEmail } = require('./lib/mailer');
+const { sendOtpEmail, isConfigured: isMailerConfigured, isDevelopmentFallbackEnabled } = require('./lib/mailer');
 const { analyzeComplaint, similarity } = require('./lib/complaint-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Gate for the super admin panel that approves staff accounts and assigns
-// departments. Change this via env var in any real deployment — same spirit
-// as SESSION_SECRET above.
 const isProduction = process.env.NODE_ENV === 'production';
-if (isProduction && (!process.env.SESSION_SECRET || !process.env.SUPERADMIN_KEY)) {
-  throw new Error('SESSION_SECRET and SUPERADMIN_KEY must be set in production.');
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const SUPERADMIN_KEY = process.env.SUPERADMIN_KEY;
+if (!SESSION_SECRET || SESSION_SECRET.length < 32 || !SUPERADMIN_KEY || SUPERADMIN_KEY.length < 32) {
+  throw new Error('SESSION_SECRET and SUPERADMIN_KEY must each be set to at least 32 characters.');
 }
-const SUPERADMIN_KEY = process.env.SUPERADMIN_KEY || 'campusdesk-superadmin-dev-key';
+if (!isMailerConfigured() && !isDevelopmentFallbackEnabled()) {
+  throw new Error('SMTP_HOST, SMTP_USER, and SMTP_PASS must be set unless the development OTP fallback is explicitly enabled.');
+}
 const MIN_PASSWORD_LENGTH = 8;
 
 // Photos are sent as base64 data URLs in the JSON body, so the default
@@ -26,7 +27,7 @@ const MIN_PASSWORD_LENGTH = 8;
 app.use(express.json({ limit: '5mb' }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'campusdesk-dev-secret-change-me',
+  secret: SESSION_SECRET,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI, dbName: process.env.MONGODB_DB || 'college_complaints', collectionName: 'sessions' }),
   resave: false,
   saveUninitialized: false,
@@ -64,6 +65,7 @@ function rateLimit(name, max, windowMs) {
 }
 const authLimit = rateLimit('auth', 10, 15 * 60 * 1000);
 const otpLimit = rateLimit('otp', 5, 15 * 60 * 1000);
+const analysisLimit = rateLimit('analysis', 20, 15 * 60 * 1000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -86,9 +88,14 @@ const SLA_HOURS = { Critical: 2, High: 8, Medium: 24, Low: 72 };
 
 /* ---------------- helpers ---------------- */
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'Not logged in.' });
+  }
+  const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
+  if (!user || (req.session.authVersion ?? 0) !== (user.auth_version || 0)) {
+    req.session.destroy(() => {});
+    return res.status(401).json({ error: 'Session invalid. Please log in again.' });
   }
   next();
 }
@@ -117,12 +124,6 @@ async function genComplaintCode() {
     if (!exists) return code;
   }
   return 'CDT-' + Date.now().toString().slice(-6); // astronomically unlikely fallback
-}
-
-function maskEmail(email) {
-  const [user, domain] = email.split('@');
-  if (!domain) return email;
-  return user.slice(0, 2) + '***@' + domain;
 }
 
 // Routing must always reflect the staff accounts currently approved for a
@@ -165,7 +166,8 @@ async function requireAdminAuth(req, res, next) {
     return res.status(401).json({ error: 'Not logged in.' });
   }
   const admin = await db.get('SELECT * FROM admins WHERE id = ?', req.session.adminId);
-  if (!admin || admin.status !== 'approved') {
+  if (!admin || admin.status !== 'approved' || (req.session.authVersion ?? 0) !== (admin.auth_version || 0)) {
+    req.session.destroy(() => {});
     return res.status(401).json({ error: 'Admin session invalid.' });
   }
   req.admin = admin;
@@ -205,7 +207,7 @@ async function publicComplaint(c, suppliedRouting) {
     aiPriorityReason: c.ai_priority_reason || null,
     aiSummary: c.ai_summary || null,
     incident: c.incident_code ? { id: c.incident_code, title: c.incident_title, affectedStudents: c.incident_affected, reportCount: c.incident_reports, urgent: c.incident_urgent } : null,
-    possibleDuplicate: c.possible_duplicate || null
+    possibleDuplicate: c.possible_duplicate ? { similarity: c.possible_duplicate.similarity } : null
     , location: c.location || null
     , aiKeywords: c.ai_keywords || []
     , aiDetectedLocation: c.ai_detected_location || null
@@ -276,6 +278,7 @@ app.post('/api/register', authLimit, async (req, res) => {
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Could not start a session.' });
     req.session.userId = user.id;
+    req.session.authVersion = user.auth_version || 0;
     res.status(201).json({ user: publicUser(user) });
   });
 });
@@ -300,6 +303,7 @@ app.post('/api/login', authLimit, async (req, res) => {
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Could not start a session.' });
     req.session.userId = user.id;
+    req.session.authVersion = user.auth_version || 0;
     res.json({ user: publicUser(user) });
   });
 });
@@ -316,7 +320,10 @@ app.post('/api/logout', async (req, res) => {
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
   const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
-  if (!user) return res.json({ user: null });
+  if (!user || (req.session.authVersion ?? 0) !== (user.auth_version || 0)) {
+    req.session.destroy(() => {});
+    return res.json({ user: null });
+  }
   res.json({ user: publicUser(user) });
 });
 
@@ -336,7 +343,8 @@ app.patch('/api/me', requireAuth, async (req, res) => {
 
   if (password) {
     const passwordHash = bcrypt.hashSync(password, 10);
-    await db.run('UPDATE users SET name = ?, hostel = ?, password_hash = ? WHERE id = ?', cleanName, hostel, passwordHash, user.id);
+    await db.run('UPDATE users SET name = ?, hostel = ?, password_hash = ?, auth_version = auth_version + 1 WHERE id = ?', cleanName, hostel, passwordHash, user.id);
+    req.session.authVersion = (user.auth_version || 0) + 1;
   } else {
     await db.run('UPDATE users SET name = ?, hostel = ? WHERE id = ?', cleanName, hostel, user.id);
   }
@@ -358,13 +366,12 @@ app.post('/api/forgot', otpLimit, async (req, res) => {
   if (!collegeId) return res.status(400).json({ error: 'College ID is required.' });
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
-  if (!user) return res.json({ ok: true, maskedEmail: 'your registered email', emailed: true });
+  const emailConfigured = isMailerConfigured();
+  if (!user) return res.json({ ok: true, emailConfigured });
 
   const otp = String(crypto.randomInt(100000, 1000000));
   const mailResult = await sendOtpEmail({ to: user.email, name: user.name, otp });
-  if (!mailResult.sent && !mailResult.development) {
-    return res.status(503).json({ error: 'We could not send a verification code. Please try again later.' });
-  }
+  if (!mailResult.sent && !mailResult.development) return res.json({ ok: true, emailConfigured });
 
   // Invalidate earlier unused codes only after the replacement was delivered.
   await db.run('DELETE FROM password_resets WHERE user_id = ? AND otp_used = 0', user.id);
@@ -372,13 +379,7 @@ app.post('/api/forgot', otpLimit, async (req, res) => {
     'INSERT INTO password_resets (user_id, otp, otp_expires_at) VALUES (?, ?, ?)'
   , user.id, bcrypt.hashSync(otp, 10), Date.now() + OTP_TTL_MS);
 
-  res.json({
-    ok: true,
-    maskedEmail: maskEmail(user.email),
-    // Lets the frontend show a heads-up banner in local dev when SMTP isn't
-    // configured — never carries the code itself, only whether it went out.
-    emailed: mailResult.sent
-  });
+  res.json({ ok: true, emailConfigured });
 });
 
 app.post('/api/forgot/verify', authLimit, async (req, res) => {
@@ -392,21 +393,13 @@ app.post('/api/forgot/verify', authLimit, async (req, res) => {
     'SELECT * FROM password_resets WHERE user_id = ? AND otp_used = 0 ORDER BY id DESC LIMIT 1'
   , user.id);
 
-  if (!row || row.otp_expires_at < Date.now()) {
-    return res.status(400).json({ error: 'That code has expired — request a new one.' });
-  }
-  if (row.attempts >= MAX_OTP_ATTEMPTS) {
-    return res.status(429).json({ error: 'Too many incorrect attempts — request a new code.' });
+  if (!row || row.otp_expires_at < Date.now() || row.attempts >= MAX_OTP_ATTEMPTS) {
+    return res.status(400).json({ error: 'That code is invalid or expired.' });
   }
 
   if (!bcrypt.compareSync(String(otp).trim(), row.otp)) {
     await db.run('UPDATE password_resets SET attempts = attempts + 1 WHERE id = ?', row.id);
-    const remaining = MAX_OTP_ATTEMPTS - (row.attempts + 1);
-    return res.status(400).json({
-      error: remaining > 0
-        ? `That code doesn\u2019t match. ${remaining} attempt${remaining === 1 ? '' : 's'} left.`
-        : 'Too many incorrect attempts — request a new code.'
-    });
+    return res.status(400).json({ error: 'That code is invalid or expired.' });
   }
 
   const resetToken = crypto.randomBytes(24).toString('hex');
@@ -422,23 +415,23 @@ app.post('/api/reset-password', async (req, res) => {
   if (!collegeId || !resetToken || !newPassword) {
     return res.status(400).json({ error: 'Missing fields.' });
   }
-  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+  if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
     return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
   }
 
   const user = await db.get('SELECT * FROM users WHERE college_id = ?', String(collegeId).trim().toUpperCase());
-  if (!user) return res.status(404).json({ error: 'No account found with that college ID.' });
+  if (!user) return res.status(400).json({ error: 'The reset request is invalid or expired.' });
 
   const row = await db.get(
     'SELECT * FROM password_resets WHERE user_id = ? AND reset_token = ? ORDER BY id DESC LIMIT 1'
   , user.id, resetToken);
 
   if (!row || !row.token_expires_at || row.token_expires_at < Date.now()) {
-    return res.status(400).json({ error: 'This reset link has expired — request a new code.' });
+    return res.status(400).json({ error: 'The reset request is invalid or expired.' });
   }
 
   const passwordHash = bcrypt.hashSync(newPassword, 10);
-  await db.run('UPDATE users SET password_hash = ? WHERE id = ?', passwordHash, user.id);
+  await db.run('UPDATE users SET password_hash = ?, auth_version = auth_version + 1 WHERE id = ?', passwordHash, user.id);
   await db.run('DELETE FROM password_resets WHERE user_id = ?', user.id);
 
   res.json({ ok: true });
@@ -454,11 +447,15 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
   res.json({ complaints: await publicComplaints(rows) });
 });
 
-app.post('/api/complaints/analyze', requireAuth, async (req, res) => {
+app.post('/api/complaints/analyze', requireAuth, analysisLimit, async (req, res) => {
   const { title, description } = req.body || {};
-  if (!title || !description) return res.status(400).json({ error: 'Add a subject and description first.' });
-  const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
-  res.json({ analysis: analyzeComplaint({ title, description, complaints }) });
+  const cleanTitle = cleanRequired(title, 200);
+  const cleanDescription = cleanRequired(description, 5000);
+  if (!cleanTitle || !cleanDescription) return res.status(400).json({ error: 'Add a subject and description within the allowed length.' });
+  const complaints = await db.recentOpenComplaints(500);
+  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
+  if (analysis.duplicate) analysis.duplicate = { similarity: analysis.duplicate.similarity };
+  res.json({ analysis });
 });
 
 app.post('/api/complaints', requireAuth, async (req, res) => {
@@ -475,7 +472,7 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
 
   const code = await genComplaintCode();
   const routing = await getRoutingDetails(category);
-  const complaints = await db.all('SELECT * FROM complaints ORDER BY id DESC');
+  const complaints = await db.recentOpenComplaints(500);
   const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
   const slaDeadline = new Date(Date.now() + SLA_HOURS[analysis.priority] * 60 * 60 * 1000);
 
@@ -610,6 +607,7 @@ app.post('/api/admin/login', authLimit, async (req, res) => {
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Could not start a session.' });
     req.session.adminId = admin.id;
+    req.session.authVersion = admin.auth_version || 0;
     res.json({ admin: publicAdmin(admin) });
   });
 });
@@ -622,7 +620,10 @@ app.post('/api/admin/logout', async (req, res) => {
 app.get('/api/admin/me', async (req, res) => {
   if (!req.session.adminId) return res.json({ admin: null });
   const admin = await db.get('SELECT * FROM admins WHERE id = ?', req.session.adminId);
-  if (!admin || admin.status !== 'approved') return res.json({ admin: null });
+  if (!admin || admin.status !== 'approved' || (req.session.authVersion ?? 0) !== (admin.auth_version || 0)) {
+    req.session.destroy(() => {});
+    return res.json({ admin: null });
+  }
   res.json({ admin: publicAdmin(admin) });
 });
 
@@ -844,7 +845,7 @@ app.patch('/api/superadmin/students/:id/credentials', requireSuperAdmin, async (
       return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
     }
     const passwordHash = bcrypt.hashSync(password, 10);
-    await db.run('UPDATE users SET college_id = ?, email = ?, password_hash = ? WHERE id = ?', cleanId, cleanEmail, passwordHash, student.id);
+    await db.run('UPDATE users SET college_id = ?, email = ?, password_hash = ?, auth_version = auth_version + 1 WHERE id = ?', cleanId, cleanEmail, passwordHash, student.id);
   } else {
     await db.run('UPDATE users SET college_id = ?, email = ? WHERE id = ?', cleanId, cleanEmail, student.id);
   }
@@ -881,7 +882,7 @@ app.patch('/api/superadmin/staff/:id/credentials', requireSuperAdmin, async (req
       return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
     }
     const passwordHash = bcrypt.hashSync(password, 10);
-    await db.run('UPDATE admins SET college_id = ?, email = ?, password_hash = ? WHERE id = ?', cleanId, cleanEmail, passwordHash, staff.id);
+    await db.run('UPDATE admins SET college_id = ?, email = ?, password_hash = ?, auth_version = auth_version + 1 WHERE id = ?', cleanId, cleanEmail, passwordHash, staff.id);
   } else {
     await db.run('UPDATE admins SET college_id = ?, email = ? WHERE id = ?', cleanId, cleanEmail, staff.id);
   }

@@ -128,6 +128,15 @@ const db = {
     return cursor.toArray();
   },
 
+  async recentOpenComplaints(limit = 500) {
+    const boundedLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 500;
+    return collection('complaints')
+      .find({ stage_index: { $lt: 3 } })
+      .sort({ id: -1 })
+      .limit(boundedLimit)
+      .toArray();
+  },
+
   async run(rawSql, ...params) {
     const sql = normalize(rawSql).replace(/\s+RETURNING\s+id$/i, '');
     const insert = sql.match(/^INSERT INTO (\w+) \(([^)]+)\) VALUES \(([^)]+)\)$/i);

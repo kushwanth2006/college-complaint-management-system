@@ -6,16 +6,16 @@ Campus complaint tracking for students, department staff, and super administrato
 
 - Node.js 20 or newer
 - A MongoDB connection string
-- SMTP credentials for real password-reset email
+- SMTP credentials for password-reset email outside explicit development mode
 
 ## Setup
 
 1. Run `npm install`.
-2. Create `.env` with `MONGODB_URI`, `SESSION_SECRET`, and `SUPERADMIN_KEY`.
-3. For email resets, also set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `EMAIL_FROM`.
+2. Create `.env` with `MONGODB_URI`, `SESSION_SECRET`, and `SUPERADMIN_KEY`; both secrets must be at least 32 characters.
+3. Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `EMAIL_FROM` for password-reset email. For local development without SMTP, set both `NODE_ENV=development` and `DEV_LOG_OTP=true` to explicitly enable terminal-only OTP logging. SMTP is required unless that development fallback is enabled.
 4. Run `npm start` and open `http://localhost:3000`.
 
-Production startup requires non-default secrets. Complaint images are limited to PNG, JPEG, GIF, or WebP data under 4 MB.
+Complaint images are limited to PNG, JPEG, GIF, or WebP data under 4 MB.
 
 ## Tests
 
