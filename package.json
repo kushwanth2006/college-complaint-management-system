@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node --env-file=.env server.js",
+    "train:model": "node scripts/train-complaint-model.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

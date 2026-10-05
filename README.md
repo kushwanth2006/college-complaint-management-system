@@ -17,6 +17,10 @@ Campus complaint tracking for students, department staff, and super administrato
 
 Complaint images are limited to PNG, JPEG, GIF, or WebP data under 4 MB.
 
+## Complaint category model
+
+Category suggestions use a small multinomial Naive Bayes model trained from `data/complaint-category-dataset-v2.csv`. The checked-in model can be retrained with `npm run train:model`; training uses only the training split and excludes rows marked `needs_review`. Priority remains rule-based, including safety-related Critical terms. The supplied dataset is synthetic, so its confidence scores are not validated on real campus complaints. Staff should review category suggestions.
+
 ## Tests
 
 Run `npm test`. Dependencies must be installed first.

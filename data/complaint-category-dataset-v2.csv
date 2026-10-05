@@ -1,0 +1,1000 @@
+id,complaint_text,category,source,label_status,variant,group_id,split
+C00001,Night snacks counter in the mess closes too early for students with late labs.,Mess,synthetic_handwritten,unverified,original,g0090,train
+C00002,"To whom it may concern, food was cold during dinner today. Please look into it.",Mess,synthetic_augmented,unverified,polite,g0059,train
+C00003,"Sambar taasted sour, I think it was left over from yesetrday.",Mess,synthetic_augmented,unverified,typo,g0072,train
+C00004,Our professor has missed four consecutive classes and no substitute was arranged.,Academic,synthetic_handwritten,unverified,original,g0126,train
+C00005,Professor shares notes only on a WhatsApp group and I'm not added to it.,Academic,synthetic_handwritten,needs_review,ambiguous,g0370,train
+C00006,printer on the network is not discoverable from any lab computer,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0188,train
+C00007,No one at the help desk could tell me which office handdles scholarship forms.,General,synthetic_augmented,needs_review,ambiguous_typo,g0401,test
+C00008,"Hi, I'd like to report that LAN cable in the faculty room is cut and nobody has fixed it. Thank you.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0185,train
+C00009,Interlibrary loan request submitted in August has no response.,Library,synthetic_handwritten,unverified,original,g0299,train
+C00010,"To whom it may concern, corridor lights on the third floor don't come on after 9 pm. Please fix asap.",Hostel,synthetic_augmented,unverified,polite,g0007,train
+C00011,"Hi, I'd like to report that the college email won't sync when I'm connected to campus Wi-Fi. Kindly resolve this soon.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0176,train
+C00012,"Library chairs are brokken, three of them wobble when you sit.",Library,synthetic_augmented,unverified,typo,g0300,train
+C00013,"Hi, I'd like to report that my hostel room has no network port even though it was promised. Please look into it.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0382,train
+C00014,"Respected sir, our room has only one working plug point for three students.",Hostel,synthetic_augmented,unverified,polite,g0024,train
+C00015,"Respected sir, wi-Fi coverage is very poor in the sports complex.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0190,train
+C00016,the basketball court floor is cracked and someone could twist an ankle,General,synthetic_augmented,unverified,casual,g0324,train
+C00017,Hstel nework is down every night after midnight.,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_typo,g0354,train
+C00018,Gas smell near the kitchen when we were having dinner.,Mess,synthetic_handwritten,unverified,original,g0098,train
+C00019,Curtain rod fell down and the room gets too much afternoon sun.,Hostel,synthetic_handwritten,unverified,original,g0039,train
+C00020,The campus ATM swallowed my card near the canteen.,General,synthetic_handwritten,needs_review,ambiguous,g0395,train
+C00021,our floor's common washing machine is leaking from the bottom,Hostel,synthetic_augmented,unverified,casual,g0042,train
+C00022,Counter closed 15 minutes before breakfast was supposed to end.,Mess,synthetic_handwritten,unverified,original,g0068,train
+C00023,"Re-exam date overlaps with aonther paper, please reschedule one of them.",Academic,synthetic_augmented,unverified,typo,g0129,train
+C00024,Main turnstile is stuck open and not recording entries.,General,synthetic_handwritten,unverified,original,g0320,test
+C00025,Drinking water container in the mess smells bad.,Mess,synthetic_handwritten,unverified,original,g0053,train
+C00026,"Dear sir/madam, night snacks counter in the mess closes too early for students with late labs. Needs urgent attention.",Mess,synthetic_augmented,unverified,polite,g0090,train
+C00027,Rats were seen near the storeroom behind the dining hall.,Mess,synthetic_handwritten,unverified,original,g0080,train
+C00028,"Hi, I'd like to report that question paper for the model exam had a printing error on page 2.",Academic,synthetic_augmented,unverified,polite,g0134,train
+C00029,AC in the quiet zone of the lbirary is not workking.,Library,synthetic_augmented,unverified,typo,g0265,val
+C00030,"Respected sir, please keep the library open till 11 pm on weekdays during the semester exams. Request you to take action.",Library,synthetic_augmented,unverified,polite,g0296,train
+C00031,Printer on the network is not discoverable from any lab computer.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0188,train
+C00032,Breakfast queue moves so slowly that many of us miss the 9 am class.,Mess,synthetic_handwritten,unverified,original,g0056,train
+C00033,Catneen near the admin block is overcharging for water botttles.,General,synthetic_augmented,unverified,typo,g0328,train
+C00034,"Broken tables in the mess hall, one leg is missing.",Mess,synthetic_handwritten,needs_review,ambiguous,g0412,train
+C00035,"Library reservations don't sync with the timetable, so I can't book during free hours.",Library,synthetic_handwritten,needs_review,ambiguous,g0389,train
+C00036,book stack numbering is confusing and there is no signboard for the section,Library,synthetic_augmented,unverified,casual,g0298,test
+C00037,Recycling bins outside the auditorium are overflowing.,General,synthetic_handwritten,unverified,original,g0308,test
+C00038,Dropped at the wrong stop because the driver didn't know the route.,Transport,synthetic_handwritten,unverified,original,g0249,train
+C00039,Flies all over the uncovered food trays at the serving counter.,Mess,synthetic_handwritten,unverified,original,g0061,train
+C00040,"Hi, water dispenser in the mess is leaking onto the floor. Kindly resolve this soon.",Mess,synthetic_augmented,needs_review,ambiguous_polite,g0415,train
+C00041,"The hostel main gate light is fused, it is completely dark at night.",Hostel,synthetic_handwritten,unverified,original,g0046,train
+C00042,shuttle to the medical center was cancelled without any notice,Transport,synthetic_augmented,unverified,casual,g0219,val
+C00043,Our department's network switch has red lights on and the whole lab is disconnected.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0198,train
+C00044,"Library staff asked me to leave because my bag was not in the locker, but the lockers are all full.",Library,synthetic_handwritten,unverified,original,g0281,train
+C00045,"route 12 bus is never on time, we wait 40 minutes every evening",Transport,synthetic_augmented,unverified,casual,g0242,train
+C00046,"To whom it may concern, the online lost and found form gives an error on submit. This has been going on for days.",General,synthetic_augmented,unverified,polite,g0307,train
+C00047,Medical room has no doctor on duty after 4 pm.,General,synthetic_handwritten,unverified,original,g0340,train
+C00048,"Good morning sir, hostel library corner has no books and the shelves are empty. Thank you.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0386,test
+C00049,Student council room keys have been missing since Monday.,General,synthetic_handwritten,unverified,original,g0336,train
+C00050,Classroom mic cuts out whenever the lecturer walks to the back.,Academic,synthetic_handwritten,unverified,original,g0115,train
+C00051,pls provide jain food option for students who dont eat onion and garlic,Mess,synthetic_augmented,unverified,casual,g0083,test
+C00052,"Good morning sir, bus charges were increased mid-semester without any circular.",Transport,synthetic_augmented,unverified,polite,g0248,train
+C00053,No hot water in our block since yesterday. Geyser seems dead.,Hostel,synthetic_handwritten,unverified,original,g0018,train
+C00054,Wired iternet port in the media lab is dead.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0162,val
+C00055,Lab computers don't have the software we need for today's practical.,Academic,synthetic_handwritten,unverified,original,g0107,train
+C00056,"Fire extinguisher on our floor has expired, the date on it is last year.",Hostel,synthetic_handwritten,unverified,original,g0040,train
+C00057,The hand wash sink next to the dining hall is blocked.,Mess,synthetic_handwritten,unverified,original,g0066,train
+C00058,wi-fi at the canteen area is unusable during lunch,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0184,train
+C00059,Please set up a suggestion box in the admin block.,General,synthetic_handwritten,unverified,original,g0352,test
+C00060,leftover food is being kept in the open near the back door of the mess,Mess,synthetic_augmented,unverified,casual,g0097,train
+C00061,Bus reached college after the first period for the third time this week.,Transport,synthetic_handwritten,unverified,original,g0238,test
+C00062,I could not find any book on the new syllabus topics like machine learning for the 6th semester.,Library,synthetic_handwritten,unverified,original,g0285,train
+C00063,"There is no dutbin in the corridor of block B, garbage is piled near the stairs.",Hostel,synthetic_augmented,unverified,typo,g0044,train
+C00064,the microphone stand in the auditorium is unstable and could fall,General,synthetic_augmented,unverified,casual,g0317,train
+C00065,"Hello team, the hand wash sink next to the dining hall is blocked. Needs urgent attention.",Mess,synthetic_augmented,unverified,polite,g0066,train
+C00066,Mess menu for this week has not been put up.,Mess,synthetic_handwritten,unverified,original,g0054,train
+C00067,Biriyani on Friday had almost no vegetables or masala.,Mess,synthetic_handwritten,unverified,original,g0094,test
+C00068,Loud music from a private event kept going on after 10 pm near the academic blocks.,General,synthetic_handwritten,unverified,original,g0342,train
+C00069,Shuttle timetable on the board doesn't match the actual departure times.,Transport,synthetic_handwritten,unverified,original,g0204,train
+C00070,Hosstel diniing hall food has been poor for the entire week.,Mess,synthetic_augmented,needs_review,ambiguous_typo,g0372,train
+C00071,The college email won't sync when I'm connected to campus Wi-Fi.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0176,train
+C00072,Campus ambulance wasn't available when a student got injured on the field.,General,synthetic_handwritten,unverified,original,g0344,val
+C00073,Seats near the back of the bus are broken and there are exposed screws.,Transport,synthetic_handwritten,unverified,original,g0229,train
+C00074,"Sir, drinking water in the library is not available, the cooler is dry. Request you to take action.",Library,synthetic_augmented,unverified,polite,g0301,train
+C00075,"Dear sir/madam, GPS tracking link for the college buses has not worked for two weeks. Request you to take action.",Transport,synthetic_augmented,unverified,polite,g0247,train
+C00076,Library lift stopped between floors with a student inside.,Library,synthetic_handwritten,unverified,original,g0266,train
+C00077,the internship credit i completed is not reflected in my grade sheet,Academic,synthetic_augmented,unverified,casual,g0132,train
+C00078,VPN to the college server times out every time I try from the lab.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0174,train
+C00079,Only one coutner was open for 400 students at dinner.,Mess,synthetic_augmented,unverified,typo,g0089,train
+C00080,Dining hall fans are off and it is very hot during lunch.,Mess,synthetic_handwritten,unverified,original,g0081,train
+C00081,Gas smell near the ktchen when we were having diinner.,Mess,synthetic_augmented,unverified,typo,g0098,train
+C00082,Room cleaaning staff have not come to our floor for four days.,Hostel,synthetic_augmented,unverified,typo,g0023,train
+C00083,"Shower in room 118 only drips, there is no pressure at all.",Hostel,synthetic_handwritten,unverified,original,g0049,train
+C00084,washrooms in the admin block do not have running water,General,synthetic_augmented,unverified,casual,g0332,train
+C00085,two faculty are taking the same elective and the groups keep changing without any notice,Academic,synthetic_augmented,unverified,casual,g0124,train
+C00086,Return receipt shows the wrong date so I might be charged a fine.,Library,synthetic_handwritten,unverified,original,g0267,train
+C00087,The attendance portal is blank for me. My friends in the hostel also see nothing.,Academic,synthetic_handwritten,needs_review,ambiguous,g0362,test
+C00088,"To whom it may concern, the campus is not accessible for wheelchair users near the old block, there are steps everywhere. Please look into it.",General,synthetic_augmented,unverified,polite,g0337,train
+C00089,"Hi, I'd like to report that assignment deadline on the portal is different from what the professor said in class. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0112,train
+C00090,Dining tables are sticky after the evening meal and nobody wipes them.,Mess,synthetic_handwritten,unverified,original,g0057,train
+C00091,"To whom it may concern, hostel curfew gate was locked at 9:30 even though the notice says 10. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0035,train
+C00092,first-aid box inside the bus is empty,Transport,synthetic_augmented,unverified,casual,g0245,test
+C00093,the visitor registration queue goes out of the main office door,General,synthetic_augmented,unverified,casual,g0312,train
+C00094,Shutle to the medical center was cancelled withoout any notice.,Transport,synthetic_augmented,unverified,typo,g0219,val
+C00095,"Shower in room 118 only drips, there is no presssure at all.",Hostel,synthetic_augmented,unverified,typo,g0049,train
+C00096,Campus map doesn't show the new stduent services ofifce.,General,synthetic_augmented,unverified,typo,g0314,train
+C00097,AC in the quiet zone of the library is not working.,Library,synthetic_handwritten,unverified,original,g0265,val
+C00098,"The syllabus copy on the department site is for the old regulation, not ours.",Academic,synthetic_handwritten,unverified,original,g0123,test
+C00099,I can't connect to the campus network in the library reading area.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0153,train
+C00100,There is no bus from the hostel to the main building after 8 pm.,Transport,synthetic_handwritten,needs_review,ambiguous,g0379,train
+C00101,New arrivals list has not been upated for the whole year.,Library,synthetic_augmented,unverified,typo,g0288,train
+C00102,I can't reach the mess billing website from the student Wi-Fi.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0357,test
+C00103,there is no bus from the hostel to the main building after 8 pm,Transport,synthetic_augmented,needs_review,ambiguous_casual,g0379,train
+C00104,the online lost and found form gives an error on submit,General,synthetic_augmented,unverified,casual,g0307,train
+C00105,Router in the seminar hall keeps restarting.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0168,train
+C00106,The mess bill for the month is wrong and I was charged for days I was away.,Mess,synthetic_handwritten,needs_review,ambiguous,g0371,val
+C00107,Water logging at the main gate stops buses from entering the campus.,General,synthetic_handwritten,needs_review,ambiguous,g0397,train
+C00108,Library washrooms are dirty by afternoon.,Library,synthetic_handwritten,unverified,original,g0269,train
+C00109,"wi-fi in the auditorium is down, the event live stream stopped",Wi-Fi & Network,synthetic_augmented,unverified,casual,g0200,train
+C00110,"mess timing on sundays is too short, brunch ends at 10:30",Mess,synthetic_augmented,unverified,casual,g0078,train
+C00111,Class representtive requests an extra class for the portions misesd due to the holiday.,Academic,synthetic_augmented,unverified,typo,g0141,val
+C00112,My phone connnects to campus Wi-Fi but no webbsite opens.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0161,train
+C00113,"Hi, library Wi-Fi password is not displayed anywhere, so I can't use the e-resources area. Needs urgent attention.",Library,synthetic_augmented,unverified,polite,g0286,train
+C00114,Visitors' parking is being used by staff vehicles all day.,General,synthetic_handwritten,unverified,original,g0350,test
+C00115,No water in the sceond floor wsahroom since morning.,Hostel,synthetic_augmented,unverified,typo,g0002,train
+C00116,My atttendance for Tuesday's lab is missing from the student protal.,Academic,synthetic_augmented,unverified,typo,g0102,train
+C00117,My CGPA on the portal is different from the one on the provisional certificate.,Academic,synthetic_handwritten,unverified,original,g0136,train
+C00118,"sambar tasted sour, i think it was left over from yesterday",Mess,synthetic_augmented,unverified,casual,g0072,train
+C00119,"Sir, the ID card printing counter takes weeks and has no updates for students. Request you to take action.",General,synthetic_augmented,unverified,polite,g0346,train
+C00120,Open drain next to the parking lot has a strong smell.,General,synthetic_handwritten,unverified,original,g0329,train
+C00121,Please add a stop at the new metro station.,Transport,synthetic_handwritten,unverified,original,g0244,train
+C00122,Door of the toilet in room F-009 doesn't lock from inside.,Hostel,synthetic_handwritten,unverified,original,g0028,train
+C00123,Briyani on Friday had alost no vegetables or masala.,Mess,synthetic_augmented,unverified,typo,g0094,test
+C00124,"The book rturn slot is full, I can't return my books.",Library,synthetic_augmented,unverified,typo,g0257,train
+C00125,"Hi, I'd like to report that my phone connects to campus Wi-Fi but no website opens.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0161,train
+C00126,Study room booking system deleted my confirmed reservation.,Library,synthetic_handwritten,unverified,original,g0261,test
+C00127,My attendance for Tuesday's lab is missing from the student portal.,Academic,synthetic_handwritten,unverified,original,g0102,train
+C00128,Pease set up a suggestion box in the admin block.,General,synthetic_augmented,unverified,typo,g0352,test
+C00129,My hostel room has no network port even though it was promised.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0382,train
+C00130,Students in the hostel can't open the course portal after 10 pm.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0360,train
+C00131,Room cleaning staff have not come to our floor for four days.,Hostel,synthetic_handwritten,unverified,original,g0023,train
+C00132,Stray dogs are romaing near the sports ground in the eveinng.,General,synthetic_augmented,unverified,typo,g0323,train
+C00133,"Hi, previous year question papers are not in the library collection. Kindly resolve this soon.",Library,synthetic_augmented,unverified,polite,g0284,train
+C00134,lecture hall ac is too cold and the teacher's voice isnt audible bcoz of the noise,Academic,synthetic_augmented,unverified,casual,g0144,train
+C00135,Marks on the portal for my assignment don't match the returned rubric.,Academic,synthetic_handwritten,unverified,original,g0105,train
+C00136,cycle stand is full and students are leaving cycles on the grass,General,synthetic_augmented,unverified,casual,g0331,train
+C00137,Several of us cannot open the course portal on campus Wi-Fi.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0158,train
+C00138,My MAC address was blocked for no reason and I can't get online.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0179,train
+C00139,Seminar hall for the guest lecture was locked when we arrived.,Academic,synthetic_handwritten,unverified,original,g0137,train
+C00140,Exahust fan in the kitchen is not working and the dinng hall is full of smoke.,Mess,synthetic_augmented,unverified,typo,g0064,test
+C00141,"Cockroaches in the bathroom of block C, please arrrange pest conttrol.",Hostel,synthetic_augmented,unverified,typo,g0022,train
+C00142,Our department's ntework switch has red lights on and the whole lab is disconected.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0198,train
+C00143,"The CCTV caera near the main gate seems to be turned off, there is no red light.",General,synthetic_augmented,unverified,typo,g0351,test
+C00144,"Hi, class test marks were announced but answer sheets have not been shown to us.",Academic,synthetic_augmented,unverified,polite,g0151,train
+C00145,The microphone stand in the auditorium is unstable and could fall.,General,synthetic_handwritten,unverified,original,g0317,train
+C00146,last shuttle left early and a few students were left stranded,Transport,synthetic_augmented,unverified,casual,g0214,val
+C00147,Marks on the portal for my assignment don't match the retruned ruubric.,Academic,synthetic_augmented,unverified,typo,g0105,train
+C00148,Garden hose was left running and floooded the path.,General,synthetic_augmented,unverified,typo,g0321,train
+C00149,driver braked suddenly and standing passengers fell over,Transport,synthetic_augmented,unverified,casual,g0221,val
+C00150,"i cant renew my book from my online account, it throws an error",Library,synthetic_augmented,unverified,casual,g0270,train
+C00151,The Wi-Fi password on the nottice board has stopped working.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0157,train
+C00152,"Dear sir/madam, I returned the book last week but it is still showing as issued under my name.",Library,synthetic_augmented,unverified,polite,g0273,train
+C00153,"Dear sir/madam, drivers change every other day and nobody knows our stop.",Transport,synthetic_augmented,unverified,polite,g0234,train
+C00154,"plates at the counter are not washed properly, there are oil stains",Mess,synthetic_augmented,unverified,casual,g0076,train
+C00155,"Cooking oil looks black and burnt, the vadas were bitter.",Mess,synthetic_handwritten,unverified,original,g0100,train
+C00156,library printer has no paper and hasn't been refilled,Library,synthetic_augmented,unverified,casual,g0263,test
+C00157,My bus pass shows the wrong route number.,Transport,synthetic_handwritten,unverified,original,g0222,train
+C00158,"Mess hall is fine but the hostel reading room has no chairs left, only broken ones.",Hostel,synthetic_handwritten,unverified,original,g0030,val
+C00159,packet loss is very high during the evening on the student network,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0201,train
+C00160,Hostel curfew gate was locked at 9:30 even though the notice says 10.,Hostel,synthetic_handwritten,unverified,original,g0035,train
+C00161,The timetable shows two compulsory classes at the same time on Thursday.,Academic,synthetic_handwritten,unverified,original,g0103,train
+C00162,Prking area near the bus bay is blocked by two-wheelers so buses can't turn.,Transport,synthetic_augmented,unverified,typo,g0240,train
+C00163,The security guard refused to let me in with the laptop bag even though I'm a student.,General,synthetic_handwritten,needs_review,ambiguous,g0398,train
+C00164,"Hi, I'd like to report that door of the toilet in room F-009 doesn't lock from inside.",Hostel,synthetic_augmented,unverified,polite,g0028,train
+C00165,Two faculty are taking the same elective and the groups keep changing without any notice.,Academic,synthetic_handwritten,unverified,original,g0124,train
+C00166,The floor in front of the serving counter is always wet and I nearly fell.,Mess,synthetic_handwritten,unverified,original,g0084,train
+C00167,the elective i was allotted was changed without telling me,Academic,synthetic_augmented,unverified,casual,g0140,train
+C00168,"To whom it may concern, hostel gate is locked when the night shuttle drops us at 9:45. Thank you.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0383,train
+C00169,Bus door did not close properly while the bus was moving.,Transport,synthetic_handwritten,unverified,original,g0213,train
+C00170,Bus fee for this semester was paid but the receipt isn't generated.,Transport,synthetic_handwritten,unverified,original,g0225,train
+C00171,Trees near the gym have dry branches that could fall.,General,synthetic_handwritten,unverified,original,g0341,train
+C00172,Laundry room has been loocked for a week and nobody told us why.,Hostel,synthetic_augmented,unverified,typo,g0009,test
+C00173,stray dogs are roaming near the sports ground in the evening,General,synthetic_augmented,unverified,casual,g0323,train
+C00174,Enrollment page shows an error when I try to add the eelctive I need.,Academic,synthetic_augmented,unverified,typo,g0111,test
+C00175,"Hi, bus fee for this semester was paid but the receipt isn't generated. Kindly resolve this soon.",Transport,synthetic_augmented,unverified,polite,g0225,train
+C00176,There was a fuel smell inside bus 9 this morning.,Transport,synthetic_handwritten,unverified,original,g0236,train
+C00177,"Hi, the hostel lift is out of order again, fourth floor students have to climb every time. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0011,train
+C00178,Can the mess add a non-spicy option for dinner? Some of us can't eat that much chilli.,Mess,synthetic_handwritten,unverified,original,g0065,train
+C00179,My mattress is torn and the spring is poking out. Need a replacement.,Hostel,synthetic_handwritten,unverified,original,g0010,train
+C00180,seats near the back of the bus are broken and there are exposed screws,Transport,synthetic_augmented,unverified,casual,g0229,train
+C00181,"To whom it may concern, AC in the shuttle is not working on the afternoon route. Thank you.",Transport,synthetic_augmented,unverified,polite,g0212,test
+C00182,vpn to the college server times out every time i try from the lab,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0174,train
+C00183,Previous year question papers are not in the library collection.,Library,synthetic_handwritten,unverified,original,g0284,train
+C00184,The ntice board near the entrance still shows last month's events.,General,synthetic_augmented,unverified,typo,g0309,test
+C00185,The speed limiter alarm in the bus beeps constantly.,Transport,synthetic_handwritten,unverified,original,g0251,train
+C00186,The college bus parking behind the hostel is blocking the fire exit.,Transport,synthetic_handwritten,needs_review,ambiguous,g0380,train
+C00187,No internet in the whole east wing since afteroon.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0155,train
+C00188,intranet page for results opens only after 10 tries bcoz the connection is so bad,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0197,train
+C00189,"To whom it may concern, the milk served at breakfast tasted like it had gone off. This has been going on for days.",Mess,synthetic_augmented,unverified,polite,g0079,train
+C00190,"Respected sir, the campus network assigns me an IP but DNS fails for everything.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0181,train
+C00191,Drinking fountain near the sports field is leaking.,General,synthetic_handwritten,unverified,original,g0313,train
+C00192,"Respected sir, poor lighting at the bus stop near the south gate. Thank you.",Transport,synthetic_augmented,needs_review,ambiguous_polite,g0408,train
+C00193,drinking fountain near the sports field is leaking,General,synthetic_augmented,unverified,casual,g0313,train
+C00194,water dispenser on the second floor of the academic block is empty,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0414,train
+C00195,Please arrange drinking water points in the playground.,General,synthetic_handwritten,unverified,original,g0335,train
+C00196,The ramp at the auditorium entrance is blocked by stored equipment.,General,synthetic_handwritten,unverified,original,g0310,val
+C00197,Medical room has no docor on duty after 4 pm.,General,synthetic_augmented,unverified,typo,g0340,train
+C00198,Convocation registration page does not acccept my enrlolment number.,Academic,synthetic_augmented,unverified,typo,g0146,train
+C00199,ATM inside the campus has been out of service for a week.,General,synthetic_handwritten,unverified,original,g0327,train
+C00200,My name is spelled wrong on the hall ticket.,Academic,synthetic_handwritten,unverified,original,g0122,train
+C00201,Library card has expired and the librarian says the form is not available.,Library,synthetic_handwritten,unverified,original,g0275,train
+C00202,staff refuses to issue more than 2 books even though the limit is 4 for final years,Library,synthetic_augmented,unverified,casual,g0302,train
+C00203,"To whom it may concern, mess committee meeting is not being held, our feedback never reaches anyone. Request you to take action.",Mess,synthetic_augmented,unverified,polite,g0093,train
+C00204,The college bus did not come to the sciecne gate picckup point.,Transport,synthetic_augmented,unverified,typo,g0203,train
+C00205,"Hello team, buses are not running after the 5:30 pm session on lab days. Thank you.",Transport,synthetic_augmented,unverified,polite,g0241,train
+C00206,Projector in the lecture hall does not display the lecturer's laptop.,Academic,synthetic_handwritten,unverified,original,g0101,train
+C00207,"Sir, the exam seating plan was put up only 10 minutes before the paper.",Academic,synthetic_augmented,unverified,polite,g0150,train
+C00208,several of us cannot open the course portal on campus wi-fi,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0158,train
+C00209,"Good morning sir, self checkout machine won't scan my student ID.",Library,synthetic_augmented,unverified,polite,g0256,train
+C00210,enrollment page shows an error when i try to add the elective i need,Academic,synthetic_augmented,unverified,casual,g0111,test
+C00211,The hostel mess table near my room is occupied by the staff all evening.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0384,train
+C00212,course registration shows incomplete even though every field is filled,Academic,synthetic_augmented,unverified,casual,g0117,train
+C00213,Lecture hall AC is too cold and the teacher's voice isn't audible because of the noise.,Academic,synthetic_handwritten,unverified,original,g0144,train
+C00214,The speed limiter alarm in the bus beeps constntly.,Transport,synthetic_augmented,unverified,typo,g0251,train
+C00215,"We need a table lamp in the shared study room, the tube light is too harsh.",Hostel,synthetic_handwritten,unverified,original,g0017,val
+C00216,"Wi-Fi in the auditorium is down, the event live stream stopped.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0200,train
+C00217,The notice board near the entrance still shows last month's events.,General,synthetic_handwritten,unverified,original,g0309,test
+C00218,"Good morning sir, the floor in front of the serving counter is always wet and I nearly fell.",Mess,synthetic_augmented,unverified,polite,g0084,train
+C00219,"Sir, I fell while getting off the bus because the step was broken.",Transport,synthetic_augmented,needs_review,ambiguous_polite,g0377,test
+C00220,We need a clear process to report lost student ID cards.,General,synthetic_handwritten,unverified,original,g0322,train
+C00221,Wardden has not responded to our request to change roommates submitted two weeks ago.,Hostel,synthetic_augmented,unverified,typo,g0021,train
+C00222,Reading list for this semester is not on the course page.,Academic,synthetic_handwritten,unverified,original,g0104,test
+C00223,Hostel dining hall food has been poor for the entire week.,Mess,synthetic_handwritten,needs_review,ambiguous,g0372,train
+C00224,"Dear sir/madam, hostel fee payment page crashed twice and I was charged both times.",General,synthetic_augmented,needs_review,ambiguous_polite,g0403,train
+C00225,Water logging at the main gate stops buses from entering the capmus.,General,synthetic_augmented,needs_review,ambiguous_typo,g0397,train
+C00226,"Cooking oil looks black and burnt, the vadas were btiter.",Mess,synthetic_augmented,unverified,typo,g0100,train
+C00227,The visitor registration queue goes out of the main office door.,General,synthetic_handwritten,unverified,original,g0312,train
+C00228,"Good morning sir, overhead water tank on the terrace is overflowing and wasting water since last night.",Hostel,synthetic_augmented,unverified,polite,g0026,val
+C00229,Billing machine printed the wrong amount on my meal receipt.,Mess,synthetic_handwritten,unverified,original,g0070,train
+C00230,"Paneer in the dinenr curry was replaced with some other hard thing, there was no paneer.",Mess,synthetic_augmented,unverified,typo,g0082,train
+C00231,The ID card printnig counter takes weeks and has no updates for studnets.,General,synthetic_augmented,unverified,typo,g0346,train
+C00232,student portal won't load whenever im on the student wi-fi but works on mobile data,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0167,test
+C00233,Journals section has the 2022 volumes missing from the shelf.,Library,synthetic_handwritten,unverified,original,g0276,train
+C00234,Bad smell from the drainage near the ground floor washrooms.,Hostel,synthetic_handwritten,unverified,original,g0032,train
+C00235,"Respected sir, internet in the computer center is down and our practical exam was delayed. Kindly resolve this soon.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0177,train
+C00236,"Fire extinguisher on our floor has expirde, the date on it is last year.",Hostel,synthetic_augmented,unverified,typo,g0040,train
+C00237,"Hi, I'd like to report that please arrange drinking water points in the playground. Thank you.",General,synthetic_augmented,unverified,polite,g0335,train
+C00238,"Sir, online library catalogue has been down since this morning. Request you to take action.",Library,synthetic_augmented,unverified,polite,g0259,train
+C00239,no soap in the public restroom near the main gate,General,synthetic_augmented,unverified,casual,g0318,train
+C00240,Lab assistant was not present during our scheduled practical.,Academic,synthetic_handwritten,unverified,original,g0118,train
+C00241,"Good morning sir, A group is talking loudly in the silent study area and the staff do nothing.",Library,synthetic_augmented,unverified,polite,g0268,val
+C00242,Bus stop sign near the north gate has fallen down.,Transport,synthetic_handwritten,unverified,original,g0210,train
+C00243,Stuednt ID photo on the portal is of aonther student.,Academic,synthetic_augmented,unverified,typo,g0149,train
+C00244,Buses are not running after the 5:30 pm session on lab days.,Transport,synthetic_handwritten,unverified,original,g0241,train
+C00245,Visitors are entering the girls hostel without signing the register.,Hostel,synthetic_handwritten,unverified,original,g0031,val
+C00246,There is no hand sanitizer at the mess entrance.,Mess,synthetic_handwritten,unverified,original,g0095,train
+C00247,Please extend librrary hours duuring exams.,Library,synthetic_augmented,unverified,typo,g0272,train
+C00248,"Dosa batter seems old, dosas turned out sticky and sour.",Mess,synthetic_handwritten,unverified,original,g0096,train
+C00249,there is a leak from the bathroom ceiling in c-306 whenever the upper floor uses water,Hostel,synthetic_augmented,unverified,casual,g0008,train
+C00250,"there is no dustbin in the corridor of block b, garbage is piled near the stairs",Hostel,synthetic_augmented,unverified,casual,g0044,train
+C00251,The pathway to the sports complex gets flooded in rain.,General,synthetic_handwritten,unverified,original,g0349,train
+C00252,Water cooler near the common room is not cooling at all.,Hostel,synthetic_handwritten,unverified,original,g0006,train
+C00253,Lab computers don't have the softwre we need for toda's practical.,Academic,synthetic_augmented,unverified,typo,g0107,train
+C00254,library toilet has no water and the floor is flooded,Library,synthetic_augmented,needs_review,ambiguous_casual,g0387,train
+C00255,"Innternet speed in the hostel is below 1 Mbps in the evening, we can't even attend online interviws.",Wi-Fi & Network,synthetic_augmented,unverified,typo,g0173,test
+C00256,Wi-Fi network name is not showing in Block C.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0166,train
+C00257,Wi-Fi coverage is very poor in the sports complex.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0190,train
+C00258,shuttle came 25 minutes late this morning and i missed my first class,Transport,synthetic_augmented,unverified,casual,g0208,train
+C00259,the auditorium ac is off during the convocation rehearsal,General,synthetic_augmented,needs_review,ambiguous_casual,g0392,train
+C00260,Question paper for the model exam had a printing error on page 2.,Academic,synthetic_handwritten,unverified,original,g0134,train
+C00261,Hostel gate is locked when the night shuttle drops us at 9:45.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0383,train
+C00262,"Hi, two faculty are taking the same elective and the groups keep changing without any notice.",Academic,synthetic_augmented,unverified,polite,g0124,train
+C00263,"Library chairs are broken, three of them wobble when you sit.",Library,synthetic_handwritten,unverified,original,g0300,train
+C00264,"Good morning sir, library chairs are broken, three of them wobble when you sit. This has been going on for days.",Library,synthetic_augmented,unverified,polite,g0300,train
+C00265,The curd at lunch was sour and wtaery.,Mess,synthetic_augmented,unverified,typo,g0092,train
+C00266,pls install reliable wi-fi in the open study area,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0171,test
+C00267,"Sambar tasted sour, I think it was left over from yesterday.",Mess,synthetic_handwritten,unverified,original,g0072,train
+C00268,Roof in the washing area leaks heavily during rain.,Hostel,synthetic_handwritten,unverified,original,g0050,train
+C00269,bus floor is dirty and there was a wet patch that made me slip,Transport,synthetic_augmented,unverified,casual,g0246,train
+C00270,Laundry room has been locked for a week and nobody told us why.,Hostel,synthetic_handwritten,unverified,original,g0009,test
+C00271,The fee counter has no queue system and takes 3 hours.,General,synthetic_handwritten,needs_review,ambiguous,g0402,train
+C00272,"Please replace the broken tiles in the bathroom, I slipped yesterday.",Hostel,synthetic_handwritten,unverified,original,g0033,train
+C00273,The lost-and-found office hours are not mentioned anywhere.,General,synthetic_handwritten,needs_review,ambiguous,g0396,val
+C00274,dining hall fans are off and it is very hot during lunch,Mess,synthetic_augmented,unverified,casual,g0081,train
+C00275,No internet in the whole east wing since afternoon.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0155,train
+C00276,The sign for the halth center is misssing.,General,synthetic_augmented,unverified,typo,g0304,train
+C00277,zebra crossing near the main gate has faded and cars dont slow down,General,synthetic_augmented,unverified,casual,g0303,val
+C00278,"Hi, I'd like to report that course feedback form on the portal can't be submitted, it says session expired. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0133,train
+C00279,my mattress is torn and the spring is poking out. need a replacement,Hostel,synthetic_augmented,unverified,casual,g0010,train
+C00280,"Hello team, the ceiling fan in my room wobbles badly and I'm scared it will fall. Kindly resolve this soon.",Hostel,synthetic_augmented,unverified,polite,g0001,train
+C00281,Roouter in the seinar hall keeps restarting.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0168,train
+C00282,No working power sockets at the second floor study desks.,Library,synthetic_handwritten,unverified,original,g0255,train
+C00283,bus stop shelter roof leaks when it rains,Transport,synthetic_augmented,unverified,casual,g0220,train
+C00284,ip conflict message pops up on all machines in lab 3,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0192,train
+C00285,"Hello team, breakfast queue moves so slowly that many of us miss the 9 am class. Request you to take action.",Mess,synthetic_augmented,unverified,polite,g0056,train
+C00286,"Room hetaer trpped the MCB again, the wiring in our room looks old.",Hostel,synthetic_augmented,unverified,typo,g0034,train
+C00287,"To whom it may concern, seat belt on seat 12 of bus 4 is broken. Request you to take action.",Transport,synthetic_augmented,unverified,polite,g0209,train
+C00288,Please arrange drinkking water points in the pllayground.,General,synthetic_augmented,unverified,typo,g0335,train
+C00289,Please build a covered waiting area at the clinic entrance.,General,synthetic_handwritten,unverified,original,g0316,train
+C00290,Libraary printer has no paper and hasn't been refilled.,Library,synthetic_augmented,unverified,typo,g0263,test
+C00291,"The access point near the computer lab looks offline, the light is not blinking.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0159,train
+C00292,The lab record notebooks are not sold in the capmus store bfore the submission date.,Academic,synthetic_augmented,needs_review,ambiguous_typo,g0369,val
+C00293,the food menu on the notice board doesnt match what is actually served,Mess,synthetic_augmented,unverified,casual,g0099,train
+C00294,The hosttel mess table near my room is occupied by the staff all evening.,Hostel,synthetic_augmented,needs_review,ambiguous_typo,g0384,train
+C00295,New first year students are not gettiing Wi-Fi credentals even after a week.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0202,train
+C00296,Redaing room liights are too dim in the back rows.,Library,synthetic_augmented,unverified,typo,g0258,train
+C00297,Wi-Fi keeps disconnecting every few minnutes in the engineering block.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0152,val
+C00298,"Respected sir, mosquitoes are everywhere in our corridor because the drain behind the block is clogged.",Hostel,synthetic_augmented,unverified,polite,g0014,train
+C00299,"Good morning sir, barcode on the book I borrowed is peeling off and the scanner can't read it.",Library,synthetic_augmented,unverified,polite,g0287,test
+C00300,water dispenser in the library is not working,Library,synthetic_augmented,needs_review,ambiguous_casual,g0416,train
+C00301,Student ID card got lost on campus. How do I get a replacement?,General,synthetic_handwritten,needs_review,ambiguous,g0393,val
+C00302,"Hello team, need more copies of the Biology 101 textbook, there are 5 copies for 200 students. Request you to take action.",Library,synthetic_augmented,unverified,polite,g0262,val
+C00303,There is a leak from the bathroom ceiling in C-306 whenever the upper floor uses water.,Hostel,synthetic_handwritten,unverified,original,g0008,train
+C00304,"To whom it may concern, main turnstile is stuck open and not recording entries.",General,synthetic_augmented,unverified,polite,g0320,test
+C00305,The e-resources login for NPTEL books doesn't accept the college credentials.,Library,synthetic_handwritten,unverified,original,g0279,val
+C00306,Bus fee for this semester was paid but the receipt isn't generatd.,Transport,synthetic_augmented,unverified,typo,g0225,train
+C00307,Bus stop sign near the north gate has falen down.,Transport,synthetic_augmented,unverified,typo,g0210,train
+C00308,"Respected sir, water from the tap is yellow in colour since the morning.",Hostel,synthetic_augmented,unverified,polite,g0036,val
+C00309,"To whom it may concern, dining tables are sticky after the evening meal and nobody wipes them.",Mess,synthetic_augmented,unverified,polite,g0057,train
+C00310,Stray dogs are roaming near the sports ground in the evening.,General,synthetic_handwritten,unverified,original,g0323,train
+C00311,Lab session was cancelled but the timetable still marks it as compulsory.,Academic,synthetic_handwritten,unverified,original,g0113,train
+C00312,There is no accessible desk on the ground floor of the library.,Library,synthetic_handwritten,unverified,original,g0271,train
+C00313,Campus road near the science block has a huge pothole.,General,synthetic_handwritten,unverified,original,g0330,train
+C00314,Water from the tap is yellow in colour since the morning.,Hostel,synthetic_handwritten,unverified,original,g0036,val
+C00315,"Respected sir, broken benches inside the library reading area. This has been going on for days.",Library,synthetic_augmented,needs_review,ambiguous_polite,g0411,train
+C00316,"The campus is not accessible for wheelchair users near the old block, there are steps everywhere.",General,synthetic_handwritten,unverified,original,g0337,train
+C00317,"The access point near the computer lab looks offine, the light is not blinkig.",Wi-Fi & Network,synthetic_augmented,unverified,typo,g0159,train
+C00318,"Good morning sir, intranet page for results opens only after 10 tries because the connection is so bad.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0197,train
+C00319,Bus charges were increased mid-semester without any circular.,Transport,synthetic_handwritten,unverified,original,g0248,train
+C00320,"The book return slot is full, I can't return my books.",Library,synthetic_handwritten,unverified,original,g0257,train
+C00321,Bathroom exhaust fan makes a loud noise and does not remove steam.,Hostel,synthetic_handwritten,unverified,original,g0013,train
+C00322,Network bloks a website we need for our coursework.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0169,test
+C00323,The internship creit I completed is not reflected in my grade sheet.,Academic,synthetic_augmented,unverified,typo,g0132,train
+C00324,The food menu on the notice board doesn't match what is actually served.,Mess,synthetic_handwritten,unverified,original,g0099,train
+C00325,The bunk bed in room E-221 shakes and creaks when anyone climbs up.,Hostel,synthetic_handwritten,unverified,original,g0025,test
+C00326,There is no hand sanitzier at the mess enttrance.,Mess,synthetic_augmented,unverified,typo,g0095,train
+C00327,"Too many devices on one SSID, the network gets jammed after 8 pm.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0178,train
+C00328,"Hello team, mess menu for this week has not been put up. Please look into it.",Mess,synthetic_augmented,unverified,polite,g0054,train
+C00329,Dgiital library compuuters are very slow and half of them are locked.,Library,synthetic_augmented,unverified,typo,g0295,test
+C00330,"Hi, I'd like to report that wired internet port in the media lab is dead. Request you to take action.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0162,val
+C00331,driver was talking on the phone while driving the bus,Transport,synthetic_augmented,unverified,casual,g0224,train
+C00332,Online quiz submitted but the portal says zero attempts.,Academic,synthetic_handwritten,unverified,original,g0145,train
+C00333,"there is a leak from the ceiling above the periodicals shelf, it will damage the books",Library,synthetic_augmented,unverified,casual,g0283,train
+C00334,"Drinking water in the library is not available, the cooler is dry.",Library,synthetic_handwritten,unverified,original,g0301,train
+C00335,LAN cable in the faculty room is cut and nobody has fixed it.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0185,train
+C00336,"To whom it may concern, the common room TV in the hostel has been broken for a month. Thank you.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0413,train
+C00337,return receipt shows the wrong date so i might be charged a fine,Library,synthetic_augmented,unverified,casual,g0267,train
+C00338,"Dear sir/madam, all computers in the west lab lost internet during class.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0164,train
+C00339,Chapati was hard like cardboard at dinner.,Mess,synthetic_handwritten,unverified,original,g0073,train
+C00340,pls conduct a doubt clearing session for engineering mathematics before the semester exam,Academic,synthetic_augmented,unverified,casual,g0147,train
+C00341,"Hello team, room heater tripped the MCB again, the wiring in our room looks old. Kindly resolve this soon.",Hostel,synthetic_augmented,unverified,polite,g0034,train
+C00342,the e-resources login for nptel books doesnt accept the college credentials,Library,synthetic_augmented,unverified,casual,g0279,val
+C00343,Enrollment page shows an error when I try to add the elective I need.,Academic,synthetic_handwritten,unverified,original,g0111,test
+C00344,"we need a table lamp in the shared study room, the tube light is too harsh",Hostel,synthetic_augmented,unverified,casual,g0017,val
+C00345,"Hi, I'd like to report that found a small piece of plastic in the salad today. Please fix asap.",Mess,synthetic_augmented,unverified,polite,g0069,train
+C00346,Modole login redirects to a blank page for all of us in the third year.,Academic,synthetic_augmented,unverified,typo,g0148,val
+C00347,"To whom it may concern, visitors' parking is being used by staff vehicles all day.",General,synthetic_augmented,unverified,polite,g0350,test
+C00348,"Good morning sir, the hostel gate staff don't allow us in after returning on the college bus at 7 pm. Request you to take action.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0381,train
+C00349,Wi-Fi in the seminar hall dropped during the online guest lecture.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0180,val
+C00350,Bus tyre looked flat and the driver still went ahead.,Transport,synthetic_handwritten,unverified,original,g0232,test
+C00351,"Sir, my bus pass shows the wrong route number. Request you to take action.",Transport,synthetic_augmented,unverified,polite,g0222,train
+C00352,Practical exam slot allotment list has not been displayed.,Academic,synthetic_handwritten,unverified,original,g0138,train
+C00353,Studets are being asked to pay again for the bus pass that is already valid.,Transport,synthetic_augmented,unverified,typo,g0252,val
+C00354,my attendance for the lab shows absent though i signed the register,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0363,train
+C00355,"Respected sir, remote desktop to the lab server is not working from the hostel network.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0196,train
+C00356,The curd at lunch was sour and watery.,Mess,synthetic_handwritten,unverified,original,g0092,train
+C00357,Benches in the central courtyard have loose bards.,General,synthetic_augmented,unverified,typo,g0315,train
+C00358,The bus driver couldn't find the pickup location on the list.,Transport,synthetic_handwritten,unverified,original,g0215,train
+C00359,Exhaust fan in the kitchen is not working and the dining hall is full of smoke.,Mess,synthetic_handwritten,unverified,original,g0064,test
+C00360,"Good morning sir, markers in the classroom are dry and the whiteboard is unreadable from the back. Request you to take action.",Academic,synthetic_augmented,unverified,polite,g0110,train
+C00361,kitchen staff were not wearing gloves or caps while serving,Mess,synthetic_augmented,unverified,casual,g0088,val
+C00362,Mosquitoes are everywhere in our corridor because the drain behind the block is clogged.,Hostel,synthetic_handwritten,unverified,original,g0014,train
+C00363,laundry room has been locked for a week and nobody told us why,Hostel,synthetic_augmented,unverified,casual,g0009,test
+C00364,"Bed bugs in my mattress, I'm getting bites every night.",Hostel,synthetic_handwritten,unverified,original,g0048,train
+C00365,"Respected sir, please mark the dishes that contain peanuts or other allergens.",Mess,synthetic_augmented,unverified,polite,g0058,train
+C00366,"Hello team, taps in the girls hostel bathroom are leaking and the floor is always wet.",Hostel,synthetic_augmented,unverified,polite,g0004,train
+C00367,"Sir, the room number plate outside my door fell off last week.",Hostel,synthetic_augmented,unverified,polite,g0015,val
+C00368,Final year project guide has not been allootted to our team yet.,Academic,synthetic_augmented,unverified,typo,g0127,train
+C00369,taps in the girls hostel bathroom are leaking and the floor is always wet,Hostel,synthetic_augmented,unverified,casual,g0004,train
+C00370,the mess bill for the month is wrong and i was charged for days i was away,Mess,synthetic_augmented,needs_review,ambiguous_casual,g0371,val
+C00371,"Hello team, the timetable shows two compulsory classes at the same time on Thursday. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0103,train
+C00372,The wardrobe in my room has no lock so I can't keep my laptop safe.,Hostel,synthetic_handwritten,unverified,original,g0038,train
+C00373,Plase conduct a doubt cleearing session for Engineering Mathematics before the semester exam.,Academic,synthetic_augmented,unverified,typo,g0147,train
+C00374,lab assistant was not present during our scheduled practical,Academic,synthetic_augmented,unverified,casual,g0118,train
+C00375,Please keep the library open till 11 pm on weekadys during the semester exams.,Library,synthetic_augmented,unverified,typo,g0296,train
+C00376,"Mess committee meeting is not being held, our feedback never reaches anyone.",Mess,synthetic_handwritten,unverified,original,g0093,train
+C00377,"The sylllabus copy on the depatment site is for the old regulation, not ours.",Academic,synthetic_augmented,unverified,typo,g0123,test
+C00378,"To whom it may concern, chutney had a strange smell today, a few of my friends got stomach pain after dinner. Please fix asap.",Mess,synthetic_augmented,unverified,polite,g0086,train
+C00379,"Hi, I'd like to report that interlibrary loan request submitted in August has no response.",Library,synthetic_augmented,unverified,polite,g0299,train
+C00380,bus door did not close properly while the bus was moving,Transport,synthetic_augmented,unverified,casual,g0213,train
+C00381,"The CCTV camera near the main gate seems to be turned off, there is no red light.",General,synthetic_handwritten,unverified,original,g0351,test
+C00382,water in the mess is dirty and many of us in the hostel are falling sick,Mess,synthetic_augmented,needs_review,ambiguous_casual,g0374,train
+C00383,What is the process to apply for revaluation of exam marks?,Academic,synthetic_handwritten,unverified,original,g0114,test
+C00384,Network drops each time the lecturer shares screen during Zoom classes.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0195,val
+C00385,Poor lighting on the road near the sports ground.,General,synthetic_handwritten,needs_review,ambiguous,g0409,train
+C00386,"Sir, lights near the west parking lot don't turn on at night. Needs urgent attention.",General,synthetic_augmented,unverified,polite,g0306,train
+C00387,No one at the help desk could tell me which office handles scholarship forms.,General,synthetic_handwritten,needs_review,ambiguous,g0401,test
+C00388,Drinkng water container in the mess smells bad.,Mess,synthetic_augmented,unverified,typo,g0053,train
+C00389,Our room has only one working plug point for three students.,Hostel,synthetic_handwritten,unverified,original,g0024,train
+C00390,"Chutney had a strange smell today, a few of my firends got stomach pain after dinner.",Mess,synthetic_augmented,unverified,typo,g0086,train
+C00391,Pick-up from the railway station on Monay mornings is not available anymore.,Transport,synthetic_augmented,unverified,typo,g0233,train
+C00392,"Respected sir, drinking water container in the mess smells bad. This has been going on for days.",Mess,synthetic_augmented,unverified,polite,g0053,train
+C00393,"Dear sir/madam, the pathway to the sports complex gets flooded in rain. This has been going on for days.",General,synthetic_augmented,unverified,polite,g0349,train
+C00394,"There is no Wi-Fi signal at all in my hostel room, only mobile data works.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0172,train
+C00395,the hand wash sink next to the dining hall is blocked,Mess,synthetic_augmented,unverified,casual,g0066,train
+C00396,I fell while getting off the bus because the step was broken.,Transport,synthetic_handwritten,needs_review,ambiguous,g0377,test
+C00397,journals section has the 2022 volumes missing from the shelf,Library,synthetic_augmented,unverified,casual,g0276,train
+C00398,"Dear sir/madam, hostel fee receipt shows room charges for a room I never stayed in. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0041,train
+C00399,markers in the classroom are dry and the whiteboard is unreadable from the back,Academic,synthetic_augmented,unverified,casual,g0110,train
+C00400,The exam hall had no clock and no water for 3 hours.,Academic,synthetic_handwritten,needs_review,ambiguous,g0368,val
+C00401,Packet loss is very high during the evening on the student network.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0201,train
+C00402,Hostel fee payment page crashed twice and I was charged both times.,General,synthetic_handwritten,needs_review,ambiguous,g0403,train
+C00403,Benches in the central courtyard have loose boards.,General,synthetic_handwritten,unverified,original,g0315,train
+C00404,"To whom it may concern, professor shares notes only on a WhatsApp group and I'm not added to it. Kindly resolve this soon.",Academic,synthetic_augmented,needs_review,ambiguous_polite,g0370,train
+C00405,Corridor lights on the third floor don't come on after 9 pm.,Hostel,synthetic_handwritten,unverified,original,g0007,train
+C00406,campus map doesnt show the new student services office,General,synthetic_augmented,unverified,casual,g0314,train
+C00407,library fan near the window seats makes a grinding noise,Library,synthetic_augmented,unverified,casual,g0293,train
+C00408,bus tyre looked flat and the driver still went ahead,Transport,synthetic_augmented,unverified,casual,g0232,test
+C00409,Bus reached late so I couldn't make it to breakfast before the mess counter closed.,Transport,synthetic_handwritten,needs_review,ambiguous,g0375,val
+C00410,Intranet page for results opens only after 10 tries because the connection is so bad.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0197,train
+C00411,wi-fi works outside but drops as soon as i walk into the north building,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0170,train
+C00412,"Sir, water has collected on the walkway next to the admin building. Kindly resolve this soon.",General,synthetic_augmented,unverified,polite,g0305,train
+C00413,The mess food is fine but the portal shows my meals as skipped.,Mess,synthetic_handwritten,needs_review,ambiguous,g0405,train
+C00414,"Dear sir/madam, bus pass scanner failed for many students at the main gate.",Transport,synthetic_augmented,unverified,polite,g0217,train
+C00415,no hot water in our block since yesterday. geyser seems dead,Hostel,synthetic_augmented,unverified,casual,g0018,train
+C00416,my bus pass shows the wrong route number,Transport,synthetic_augmented,unverified,casual,g0222,train
+C00417,My fee payment for exam registration is deducted but the portal shows unpaid.,Academic,synthetic_handwritten,needs_review,ambiguous,g0367,train
+C00418,"Veg option finished before lunch service was over, late students got nothing.",Mess,synthetic_handwritten,unverified,original,g0055,train
+C00419,"Good morning sir, I was charged a fine for a book that was already in the system as returned. Kindly resolve this soon.",Library,synthetic_augmented,unverified,polite,g0274,train
+C00420,Please keep the library open till 11 pm on weekdays during the semester exams.,Library,synthetic_handwritten,unverified,original,g0296,train
+C00421,Student portal shows my hostel fee as unpaid even though I have the receipt.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0404,train
+C00422,"Hello team, driver skipped the stop near the sports complex. Please look into it.",Transport,synthetic_augmented,unverified,polite,g0205,train
+C00423,Poor lighting around the library entrance at night.,Library,synthetic_handwritten,needs_review,ambiguous,g0406,train
+C00424,"Respected sir, my library fine was added to the mess bill by mistake.",Library,synthetic_augmented,needs_review,ambiguous_polite,g0391,train
+C00425,There is no Wi-Fi in my hotel room even thhough I paid the full fee.,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_typo,g0353,train
+C00426,final year project guide has not been allotted to our team yet,Academic,synthetic_augmented,unverified,casual,g0127,train
+C00427,"Power cut in the hostel every evening between 7 and 8, the inverter is not working.",Hostel,synthetic_handwritten,unverified,original,g0027,train
+C00428,Broken benches outside the lab where we wait for the practical.,Academic,synthetic_handwritten,needs_review,ambiguous,g0410,train
+C00429,"Mess hall is fine but the hsotel reading room has no chairs left, only broken ones.",Hostel,synthetic_augmented,unverified,typo,g0030,val
+C00430,"Hi, warden has not responded to our request to change roommates submitted two weeks ago. Thank you.",Hostel,synthetic_augmented,unverified,polite,g0021,train
+C00431,Biometric reader at the hostel gate is not recognising student cards.,Hostel,synthetic_handwritten,unverified,original,g0019,train
+C00432,Medical room was closed during the sports meet and a student had to be taken by auto.,General,synthetic_handwritten,needs_review,ambiguous,g0394,train
+C00433,"Hi, no soap in the public restroom near the main gate. Kindly resolve this soon.",General,synthetic_augmented,unverified,polite,g0318,train
+C00434,Garden hose was left running and flooded the path.,General,synthetic_handwritten,unverified,original,g0321,train
+C00435,broken benches outside the lab where we wait for the practical,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0410,train
+C00436,The silent reading room is used for group discussions and we can't concentrate.,Library,synthetic_handwritten,unverified,original,g0292,train
+C00437,student council room keys have been missing since monday,General,synthetic_augmented,unverified,casual,g0336,train
+C00438,No soap in the public restroom near the main gate.,General,synthetic_handwritten,unverified,original,g0318,train
+C00439,The attendance poortal is blank for me. My frinds in the hostel also see nothing.,Academic,synthetic_augmented,needs_review,ambiguous_typo,g0362,test
+C00440,the college bus did not come to the science gate pickup point,Transport,synthetic_augmented,unverified,casual,g0203,train
+C00441,AC in the shuttle is not working on the afternoon route.,Transport,synthetic_handwritten,unverified,original,g0212,test
+C00442,"Mess timming on Sunddays is too short, brunch ends at 10:30.",Mess,synthetic_augmented,unverified,typo,g0078,train
+C00443,Some seats in the reading hall have been reserved with bags the whole day.,Library,synthetic_handwritten,unverified,original,g0280,train
+C00444,Bus number 7 broke down in the middle of the road and no replacement was sent.,Transport,synthetic_handwritten,unverified,original,g0223,train
+C00445,self checkout machine won't scan my student id,Library,synthetic_augmented,unverified,casual,g0256,train
+C00446,Photocopier in the librrary eats paper and gives blurry copies.,Library,synthetic_augmented,unverified,typo,g0277,train
+C00447,"Hotspot of the router in Block A changes name daily, so we have to reconnect each time.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0199,train
+C00448,My name is spelled wrong on the hall ticcket.,Academic,synthetic_augmented,unverified,typo,g0122,train
+C00449,What is the proecss to apply for revvaluation of exam marks?,Academic,synthetic_augmented,unverified,typo,g0114,test
+C00450,Kitchen tap in the hostel pantry is loose and sprays water on everyone.,Hostel,synthetic_handwritten,unverified,original,g0016,train
+C00451,visitors are entering the girls hostel without signing the register,Hostel,synthetic_augmented,unverified,casual,g0031,val
+C00452,Convocation registration page does not accept my enrollment number.,Academic,synthetic_handwritten,unverified,original,g0146,train
+C00453,The lab's AC isn't working so we can't run the machines during practicals.,Academic,synthetic_handwritten,needs_review,ambiguous,g0365,train
+C00454,Lights near the west parking lot don't turn on at night.,General,synthetic_handwritten,unverified,original,g0306,train
+C00455,Network speed drops heavily whenever there is an online exam.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0186,val
+C00456,The library computers can't reach the internet.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0356,train
+C00457,"there is no wi-fi signal at all in my hostel room, only mobile data works",Wi-Fi & Network,synthetic_augmented,unverified,casual,g0172,train
+C00458,Video lectures keep buffering on the campus network.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0165,train
+C00459,Why is the monthly mess bill higher than last month when we were on leave for a week?,Mess,synthetic_handwritten,unverified,original,g0085,train
+C00460,"Hi, sports equipment room is locked and nobody has the key during practice hours. Please look into it.",General,synthetic_augmented,unverified,polite,g0345,train
+C00461,Portions at lunch were much smaller than what the menu says.,Mess,synthetic_handwritten,unverified,original,g0067,val
+C00462,the classroom fan is broken and it's too hot to focus during lectures,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0364,val
+C00463,The clock ouutside the administration offiice shows the wrong time.,General,synthetic_augmented,unverified,typo,g0311,train
+C00464,"Sir, billing machine printed the wrong amount on my meal receipt. This has been going on for days.",Mess,synthetic_augmented,unverified,polite,g0070,train
+C00465,"Hi, I'd like to report that reading room lights are too dim in the back rows. Kindly resolve this soon.",Library,synthetic_augmented,unverified,polite,g0258,train
+C00466,"Cockroaches in the bathroom of block C, please arrange pest control.",Hostel,synthetic_handwritten,unverified,original,g0022,train
+C00467,Seats near the back of the bus are broekn and there are exxposed screws.,Transport,synthetic_augmented,unverified,typo,g0229,train
+C00468,there are pages cut out of the reference copy of thermodynamics,Library,synthetic_augmented,unverified,casual,g0289,val
+C00469,Water has collectted on the wallkway next to the admin building.,General,synthetic_augmented,unverified,typo,g0305,train
+C00470,"Chutney had a strange smell today, a few of my friends got stomach pain after dinner.",Mess,synthetic_handwritten,unverified,original,g0086,train
+C00471,the sign for the health center is missing,General,synthetic_augmented,unverified,casual,g0304,train
+C00472,kitchen tap in the hostel pantry is loose and sprays water on everyone,Hostel,synthetic_augmented,unverified,casual,g0016,train
+C00473,Student council room keys have been missing since Monnday.,General,synthetic_augmented,unverified,typo,g0336,train
+C00474,New first year students are not getting Wi-Fi credentials even after a week.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0202,train
+C00475,student id photo on the portal is of another student,Academic,synthetic_augmented,unverified,casual,g0149,train
+C00476,Bus number 7 broke down in the midddle of the road and no rplacement was sent.,Transport,synthetic_augmented,unverified,typo,g0223,train
+C00477,The basketball court floor is craked and someone could twist an ankle.,General,synthetic_augmented,unverified,typo,g0324,train
+C00478,Overhead water tank on the terrace is overflowing and wasting water since last night.,Hostel,synthetic_handwritten,unverified,original,g0026,val
+C00479,Reference desk was empty during the posted hours.,Library,synthetic_handwritten,unverified,original,g0264,train
+C00480,Boiled eggs on Sunday morning smelled bad.,Mess,synthetic_handwritten,unverified,original,g0077,train
+C00481,Bus charges were icreased mid-semester without any circular.,Transport,synthetic_augmented,unverified,typo,g0248,train
+C00482,"Hotspot of the roouter in Block A changes name daily, so we have to reconnect each time.",Wi-Fi & Network,synthetic_augmented,unverified,typo,g0199,train
+C00483,Library fan near the window seats makes a grinding noise.,Library,synthetic_handwritten,unverified,original,g0293,train
+C00484,we need a clear process to report lost student id cards,General,synthetic_augmented,unverified,casual,g0322,train
+C00485,Please conduct a doubt clearing session for Engineering Mathematics before the semester exam.,Academic,synthetic_handwritten,unverified,original,g0147,train
+C00486,assignment deadline on the portal is different from what the professor said in class,Academic,synthetic_augmented,unverified,casual,g0112,train
+C00487,no working power sockets at the second floor study desks,Library,synthetic_augmented,unverified,casual,g0255,train
+C00488,lab record was signed but the marks are not updated in the system,Academic,synthetic_augmented,unverified,casual,g0128,test
+C00489,Window glass in my room is cracked and rain comes in.,Hostel,synthetic_handwritten,unverified,original,g0029,train
+C00490,"To whom it may concern, we need a table lamp in the shared study room, the tube light is too harsh.",Hostel,synthetic_augmented,unverified,polite,g0017,val
+C00491,photocopier in the library eats paper and gives blurry copies,Library,synthetic_augmented,unverified,casual,g0277,train
+C00492,Bus pass fee deducted twice from my account.,Transport,synthetic_handwritten,needs_review,ambiguous,g0376,train
+C00493,The bus dirver couldn't find the pickup location on the list.,Transport,synthetic_augmented,unverified,typo,g0215,train
+C00494,"Hi, cupboard hinge in D-112 has come off and the door won't close. Kindly resolve this soon.",Hostel,synthetic_augmented,unverified,polite,g0020,test
+C00495,"lockers outside the library are broken, three of them dont open",Library,synthetic_augmented,unverified,casual,g0282,train
+C00496,biometric reader at the hostel gate is not recognising student cards,Hostel,synthetic_augmented,unverified,casual,g0019,train
+C00497,bus stopped far from the actual stop and we had to walk on the highway,Transport,synthetic_augmented,unverified,casual,g0227,train
+C00498,The online lost and found form gives an error on submit.,General,synthetic_handwritten,unverified,original,g0307,train
+C00499,medical room has no doctor on duty after 4 pm,General,synthetic_augmented,unverified,casual,g0340,train
+C00500,"Respected sir, the exam hall had no clock and no water for 3 hours. Please look into it.",Academic,synthetic_augmented,needs_review,ambiguous_polite,g0368,val
+C00501,the exam seating plan was put up only 10 minutes before the paper,Academic,synthetic_augmented,unverified,casual,g0150,train
+C00502,no internet in the whole east wing since afternoon,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0155,train
+C00503,counter closed 15 minutes before breakfast was supposed to end,Mess,synthetic_augmented,unverified,casual,g0068,train
+C00504,can the library subscribe to ieee xplore? we cant access most papers for the project,Library,synthetic_augmented,unverified,casual,g0278,train
+C00505,Digital library computers are very slow and half of them are locked.,Library,synthetic_handwritten,unverified,original,g0295,test
+C00506,The fee counter has no queue sytsem and takes 3 hours.,General,synthetic_augmented,needs_review,ambiguous_typo,g0402,train
+C00507,Garbage is not collected from behind the canteen and it attracts rats.,General,synthetic_handwritten,unverified,original,g0343,train
+C00508,the security guard refused to let me in with the laptop bag even though im a student,General,synthetic_augmented,needs_review,ambiguous_casual,g0398,train
+C00509,Please increase the numbber of buses on the Tammbaram route in the morning.,Transport,synthetic_augmented,unverified,typo,g0230,train
+C00510,the mess kitchen drain is blocked and the smell is reaching the hostel rooms,Mess,synthetic_augmented,needs_review,ambiguous_casual,g0373,train
+C00511,Water dispenser in the library is not working.,Library,synthetic_handwritten,needs_review,ambiguous,g0416,train
+C00512,"Respected sir, library staff asked me to leave because my bag was not in the locker, but the lockers are all full.",Library,synthetic_augmented,unverified,polite,g0281,train
+C00513,"To whom it may concern, I submitted the form to correct my exam registration but there has been no update. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0109,train
+C00514,The hostel gate staff don't allow us in after returning on the college bus at 7 pm.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0381,train
+C00515,"Hi, I'd like to report that our route has no bus on Saturdays even though we have classes.",Transport,synthetic_augmented,unverified,polite,g0226,train
+C00516,Exam portal timed out while I was uploading my answer sheet.,Academic,synthetic_handwritten,unverified,original,g0119,train
+C00517,there was a hair in my curd rice at lunch,Mess,synthetic_augmented,unverified,casual,g0071,val
+C00518,Plagiarism report for my assignment shows 60 percent but I only quoted the references.,Academic,synthetic_handwritten,unverified,original,g0131,train
+C00519,"I can't renew my book from my online accont, it thrws an error.",Library,synthetic_augmented,unverified,typo,g0270,train
+C00520,"Hello team, only one counter was open for 400 students at dinner. Thank you.",Mess,synthetic_augmented,unverified,polite,g0089,train
+C00521,The ID card printing counter takes weeks and has no updates for students.,General,synthetic_handwritten,unverified,original,g0346,train
+C00522,The ceiling fan in my room wobbles badly and I'm scared it will fall.,Hostel,synthetic_handwritten,unverified,original,g0001,train
+C00523,"To whom it may concern, student Wi-Fi account locked after two wrong attempts and there's no way to unlock it. Needs urgent attention.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0193,train
+C00524,"Good morning sir, cycle stand is full and students are leaving cycles on the grass.",General,synthetic_augmented,unverified,polite,g0331,train
+C00525,There was a hair in my curd rice at lunch.,Mess,synthetic_handwritten,unverified,original,g0071,val
+C00526,"veg option finished before lunch service was over, late students got nothing",Mess,synthetic_augmented,unverified,casual,g0055,train
+C00527,There is a leak from the bathroom ceiling in C-306 whenveer the upper floor uses water.,Hostel,synthetic_augmented,unverified,typo,g0008,train
+C00528,Can IT pleease increase the bandwidth for the final-year labs?,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0194,train
+C00529,"There is no dustbin in the corridor of block B, garbage is piled near the stairs.",Hostel,synthetic_handwritten,unverified,original,g0044,train
+C00530,Cupboard hinge in D-112 has come off and the door won't close.,Hostel,synthetic_handwritten,unverified,original,g0020,test
+C00531,Warden has not responded to our request to change roommates submitted two weeks ago.,Hostel,synthetic_handwritten,unverified,original,g0021,train
+C00532,The mess kitchen drain is blocked and the smell is reaching the hostel rooms.,Mess,synthetic_handwritten,needs_review,ambiguous,g0373,train
+C00533,Librray lift stopped between floors with a student insiide.,Library,synthetic_augmented,unverified,typo,g0266,train
+C00534,Please mark the dishes that contain peanuts or other allergens.,Mess,synthetic_handwritten,unverified,original,g0058,train
+C00535,online quiz submitted but the portal says zero attempts,Academic,synthetic_augmented,unverified,casual,g0145,train
+C00536,"Hi, the syllabus copy on the department site is for the old regulation, not ours. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0123,test
+C00537,"Lab equipment in the electronics lab is faulty, half the oscilloscopes show no signal.",Academic,synthetic_handwritten,unverified,original,g0139,test
+C00538,library closes before the closing time on the website on weekends,Library,synthetic_augmented,unverified,casual,g0254,train
+C00539,reference desk was empty during the posted hours,Library,synthetic_augmented,unverified,casual,g0264,train
+C00540,"mess committee meeting is not being held, our feedback never reaches anyone",Mess,synthetic_augmented,unverified,casual,g0093,train
+C00541,The overdue fine rate seems to have gone up and nobody informed us.,Library,synthetic_handwritten,unverified,original,g0294,train
+C00542,"Hi, the overdue fine rate seems to have gone up and nobody informed us. This has been going on for days.",Library,synthetic_augmented,unverified,polite,g0294,train
+C00543,"Good morning sir, the classroom projector works but the room has no network for the live demo.",Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_polite,g0361,train
+C00544,Library entrance gate beeps for every student even when there is no book in the bag.,Library,synthetic_handwritten,unverified,original,g0291,train
+C00545,"To whom it may concern, I can't connect to the campus network in the library reading area.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0153,train
+C00546,"Respected sir, can IT please increase the bandwidth for the final-year labs? This has been going on for days.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0194,train
+C00547,I was charged a fine for a book that was already in the system as retuurned.,Library,synthetic_augmented,unverified,typo,g0274,train
+C00548,No water in the second floor washroom since morning.,Hostel,synthetic_handwritten,unverified,original,g0002,train
+C00549,Class representative requests an extra class for the portions missed due to the holiday.,Academic,synthetic_handwritten,unverified,original,g0141,val
+C00550,"evening return bus is badly overcrowded, many of us have to stand for an hour",Transport,synthetic_augmented,unverified,casual,g0206,train
+C00551,"Hi, I'd like to report that IP conflict message pops up on all machines in lab 3. Please fix asap.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0192,train
+C00552,"Hello team, the Wi-Fi password on the notice board has stopped working. Needs urgent attention.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0157,train
+C00553,Internal marks for Data Structures have not been published and the deadline to raise queries is tomorrow.,Academic,synthetic_handwritten,unverified,original,g0121,train
+C00554,"Hi, I'd like to report that interior lights of the bus are off during the evening route. Thank you.",Transport,synthetic_augmented,unverified,polite,g0218,test
+C00555,Please install reliable Wi-Fi in the open study area.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0171,test
+C00556,"Reading room in the acdaemic block is always locked, who keeps the key?",General,synthetic_augmented,needs_review,ambiguous_typo,g0400,val
+C00557,"Hi, please replace the broken tiles in the bathroom, I slipped yesterday.",Hostel,synthetic_augmented,unverified,polite,g0033,train
+C00558,"Respected sir, two Wi-Fi networks with the same name are showing and neither connects. Needs urgent attention.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0191,train
+C00559,"To whom it may concern, uploading files from the design studio is extremely slow. Thank you.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0160,train
+C00560,"Respected sir, my laptop shows 'limited connectivity' on the campus network only. Request you to take action.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0175,train
+C00561,The library ID scanner doesn't read my bus pass but reads others.,Library,synthetic_handwritten,needs_review,ambiguous,g0388,train
+C00562,the clock outside the administration office shows the wrong time,General,synthetic_augmented,unverified,casual,g0311,train
+C00563,bike parking fee was introduced without any notice,General,synthetic_augmented,unverified,casual,g0348,train
+C00564,Hostel network is down every night after midnight.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0354,train
+C00565,Female students' bus has no lights inside after dark.,Transport,synthetic_handwritten,unverified,original,g0250,train
+C00566,"To whom it may concern, practical exam slot allotment list has not been displayed.",Academic,synthetic_augmented,unverified,polite,g0138,train
+C00567,Hostel library corner has no books and the shelves are empty.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0386,test
+C00568,I submitted the form to correct my exam registration but there has been no update.,Academic,synthetic_handwritten,unverified,original,g0109,train
+C00569,"Hi, poor lighting along the walkway between the hostel and the mess. Please fix asap.",Hostel,synthetic_augmented,needs_review,ambiguous_polite,g0407,test
+C00570,Breakfaast queue moves so slowly that many of us miss the 9 am class.,Mess,synthetic_augmented,unverified,typo,g0056,train
+C00571,Please share lecutre notes in a fomat that works with screen readers.,Academic,synthetic_augmented,unverified,typo,g0120,train
+C00572,"Respected sir, no working power sockets at the second floor study desks. Please look into it.",Library,synthetic_augmented,unverified,polite,g0255,train
+C00573,"Hi, I'd like to report that VPN to the college server times out every time I try from the lab.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0174,train
+C00574,"Respected sir, bus reached late so I couldn't make it to breakfast before the mess counter closed. Needs urgent attention.",Transport,synthetic_augmented,needs_review,ambiguous_polite,g0375,val
+C00575,Our floor's common washing machine is leaking from the bottom.,Hostel,synthetic_handwritten,unverified,original,g0042,train
+C00576,Interior lights of the bus are off during the evening route.,Transport,synthetic_handwritten,unverified,original,g0218,test
+C00577,classroom mic cuts out whenever the lecturer walks to the back,Academic,synthetic_augmented,unverified,casual,g0115,train
+C00578,Hall ticket download btuton gives a blank page.,Academic,synthetic_augmented,unverified,typo,g0125,train
+C00579,"Hi, I'd like to report that digital library computers are very slow and half of them are locked.",Library,synthetic_augmented,unverified,polite,g0295,test
+C00580,"Lab equipment in the electronics lab is faullty, half the oscilloscopes show no signal.",Academic,synthetic_augmented,unverified,typo,g0139,test
+C00581,Reading room lights are too dim in the back rows.,Library,synthetic_handwritten,unverified,original,g0258,train
+C00582,The coonductor refused to acept my pass saying it is not valid.,Transport,synthetic_augmented,unverified,typo,g0228,train
+C00583,Wi-Fi in the lirbary is too slow to open any jounral.,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_typo,g0355,train
+C00584,Our route has no bus on Saturdays even though we have classes.,Transport,synthetic_handwritten,unverified,original,g0226,train
+C00585,"Hi, bus floor is dirty and there was a wet patch that made me slip. Please look into it.",Transport,synthetic_augmented,unverified,polite,g0246,train
+C00586,"Route 12 bus is never on time, we wait 40 minutes every evening.",Transport,synthetic_handwritten,unverified,original,g0242,train
+C00587,The bunk bed in room E-221 shakes and creaks when anyone clmbs up.,Hostel,synthetic_augmented,unverified,typo,g0025,test
+C00588,I retuurned the book last week but it is still showing as isssued under my name.,Library,synthetic_augmented,unverified,typo,g0273,train
+C00589,the notice board near the entrance still shows last month's events,General,synthetic_augmented,unverified,casual,g0309,test
+C00590,"Sir, loud music from a private event kept going on after 10 pm near the academic blocks.",General,synthetic_augmented,unverified,polite,g0342,train
+C00591,Same menu of potato curry has been served five days in a row.,Mess,synthetic_handwritten,unverified,original,g0074,train
+C00592,"Wi-Fi login asks for a password every hour, it keeps logging me out.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0182,train
+C00593,Class test marks were announced but answer sheets have not been shown to us.,Academic,synthetic_handwritten,unverified,original,g0151,train
+C00594,Bike parking fee was introduced without any notice.,General,synthetic_handwritten,unverified,original,g0348,train
+C00595,The timetable shows two compullsory classes at the same time on Thursday.,Academic,synthetic_augmented,unverified,typo,g0103,train
+C00596,Can the library subscribe to IEEE Xplore? We can't access most papers for the project.,Library,synthetic_handwritten,unverified,original,g0278,train
+C00597,The Wi-Fi extender in the corridor of block D is not powered on.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0187,train
+C00598,Poor lighting along the walkway between the hostel and the mess.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0407,test
+C00599,"There is a leak from the ceiling above the periodicals shelf, it will damage the books.",Library,synthetic_handwritten,unverified,original,g0283,train
+C00600,Lab sesion was cancelled but the timetabble still marks it as compulsory.,Academic,synthetic_augmented,unverified,typo,g0113,train
+C00601,"Respected sir, washrooms in the admin block do not have running water. Thank you.",General,synthetic_augmented,unverified,polite,g0332,train
+C00602,"Sir, ATM inside the campus has been out of service for a week. Kindly resolve this soon.",General,synthetic_augmented,unverified,polite,g0327,train
+C00603,some seats in the reading hall have been reserved with bags the whole day,Library,synthetic_augmented,unverified,casual,g0280,train
+C00604,Lecture recording from last Friday is missing from the course page.,Academic,synthetic_handwritten,unverified,original,g0108,train
+C00605,parking area has no lighting and two-wheelers were damaged last week,General,synthetic_augmented,unverified,casual,g0334,train
+C00606,Wi-Fi in the seminar hall drpoped during the onlnie guest lecture.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0180,val
+C00607,there is no hand sanitizer at the mess entrance,Mess,synthetic_augmented,unverified,casual,g0095,train
+C00608,"Bus was diven at very high speed on the byapss road, we were all scared.",Transport,synthetic_augmented,unverified,typo,g0231,train
+C00609,"Dear sir/madam, the Wi-Fi extender in the corridor of block D is not powered on. Request you to take action.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0187,train
+C00610,"Dear sir/madam, no hot water in our block since yesterday. Geyser seems dead. Thank you.",Hostel,synthetic_augmented,unverified,polite,g0018,train
+C00611,Please increase the number of buses on the Tambaram route in the morning.,Transport,synthetic_handwritten,unverified,original,g0230,train
+C00612,The Wi-Fi password on the notice board has stopped working.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0157,train
+C00613,"Good morning sir, auditorium lights flicker during events and the sound system hums. Kindly resolve this soon.",General,synthetic_augmented,unverified,polite,g0333,train
+C00614,Library toilet has no water and the floor is flooded.,Library,synthetic_handwritten,needs_review,ambiguous,g0387,train
+C00615,Garbage is not colelcted from beihnd the canteen and it attracts rats.,General,synthetic_augmented,unverified,typo,g0343,train
+C00616,"Hi, I'd like to report that transport incharge doesn't answer calls when the bus is late.",Transport,synthetic_augmented,unverified,polite,g0243,val
+C00617,roof in the washing area leaks heavily during rain,Hostel,synthetic_augmented,unverified,casual,g0050,train
+C00618,"Hi, I'd like to report that library card has expired and the librarian says the form is not available. Thank you.",Library,synthetic_augmented,unverified,polite,g0275,train
+C00619,Pick-up from the railway station on Monday mornings is not available anymore.,Transport,synthetic_handwritten,unverified,original,g0233,train
+C00620,Student ID card got lost on caampus. How do I get a rpelacement?,General,synthetic_augmented,needs_review,ambiguous_typo,g0393,val
+C00621,Parking area near the bus bay is blocked by two-wheelers so buses can't turn.,Transport,synthetic_handwritten,unverified,original,g0240,train
+C00622,Barode on the book I borroed is peeling off and the scanner can't read it.,Library,synthetic_augmented,unverified,typo,g0287,test
+C00623,The mess staff were rude when I asked for a secoond serving of rice.,Mess,synthetic_augmented,unverified,typo,g0075,train
+C00624,"Library Wi-Fi password is not displayed anywhere, so I can't use the e-resources area.",Library,synthetic_handwritten,unverified,original,g0286,train
+C00625,"Sir, there is no accessible desk on the ground floor of the library.",Library,synthetic_augmented,unverified,polite,g0271,train
+C00626,gas smell near the kitchen when we were having dinner,Mess,synthetic_augmented,unverified,casual,g0098,train
+C00627,Exam poral timed out while I was ulpoading my answer sheet.,Academic,synthetic_augmented,unverified,typo,g0119,train
+C00628,The room number plate outside my door fell off last week.,Hostel,synthetic_handwritten,unverified,original,g0015,val
+C00629,Final year project guide has not been allotted to our team yet.,Academic,synthetic_handwritten,unverified,original,g0127,train
+C00630,"Dosa batter seems old, dosas turned out stciky and sour.",Mess,synthetic_augmented,unverified,typo,g0096,train
+C00631,mosquitoes are everywhere in our corridor bcoz the drain behind the block is clogged,Hostel,synthetic_augmented,unverified,casual,g0014,train
+C00632,faculty bus and student bus timings clash and we are forced to wait,Transport,synthetic_augmented,unverified,casual,g0239,train
+C00633,Water from the tap is yellow in collour since the morning.,Hostel,synthetic_augmented,unverified,typo,g0036,val
+C00634,Hostel washroom flush has been broken for three days in block B.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0385,train
+C00635,Transport office hasn't updated my bus pass after I renewed it.,Transport,synthetic_handwritten,unverified,original,g0207,train
+C00636,Prrinter on the network is not discoverable from any lab computer.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0188,train
+C00637,my fee payment for exam registration is deducted but the portal shows unpaid,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0367,train
+C00638,Shuttle came 25 minutes late this morning and I missed my first class.,Transport,synthetic_handwritten,unverified,original,g0208,train
+C00639,garbage is not collected from behind the canteen and it attracts rats,General,synthetic_augmented,unverified,casual,g0343,train
+C00640,Seat belt on seat 12 of bus 4 is broken.,Transport,synthetic_handwritten,unverified,original,g0209,train
+C00641,Last shuttle left early and a few students were left stranded.,Transport,synthetic_handwritten,unverified,original,g0214,val
+C00642,bus reached college after the first period for the third time this week,Transport,synthetic_augmented,unverified,casual,g0238,test
+C00643,"Hello team, network login rejects my account even after a password reset. This has been going on for days.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0163,train
+C00644,Water jug on our table was empty and no one refilled it.,Mess,synthetic_handwritten,unverified,original,g0087,val
+C00645,The mic in the seminar hall hums loudly during department presentations.,Academic,synthetic_handwritten,needs_review,ambiguous,g0366,train
+C00646,Driver skipped the stop near the sports complex.,Transport,synthetic_handwritten,unverified,original,g0205,train
+C00647,Please repair the broken window latch in room A-108.,Hostel,synthetic_handwritten,unverified,original,g0005,train
+C00648,I can't connect to the campus ntwork in the library reading area.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0153,train
+C00649,"cockroaches in the bathroom of block c, pls arrange pest control",Hostel,synthetic_augmented,unverified,casual,g0022,train
+C00650,"need more copies of the biology 101 textbook, there are 5 copies for 200 students",Library,synthetic_augmented,unverified,casual,g0262,val
+C00651,two wi-fi networks with the same name are showing and neither connects,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0191,train
+C00652,Faculty is not accepting assignments after 5 pm even though the porrtal deadlline is midnight.,Academic,synthetic_augmented,unverified,typo,g0135,train
+C00653,There are pages cut out of the refeerence copy of Thermodynaimcs.,Library,synthetic_augmented,unverified,typo,g0289,val
+C00654,"Hello team, I was charged more than the price on the displayed menu. Please fix asap.",Mess,synthetic_augmented,unverified,polite,g0062,train
+C00655,Hall ticket download button gives a blank page.,Academic,synthetic_handwritten,unverified,original,g0125,train
+C00656,visitors' parking is being used by staff vehicles all day,General,synthetic_augmented,unverified,casual,g0350,test
+C00657,Auditorium lights flicker during events and the sound system hums.,General,synthetic_handwritten,unverified,original,g0333,train
+C00658,Student porttal shows my hostel fee as unpaid even though I have the recipt.,Hostel,synthetic_augmented,needs_review,ambiguous_typo,g0404,train
+C00659,boiled eggs on sunday morning smelled bad,Mess,synthetic_augmented,unverified,casual,g0077,train
+C00660,the conductor refused to accept my pass saying it is not valid,Transport,synthetic_augmented,unverified,casual,g0228,train
+C00661,A group is talking loudly in the slient study area and the staff do nothing.,Library,synthetic_augmented,unverified,typo,g0268,val
+C00662,"Evening return bus is badly overcrowded, many of us have to stand for an hour.",Transport,synthetic_handwritten,unverified,original,g0206,train
+C00663,"The carging pooints at the back desks are all loose, plugs fall out.",Library,synthetic_augmented,unverified,typo,g0297,train
+C00664,Stationery shop in the campus sells photocopies at a much higher rate than posted.,General,synthetic_handwritten,unverified,original,g0339,train
+C00665,Network login rejects my account even after a password reset.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0163,train
+C00666,pls add a stop at the new metro station,Transport,synthetic_augmented,unverified,casual,g0244,train
+C00667,flies all over the uncovered food trays at the serving counter,Mess,synthetic_augmented,unverified,casual,g0061,train
+C00668,Catalogue says the book is available but it isn't on the shelf.,Library,synthetic_handwritten,unverified,original,g0253,train
+C00669,Parking area has no lighting and two-wheelers were damaged last week.,General,synthetic_handwritten,unverified,original,g0334,train
+C00670,Zebra crossing near the main gate has faded and cars don't slow down.,General,synthetic_handwritten,unverified,original,g0303,val
+C00671,pls start a morning shuttle from the west parking area,Transport,synthetic_augmented,unverified,casual,g0216,train
+C00672,No cups at the tea counter this afternoon.,Mess,synthetic_handwritten,unverified,original,g0063,train
+C00673,"Hello team, the access point near the computer lab looks offline, the light is not blinking. This has been going on for days.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0159,train
+C00674,"Paneer in the dinner curry was replaced with some other hard thing, there was no paneer.",Mess,synthetic_handwritten,unverified,original,g0082,train
+C00675,There are no clean spoons at the lunch counter again.,Mess,synthetic_handwritten,unverified,original,g0052,test
+C00676,The internship credit I completed is not reflected in my grade sheet.,Academic,synthetic_handwritten,unverified,original,g0132,train
+C00677,"Hello team, reading list for this semester is not on the course page.",Academic,synthetic_augmented,unverified,polite,g0104,test
+C00678,"Good morning sir, there are no clean spoons at the lunch counter again. Kindly resolve this soon.",Mess,synthetic_augmented,unverified,polite,g0052,test
+C00679,pls build a covered waiting area at the clinic entrance,General,synthetic_augmented,unverified,casual,g0316,train
+C00680,food was cold during dinner today,Mess,synthetic_augmented,unverified,casual,g0059,train
+C00681,medical room was closed during the sports meet and a student had to be taken by auto,General,synthetic_augmented,needs_review,ambiguous_casual,g0394,train
+C00682,female students' bus has no lights inside after dark,Transport,synthetic_augmented,unverified,casual,g0250,train
+C00683,many books on the reserve shelf have torn pages,Library,synthetic_augmented,unverified,casual,g0260,train
+C00684,"Re-exam date overlaps with another paper, please reschedule one of them.",Academic,synthetic_handwritten,unverified,original,g0129,train
+C00685,"Respected sir, boiled eggs on Sunday morning smelled bad. Please look into it.",Mess,synthetic_augmented,unverified,polite,g0077,train
+C00686,"Need more copies of the Biology 101 textbook, there are 5 copies for 200 students.",Library,synthetic_handwritten,unverified,original,g0262,val
+C00687,new arrivals list has not been updated for the whole year,Library,synthetic_augmented,unverified,casual,g0288,train
+C00688,Class test marks were announced but anser sheeets have not been shown to us.,Academic,synthetic_augmented,unverified,typo,g0151,train
+C00689,"Dear sir/madam, recycling bins outside the auditorium are overflowing. Thank you.",General,synthetic_augmented,unverified,polite,g0308,test
+C00690,The library gets very hot because the windows can't be opened and the fans are off.,Library,synthetic_handwritten,needs_review,ambiguous,g0390,test
+C00691,"Good morning sir, dropped at the wrong stop because the driver didn't know the route. Please look into it.",Transport,synthetic_augmented,unverified,polite,g0249,train
+C00692,Student portal won't load whenever I'm on the student Wi-Fi but works on mobile data.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0167,test
+C00693,Online library catalogue has been down since this morning.,Library,synthetic_handwritten,unverified,original,g0259,train
+C00694,the campus atm swallowed my card near the canteen,General,synthetic_augmented,needs_review,ambiguous_casual,g0395,train
+C00695,Broken benches inside the library reading area.,Library,synthetic_handwritten,needs_review,ambiguous,g0411,train
+C00696,Faculty is not accepting assignments after 5 pm even though the portal deadline is midnight.,Academic,synthetic_handwritten,unverified,original,g0135,train
+C00697,Library washroms are dirty by afternoon.,Library,synthetic_augmented,unverified,typo,g0269,train
+C00698,Driver was talking on the phone while driving the bus.,Transport,synthetic_handwritten,unverified,original,g0224,train
+C00699,"To whom it may concern, transport office hasn't updated my bus pass after I renewed it. Kindly resolve this soon.",Transport,synthetic_augmented,unverified,polite,g0207,train
+C00700,"Lockers outside the library are broken, three of them don't open.",Library,synthetic_handwritten,unverified,original,g0282,train
+C00701,"Hello team, lab session was cancelled but the timetable still marks it as compulsory. Needs urgent attention.",Academic,synthetic_augmented,unverified,polite,g0113,train
+C00702,There is no Wi-Fi in my hostel room even though I paid the full fee.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0353,train
+C00703,Bus pass fee deductted twice from my account.,Transport,synthetic_augmented,needs_review,ambiguous_typo,g0376,train
+C00704,Water jug on our table was empty and no one refillled it.,Mess,synthetic_augmented,unverified,typo,g0087,val
+C00705,the library computers cant reach the internet,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_casual,g0356,train
+C00706,"Dear sir/madam, network signal is very weak in classroom 204. Please fix asap.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0156,train
+C00707,poor lighting around the library entrance at night,Library,synthetic_augmented,needs_review,ambiguous_casual,g0406,train
+C00708,Washrooms in the admin block do not have running water.,General,synthetic_handwritten,unverified,original,g0332,train
+C00709,Poor lighting at the bus stop near the south gate.,Transport,synthetic_handwritten,needs_review,ambiguous,g0408,train
+C00710,Bus floor is dirty and there was a wet patch that made me slip.,Transport,synthetic_handwritten,unverified,original,g0246,train
+C00711,Hostel washroom flush has been brroken for three days in block B.,Hostel,synthetic_augmented,needs_review,ambiguous_typo,g0385,train
+C00712,internal marks for data structures have not been published and the deadline to raise queries is tmrw,Academic,synthetic_augmented,unverified,casual,g0121,train
+C00713,Tea is too watery and has no sugar most evenings.,Mess,synthetic_handwritten,unverified,original,g0091,test
+C00714,biriyani on friday had almost no vegetables or masala,Mess,synthetic_augmented,unverified,casual,g0094,test
+C00715,Room B-214 light keeps flickering and the switch is loose.,Hostel,synthetic_handwritten,unverified,original,g0003,train
+C00716,Water dispenser on the second floor of the academic block is empty.,Academic,synthetic_handwritten,needs_review,ambiguous,g0414,train
+C00717,"Wi-Fi login asks for a pasword every hour, it keeps logging me out.",Wi-Fi & Network,synthetic_augmented,unverified,typo,g0182,train
+C00718,"the cctv camera near the main gate seems to be turned off, there is no red light",General,synthetic_augmented,unverified,casual,g0351,test
+C00719,Two Wi-Fi networks with the same name are showing and neither connects.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0191,train
+C00720,Kitchen staff were not wearing gloves or caps while serving.,Mess,synthetic_handwritten,unverified,original,g0088,val
+C00721,Many books on the reeserve shelf have torn pages.,Library,synthetic_augmented,unverified,typo,g0260,train
+C00722,Bathroom exaust fan makes a loud noise and does not remove steam.,Hostel,synthetic_augmented,unverified,typo,g0013,train
+C00723,Water in the mess is dirty and many of us in the hostel are falling sick.,Mess,synthetic_handwritten,needs_review,ambiguous,g0374,train
+C00724,Wi-Fi at the canteen area is unusable during lunch.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0184,train
+C00725,open drain next to the parking lot has a strong smell,General,synthetic_augmented,unverified,casual,g0329,train
+C00726,"I can't renew my book from my online account, it throws an error.",Library,synthetic_handwritten,unverified,original,g0270,train
+C00727,Please provide jain food option for students who don't eat onion and garlic.,Mess,synthetic_handwritten,unverified,original,g0083,test
+C00728,"paneer in the dinner curry was replaced with some other hard thing, there was no paneer",Mess,synthetic_augmented,unverified,casual,g0082,train
+C00729,library lift stopped between floors with a student inside,Library,synthetic_augmented,unverified,casual,g0266,train
+C00730,"Hi, please install reliable Wi-Fi in the open study area. Thank you.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0171,test
+C00731,"Dear sir/madam, projector in the lecture hall does not display the lecturer's laptop. This has been going on for days.",Academic,synthetic_augmented,unverified,polite,g0101,train
+C00732,"Good morning sir, network drops each time the lecturer shares screen during Zoom classes. This has been going on for days.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0195,val
+C00733,The campus network assigns me an IP but DNS fails for everything.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0181,train
+C00734,bus pass photo is wrong and the transport office keeps asking me to come back next week,Transport,synthetic_augmented,unverified,casual,g0237,train
+C00735,"Hi, attendance shortage list includes my name though I have medical leave approved. Please look into it.",Academic,synthetic_augmented,unverified,polite,g0142,train
+C00736,"Hello team, there was a hair in my curd rice at lunch. Thank you.",Mess,synthetic_augmented,unverified,polite,g0071,val
+C00737,Drivers change every other day and nobody knows our stop.,Transport,synthetic_handwritten,unverified,original,g0234,train
+C00738,"Mess timing on Sundays is too short, brunch ends at 10:30.",Mess,synthetic_handwritten,unverified,original,g0078,train
+C00739,Shuttle to the medical center was cancelled without any notice.,Transport,synthetic_handwritten,unverified,original,g0219,val
+C00740,"To whom it may concern, exam hall for CS204 is not listed anywhere on the schedule.",Academic,synthetic_augmented,unverified,polite,g0106,train
+C00741,Chapaati was hard like cardboard at dnner.,Mess,synthetic_augmented,unverified,typo,g0073,train
+C00742,"Street lights on the road outside the college are off, it's unsafe for girls walking to the bus stop.",General,synthetic_handwritten,needs_review,ambiguous,g0399,train
+C00743,campus road near the science block has a huge pothole,General,synthetic_augmented,unverified,casual,g0330,train
+C00744,I returned the book last week but it is still showing as issued under my name.,Library,synthetic_handwritten,unverified,original,g0273,train
+C00745,"Hello team, the ramp at the auditorium entrance is blocked by stored equipment.",General,synthetic_augmented,unverified,polite,g0310,val
+C00746,"The hostel lift is out of order again, fourth floor students have to climb every time.",Hostel,synthetic_handwritten,unverified,original,g0011,train
+C00747,The rice at dinner was undercooked.,Mess,synthetic_handwritten,unverified,original,g0051,test
+C00748,"the charging points at the back desks are all loose, plugs fall out",Library,synthetic_augmented,unverified,casual,g0297,train
+C00749,atm inside the campus has been out of service for a week,General,synthetic_augmented,unverified,casual,g0327,train
+C00750,The lab's AC isn't workng so we can't run the machines during praacticals.,Academic,synthetic_augmented,needs_review,ambiguous_typo,g0365,train
+C00751,window glass in my room is cracked and rain comes in,Hostel,synthetic_augmented,unverified,casual,g0029,train
+C00752,The classroom projector works but the room has no network for the live demo.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0361,train
+C00753,IP conflict message pops up on all machines in lab 3.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0192,train
+C00754,the silent reading room is used for group discussions and we cant concentrate,Library,synthetic_augmented,unverified,casual,g0292,train
+C00755,Staff refuses to issue more than 2 books even thoough the limit is 4 for final years.,Library,synthetic_augmented,unverified,typo,g0302,train
+C00756,Pulbic address speakers near the main lawn are broken.,General,synthetic_augmented,unverified,typo,g0347,train
+C00757,Hostel pantry fridge stopped working and food got spoiled.,Hostel,synthetic_handwritten,unverified,original,g0043,train
+C00758,Pcaket loss is very high during the evening on the student network.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0201,train
+C00759,The clock outside the administration office shows the wrong time.,General,synthetic_handwritten,unverified,original,g0311,train
+C00760,Campus map doesn't show the new student services office.,General,synthetic_handwritten,unverified,original,g0314,train
+C00761,My library fine was added to the mess bill by mistake.,Library,synthetic_handwritten,needs_review,ambiguous,g0391,train
+C00762,Tea is too watery and has no sugar most evenngs.,Mess,synthetic_augmented,unverified,typo,g0091,test
+C00763,Student Wi-Fi account locked after two wrong attempts and there's no way to unlock it.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0193,train
+C00764,Moodle login redirects to a blank page for all of us in the third year.,Academic,synthetic_handwritten,unverified,original,g0148,val
+C00765,question paper for the model exam had a printing error on page 2,Academic,synthetic_augmented,unverified,casual,g0134,train
+C00766,The exam seating plan was put up only 10 minutes before the paper.,Academic,synthetic_handwritten,unverified,original,g0150,train
+C00767,no cups at the tea counter this afternoon,Mess,synthetic_augmented,unverified,casual,g0063,train
+C00768,Water has collected on the walkway next to the admin building.,General,synthetic_handwritten,unverified,original,g0305,train
+C00769,The rice at dinner was udercooked.,Mess,synthetic_augmented,unverified,typo,g0051,test
+C00770,Public address speakers near the main lawn are broken.,General,synthetic_handwritten,unverified,original,g0347,train
+C00771,my laptop shows 'limited connectivity' on the campus network only,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0175,train
+C00772,Lab record was signed but the marks are not updated in the system.,Academic,synthetic_handwritten,unverified,original,g0128,test
+C00773,"Hi, I'd like to report that the hostel main gate light is fused, it is completely dark at night. Please fix asap.",Hostel,synthetic_augmented,unverified,polite,g0046,train
+C00774,Shuttle timetable on the board dosn't match the actual departure times.,Transport,synthetic_augmented,unverified,typo,g0204,train
+C00775,"Common room door lock is broken, anyone can walk in at night.",Hostel,synthetic_handwritten,unverified,original,g0012,train
+C00776,Student ID photo on the portal is of another student.,Academic,synthetic_handwritten,unverified,original,g0149,train
+C00777,portions at lunch were much smaller than what the menu says,Mess,synthetic_augmented,unverified,casual,g0067,val
+C00778,route map doesnt show the new residence hall stop,Transport,synthetic_augmented,unverified,casual,g0211,train
+C00779,Library staff were rude when I asked them to look up a missing book.,Library,synthetic_handwritten,unverified,original,g0290,val
+C00780,dropped at the wrong stop bcoz the driver didn't know the route,Transport,synthetic_augmented,unverified,casual,g0249,train
+C00781,"Respected sir, I could not find any book on the new syllabus topics like machine learning for the 6th semester.",Library,synthetic_augmented,unverified,polite,g0285,train
+C00782,Remote desktop to the lab server is not working from the hostel network.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0196,train
+C00783,"To whom it may concern, wi-Fi network name is not showing in Block C.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0166,train
+C00784,Uploading files from the design studio is extremely slow.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0160,train
+C00785,"internet is available but github and stack overflow are blocked, which affects our project work",Wi-Fi & Network,synthetic_augmented,unverified,casual,g0189,val
+C00786,"Sir, dosa batter seems old, dosas turned out sticky and sour. Request you to take action.",Mess,synthetic_augmented,unverified,polite,g0096,train
+C00787,Online exam stopped midway because the network in the lab went down.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0358,test
+C00788,There are pages cut out of the reference copy of Thermodynamics.,Library,synthetic_handwritten,unverified,original,g0289,val
+C00789,GPS tracking link for the college buses has not worked for two weeks.,Transport,synthetic_handwritten,unverified,original,g0247,train
+C00790,Bus pass photo is wrong and the transport office keeps asking me to come back next week.,Transport,synthetic_handwritten,unverified,original,g0237,train
+C00791,Bus stop shelter roof leaks when it rains.,Transport,synthetic_handwritten,unverified,original,g0220,train
+C00792,the ramp at the auditorium entrance is blocked by stored equipment,General,synthetic_augmented,unverified,casual,g0310,val
+C00793,Please start a morning shuttle from the west parking area.,Transport,synthetic_handwritten,unverified,original,g0216,train
+C00794,Leftover food is being kept in the open near the back door of the mess.,Mess,synthetic_handwritten,unverified,original,g0097,train
+C00795,Assignment deadline on the portal is different from what the professor said in class.,Academic,synthetic_handwritten,unverified,original,g0112,train
+C00796,"To whom it may concern, hostel pantry fridge stopped working and food got spoiled. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0043,train
+C00797,"To whom it may concern, please repair the broken window latch in room A-108. Kindly resolve this soon.",Hostel,synthetic_augmented,unverified,polite,g0005,train
+C00798,"Please allot a room on the ground floor, my leg is in a cast.",Hostel,synthetic_handwritten,unverified,original,g0047,train
+C00799,The lab record notebooks are not sold in the campus store before the submission date.,Academic,synthetic_handwritten,needs_review,ambiguous,g0369,val
+C00800,"Transcript request submitted three weeks ago, still showing in progress.",Academic,synthetic_handwritten,unverified,original,g0143,train
+C00801,The visitor registration queue goes out of the main offfice door.,General,synthetic_augmented,unverified,typo,g0312,train
+C00802,Wi-Fi works outside but drops as soon as I walk into the north building.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0170,train
+C00803,Wi-Fi in the library is too slow to open any journal.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0355,train
+C00804,previous year question papers are not in the library collection,Library,synthetic_augmented,unverified,casual,g0284,train
+C00805,Please extend library hours during exams.,Library,synthetic_handwritten,unverified,original,g0272,train
+C00806,Bus reaached college after the first period for the third time this week.,Transport,synthetic_augmented,unverified,typo,g0238,test
+C00807,Biometric reader at the hosel gate is not recognising student cards.,Hostel,synthetic_augmented,unverified,typo,g0019,train
+C00808,Many books on the reserve shelf have torn pages.,Library,synthetic_handwritten,unverified,original,g0260,train
+C00809,pls extend library hours during exams,Library,synthetic_augmented,unverified,casual,g0272,train
+C00810,same menu of potato curry has been served five days in a row,Mess,synthetic_augmented,unverified,casual,g0074,train
+C00811,wi-fi keeps disconnecting every few minutes in the engineering block,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0152,val
+C00812,The e-resources login for NPTEL books doesn't acccept the college credentials.,Library,synthetic_augmented,unverified,typo,g0279,val
+C00813,"Hi, journals section has the 2022 volumes missing from the shelf. This has been going on for days.",Library,synthetic_augmented,unverified,polite,g0276,train
+C00814,lecture recording from last friday is missing from the course page,Academic,synthetic_augmented,unverified,casual,g0108,train
+C00815,"To whom it may concern, the event calendar lists a room that has already been booked.",General,synthetic_augmented,unverified,polite,g0319,train
+C00816,"Bed bugs in my mattress, I'm gettnig bites every night.",Hostel,synthetic_augmented,unverified,typo,g0048,train
+C00817,"Good morning sir, stray dogs are entering the hostel compound at night through the broken back gate. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0037,train
+C00818,library washrooms are dirty by afternoon,Library,synthetic_augmented,unverified,casual,g0269,train
+C00819,the mic in the seminar hall hums loudly during department presentations,Academic,synthetic_augmented,needs_review,ambiguous_casual,g0366,train
+C00820,The conductor refused to accept my pass saying it is not valid.,Transport,synthetic_handwritten,unverified,original,g0228,train
+C00821,The ovrdue fine rate seems to have gone up and nobody informed us.,Library,synthetic_augmented,unverified,typo,g0294,train
+C00822,Poor ligting on the road near the sports ground.,General,synthetic_augmented,needs_review,ambiguous_typo,g0409,train
+C00823,canteen near the admin block is overcharging for water bottles,General,synthetic_augmented,unverified,casual,g0328,train
+C00824,"Good morning sir, kitchen tap in the hostel pantry is loose and sprays water on everyone.",Hostel,synthetic_augmented,unverified,polite,g0016,train
+C00825,pls increase the number of buses on the tambaram route in the morning,Transport,synthetic_augmented,unverified,casual,g0230,train
+C00826,Internet in the computer center is down and our practical exam was delayed.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0177,train
+C00827,Librrary staff were rude when I asked them to look up a missing book.,Library,synthetic_augmented,unverified,typo,g0290,val
+C00828,Last shuttle left early and a few students were left sttranded.,Transport,synthetic_augmented,unverified,typo,g0214,val
+C00829,Bus stopped far from the actual stop and we had to walk on the highway.,Transport,synthetic_handwritten,unverified,original,g0227,train
+C00830,Wi-Fi works outside but drops as soon as I walk into the north biulding.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0170,train
+C00831,gps tracking link for the college buses has not worked for two weeks,Transport,synthetic_augmented,unverified,casual,g0247,train
+C00832,My attendance for the lab shows absent though I signed the register.,Academic,synthetic_handwritten,needs_review,ambiguous,g0363,train
+C00833,"street lights on the road outside the college are off, it's unsafe for girls walking to the bus stop",General,synthetic_augmented,needs_review,ambiguous_casual,g0399,train
+C00834,The mess food is fine but the portal shows my meals as skippeed.,Mess,synthetic_augmented,needs_review,ambiguous_typo,g0405,train
+C00835,Bad smell from the drainage near the gorund floor washrooms.,Hostel,synthetic_augmented,unverified,typo,g0032,train
+C00836,My phone connects to campus Wi-Fi but no website opens.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0161,train
+C00837,Canteen near the admin block is overcharging for water bottles.,General,synthetic_handwritten,unverified,original,g0328,train
+C00838,my mac address was blocked for no reason and i cant get online,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0179,train
+C00839,interlibrary loan request submitted in august has no response,Library,synthetic_augmented,unverified,casual,g0299,train
+C00840,Water dispenser in the mess is leaking onto the floor.,Mess,synthetic_handwritten,needs_review,ambiguous,g0415,train
+C00841,Photocopier in the library eats paper and gives blurry copies.,Library,synthetic_handwritten,unverified,original,g0277,train
+C00842,Markers in the classroom are dry and the whiteboard is unreadable from the back.,Academic,synthetic_handwritten,unverified,original,g0110,train
+C00843,Exam hall for CS204 is not listed anywhere on the schedule.,Academic,synthetic_handwritten,unverified,original,g0106,train
+C00844,plagiarism report for my assignment shows 60 percent but i only quoted the references,Academic,synthetic_augmented,unverified,casual,g0131,train
+C00845,Bus tracking app doesn't open on campus Wi-Fi but opens on mobile data.,Wi-Fi & Network,synthetic_handwritten,needs_review,ambiguous,g0359,train
+C00846,the library id scanner doesnt read my bus pass but reads others,Library,synthetic_augmented,needs_review,ambiguous_casual,g0388,train
+C00847,Route map doesn't show the new residence hall stop.,Transport,synthetic_handwritten,unverified,original,g0211,train
+C00848,"Good morning sir, there is a leak from the ceiling above the periodicals shelf, it will damage the books. Thank you.",Library,synthetic_augmented,unverified,polite,g0283,train
+C00849,"internet speed in the hostel is below 1 mbps in the evening, we cant even attend online interviews",Wi-Fi & Network,synthetic_augmented,unverified,casual,g0173,test
+C00850,"To whom it may concern, campus ambulance wasn't available when a student got injured on the field. Please look into it.",General,synthetic_augmented,unverified,polite,g0344,val
+C00851,"Hello team, campus road near the science block has a huge pothole. Needs urgent attention.",General,synthetic_augmented,unverified,polite,g0330,train
+C00852,"To whom it may concern, stationery shop in the campus sells photocopies at a much higher rate than posted. This has been going on for days.",General,synthetic_augmented,unverified,polite,g0339,train
+C00853,"Hello team, mess hall is fine but the hostel reading room has no chairs left, only broken ones. Needs urgent attention.",Hostel,synthetic_augmented,unverified,polite,g0030,val
+C00854,library staff were rude when i asked them to look up a missing book,Library,synthetic_augmented,unverified,casual,g0290,val
+C00855,Sports equipment room is locked and nobody has the key during practice hours.,General,synthetic_handwritten,unverified,original,g0345,train
+C00856,students in the hostel cant open the course portal after 10 pm,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_casual,g0360,train
+C00857,Cycle stand is full and students are leaving cycles on the grass.,General,synthetic_handwritten,unverified,original,g0331,train
+C00858,Network speed drops heavily whenever there is an onine exam.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0186,val
+C00859,the curd at lunch was sour and watery,Mess,synthetic_augmented,unverified,casual,g0092,train
+C00860,"The charging points at the back desks are all loose, plugs fall out.",Library,synthetic_handwritten,unverified,original,g0297,train
+C00861,network drops each time the lecturer shares screen during zoom classes,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0195,val
+C00862,The sign for the health center is missing.,General,synthetic_handwritten,unverified,original,g0304,train
+C00863,"common room door lock is broken, anyone can walk in at night",Hostel,synthetic_augmented,unverified,casual,g0012,train
+C00864,"Dear sir/madam, pick-up from the railway station on Monday mornings is not available anymore. Request you to take action.",Transport,synthetic_augmented,unverified,polite,g0233,train
+C00865,The event calendar lists a room that has already been booked.,General,synthetic_handwritten,unverified,original,g0319,train
+C00866,Barcode on the book I borrowed is peeling off and the scanner can't read it.,Library,synthetic_handwritten,unverified,original,g0287,test
+C00867,Rats were seen near the storeorom beind the dining hall.,Mess,synthetic_augmented,unverified,typo,g0080,train
+C00868,"Bus was driven at very high speed on the bypass road, we were all scared.",Transport,synthetic_handwritten,unverified,original,g0231,train
+C00869,"Hi, I'd like to report that the speed limiter alarm in the bus beeps constantly. Please look into it.",Transport,synthetic_augmented,unverified,polite,g0251,train
+C00870,Kitchen staff were not wearring glvoes or caps while serving.,Mess,synthetic_augmented,unverified,typo,g0088,val
+C00871,Faculty bus and student bus timings clash and we are forced to wait.,Transport,synthetic_handwritten,unverified,original,g0239,train
+C00872,"Respected sir, roof in the washing area leaks heavily during rain. This has been going on for days.",Hostel,synthetic_augmented,unverified,polite,g0050,train
+C00873,Network signal is very weak in classroom 204.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0156,train
+C00874,"Sir, student portal won't load whenever I'm on the student Wi-Fi but works on mobile data. Please look into it.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0167,test
+C00875,security guard at the back gate was sleeping when i passed at 11 pm,General,synthetic_augmented,unverified,casual,g0326,train
+C00876,"Hi, I'd like to report that fire exit door in the auditorium is chained from outside. This has been going on for days.",General,synthetic_augmented,unverified,polite,g0338,train
+C00877,"To whom it may concern, my name is spelled wrong on the hall ticket. Thank you.",Academic,synthetic_augmented,unverified,polite,g0122,train
+C00878,Uploadng files from the design studio is extremely slow.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0160,train
+C00879,The elective I was allotted was changged without tellnig me.,Academic,synthetic_augmented,unverified,typo,g0140,train
+C00880,The auditorium AC is off during the convocation rehearsal.,General,synthetic_handwritten,needs_review,ambiguous,g0392,train
+C00881,There's no first aid kit at the sports complex.,General,synthetic_handwritten,unverified,original,g0325,train
+C00882,First-aid box inside the bus is empty.,Transport,synthetic_handwritten,unverified,original,g0245,test
+C00883,Transport office hasn't updated my bus pass after I reneewd it.,Transport,synthetic_augmented,unverified,typo,g0207,train
+C00884,"Hi, return receipt shows the wrong date so I might be charged a fine. This has been going on for days.",Library,synthetic_augmented,unverified,polite,g0267,train
+C00885,The classroom fan is broken and it's too hot to focus during lectures.,Academic,synthetic_handwritten,needs_review,ambiguous,g0364,val
+C00886,Lights near the west prking lot don't turn on at night.,General,synthetic_augmented,unverified,typo,g0306,train
+C00887,the lost-and-found office hours are not mentioned anywhere,General,synthetic_augmented,needs_review,ambiguous_casual,g0396,val
+C00888,seminar hall for the guest lecture was locked when we arrived,Academic,synthetic_augmented,unverified,casual,g0137,train
+C00889,Network blocks a website we need for our coursework.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0169,test
+C00890,The milk served at breakfast tasted like it had gone off.,Mess,synthetic_handwritten,unverified,original,g0079,train
+C00891,faculty is not accepting assignments after 5 pm even though the portal deadline is midnight,Academic,synthetic_augmented,unverified,casual,g0135,train
+C00892,The college bus did not come to the science gate pickup point.,Transport,synthetic_handwritten,unverified,original,g0203,train
+C00893,Only one counter was open for 400 students at dinner.,Mess,synthetic_handwritten,unverified,original,g0089,train
+C00894,library entrance gate beeps for every student even when there is no book in the bag,Library,synthetic_augmented,unverified,casual,g0291,train
+C00895,Self checkout machine won't scan my student ID.,Library,synthetic_handwritten,unverified,original,g0256,train
+C00896,practical exam slot allotment list has not been displayed,Academic,synthetic_augmented,unverified,casual,g0138,train
+C00897,Backog exam fee was paid but the portal still shows it as pendding.,Academic,synthetic_augmented,unverified,typo,g0130,train
+C00898,The fruit given at lunch was bruised and overrripe.,Mess,synthetic_augmented,unverified,typo,g0060,val
+C00899,The bus stand near the hostel has no shade or seating.,Transport,synthetic_handwritten,needs_review,ambiguous,g0378,train
+C00900,I was charged a fine for a book that was already in the system as returned.,Library,synthetic_handwritten,unverified,original,g0274,train
+C00901,i cant reach the mess billing website from the student wi-fi,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_casual,g0357,test
+C00902,"To whom it may concern, trees near the gym have dry branches that could fall. Needs urgent attention.",General,synthetic_augmented,unverified,polite,g0341,train
+C00903,Fire exit door in the auditorium is chained from outside.,General,synthetic_handwritten,unverified,original,g0338,train
+C00904,I get a certificate warning every time I open the login page.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0183,train
+C00905,Lectuure hall AC is too cold and the teacher's voice isn't audible because of the noise.,Academic,synthetic_augmented,unverified,typo,g0144,train
+C00906,The Wi-Fi etender in the corridor of block D is not powered on.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0187,train
+C00907,Attendance shortage list includes my name though I have medical leave approved.,Academic,synthetic_handwritten,unverified,original,g0142,train
+C00908,Online exam stopepd midway because the network in the lab went down.,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_typo,g0358,test
+C00909,Auditorium lights flicker duuring events and the sound ssytem hums.,General,synthetic_augmented,unverified,typo,g0333,train
+C00910,"library reservations dont sync with the timetable, so i cant book during free hours",Library,synthetic_augmented,needs_review,ambiguous_casual,g0389,train
+C00911,Library printer has no paper and hasn't been refilled.,Library,synthetic_handwritten,unverified,original,g0263,test
+C00912,the pathway to the sports complex gets flooded in rain,General,synthetic_augmented,unverified,casual,g0349,train
+C00913,"transcript request submitted three weeks ago, still showing in progress",Academic,synthetic_augmented,unverified,casual,g0143,train
+C00914,router in the seminar hall keeps restarting,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0168,train
+C00915,Taps in the girls hostel bathroom are leaking and the floor is always wet.,Hostel,synthetic_handwritten,unverified,original,g0004,train
+C00916,"Sir, plagiarism report for my assignment shows 60 percent but I only quoted the references.",Academic,synthetic_augmented,unverified,polite,g0131,train
+C00917,The fruit given at lunch was bruised and overripe.,Mess,synthetic_handwritten,unverified,original,g0060,val
+C00918,"broken tables in the mess hall, one leg is missing",Mess,synthetic_augmented,needs_review,ambiguous_casual,g0412,train
+C00919,Can IT please increase the bandwidth for the final-year labs?,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0194,train
+C00920,"Hi, water jug on our table was empty and no one refilled it. Please fix asap.",Mess,synthetic_augmented,unverified,polite,g0087,val
+C00921,study room booking system deleted my confirmed reservation,Library,synthetic_augmented,unverified,casual,g0261,test
+C00922,Students are being asked to pay again for the bus pass that is already valid.,Transport,synthetic_handwritten,unverified,original,g0252,val
+C00923,seat belt on seat 12 of bus 4 is broken,Transport,synthetic_augmented,unverified,casual,g0209,train
+C00924,Reference desk was empty during the possted hours.,Library,synthetic_augmented,unverified,typo,g0264,train
+C00925,Staff refuses to issue more than 2 books even though the limit is 4 for final years.,Library,synthetic_handwritten,unverified,original,g0302,train
+C00926,"Respected sir, lab computers don't have the software we need for today's practical.",Academic,synthetic_augmented,unverified,polite,g0107,train
+C00927,i submitted the form to correct my exam registration but there has been no update,Academic,synthetic_augmented,unverified,casual,g0109,train
+C00928,The common room TV in the hostel has been broken for a month.,Hostel,synthetic_handwritten,needs_review,ambiguous,g0413,train
+C00929,"Room heater tripped the MCB again, the wiring in our room looks old.",Hostel,synthetic_handwritten,unverified,original,g0034,train
+C00930,"To whom it may concern, there's no first aid kit at the sports complex.",General,synthetic_augmented,unverified,polite,g0325,train
+C00931,shuttle timetable on the board doesnt match the actual departure times,Transport,synthetic_augmented,unverified,casual,g0204,train
+C00932,Backlog exam fee was paid but the portal still shows it as pending.,Academic,synthetic_handwritten,unverified,original,g0130,train
+C00933,"Good morning sir, too many devices on one SSID, the network gets jammed after 8 pm. Please fix asap.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0178,train
+C00934,Please share lecture notes in a format that works with screen readers.,Academic,synthetic_handwritten,unverified,original,g0120,train
+C00935,lan cable in the faculty room is cut and nobody has fixed it,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0185,train
+C00936,The mess staff were rude when I asked for a second serving of rice.,Mess,synthetic_handwritten,unverified,original,g0075,train
+C00937,"Hi, I'd like to report that power cut in the hostel every evening between 7 and 8, the inverter is not working.",Hostel,synthetic_augmented,unverified,polite,g0027,train
+C00938,"To whom it may concern, can the mess add a non-spicy option for dinner? Some of us can't eat that much chilli. Needs urgent attention.",Mess,synthetic_augmented,unverified,polite,g0065,train
+C00939,"To whom it may concern, shuttle came 25 minutes late this morning and I missed my first class. Needs urgent attention.",Transport,synthetic_augmented,unverified,polite,g0208,train
+C00940,Department has not uploaded the updated project submission guidelines.,Academic,synthetic_handwritten,unverified,original,g0116,val
+C00941,backlog exam fee was paid but the portal still shows it as pending,Academic,synthetic_augmented,unverified,casual,g0130,train
+C00942,Department has not uploaded the updtaed prject submission guidelines.,Academic,synthetic_augmented,unverified,typo,g0116,val
+C00943,I was charged more than the price on the displayed menu.,Mess,synthetic_handwritten,unverified,original,g0062,train
+C00944,the library gets very hot bcoz the windows cant be opened and the fans are off,Library,synthetic_augmented,needs_review,ambiguous_casual,g0390,test
+C00945,Wired internet port in the media lab is dead.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0162,val
+C00946,New arrivals list has not been updated for the whole year.,Library,synthetic_handwritten,unverified,original,g0288,train
+C00947,"Plates at the counter are not washed properly, there are oil stains.",Mess,synthetic_handwritten,unverified,original,g0076,train
+C00948,Driver braked suddenly and standing passengers fell over.,Transport,synthetic_handwritten,unverified,original,g0221,val
+C00949,Transport incharge doesn't answer calls when the bus is late.,Transport,synthetic_handwritten,unverified,original,g0243,val
+C00950,exam hall for cs204 is not listed anywhere on the schedule,Academic,synthetic_augmented,unverified,casual,g0106,train
+C00951,"Good morning sir, the college bus parking behind the hostel is blocking the fire exit. Kindly resolve this soon.",Transport,synthetic_augmented,needs_review,ambiguous_polite,g0380,train
+C00952,Bus pass photo is wrong and the transport ofifce keeps askking me to come back next week.,Transport,synthetic_augmented,unverified,typo,g0237,train
+C00953,"Sir, the bus stand near the hostel has no shade or seating.",Transport,synthetic_augmented,needs_review,ambiguous_polite,g0378,train
+C00954,"Hello team, zebra crossing near the main gate has faded and cars don't slow down. Thank you.",General,synthetic_augmented,unverified,polite,g0303,val
+C00955,Stray dogs are entering the hostel compound at night through the broken back gate.,Hostel,synthetic_handwritten,unverified,original,g0037,train
+C00956,The basketball court floor is cracked and someone could twist an ankle.,General,synthetic_handwritten,unverified,original,g0324,train
+C00957,Video lecutres keep buffering on the capmus network.,Wi-Fi & Network,synthetic_augmented,unverified,typo,g0165,train
+C00958,My laptop shows 'limited connectivity' on the campus network only.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0175,train
+C00959,Our professor has missed four conscutive classes and no substitute was arranged.,Academic,synthetic_augmented,unverified,typo,g0126,train
+C00960,water cooler near the common room is not cooling at all,Hostel,synthetic_augmented,unverified,casual,g0006,train
+C00961,All computers in the west lab lost internet during class.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0164,train
+C00962,bus tracking app doesnt open on campus wi-fi but opens on mobile data,Wi-Fi & Network,synthetic_augmented,needs_review,ambiguous_casual,g0359,train
+C00963,The elective I was allotted was changed without telling me.,Academic,synthetic_handwritten,unverified,original,g0140,train
+C00964,"Hi, security guard at the back gate was sleeping when I passed at 11 pm. Kindly resolve this soon.",General,synthetic_augmented,unverified,polite,g0326,train
+C00965,Library closes before the closing time on the website on weekends.,Library,synthetic_handwritten,unverified,original,g0254,train
+C00966,Cataloogue says the book is avvailable but it isn't on the shelf.,Library,synthetic_augmented,unverified,typo,g0253,train
+C00967,Hostel fee receipt shows room charges for a room I never stayed in.,Hostel,synthetic_handwritten,unverified,original,g0041,train
+C00968,The window of the bus won't close and rain was coming in all the way.,Transport,synthetic_handwritten,unverified,original,g0235,train
+C00969,Wi-Fi keeps disconnecting every few minutes in the engineering block.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0152,val
+C00970,curtain rod fell down and the room gets too much afternoon sun,Hostel,synthetic_augmented,unverified,casual,g0039,train
+C00971,"Respected sir, common room door lock is broken, anyone can walk in at night. Request you to take action.",Hostel,synthetic_augmented,unverified,polite,g0012,train
+C00972,"Sir, switchboard in my room gives a small shock when I plug in my charger.",Hostel,synthetic_augmented,unverified,polite,g0045,test
+C00973,"Internet speed in the hostel is below 1 Mbps in the evening, we can't even attend online interviews.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0173,test
+C00974,Bus pass scanner failed for many students at the main gate.,Transport,synthetic_handwritten,unverified,original,g0217,train
+C00975,The widow of the bus won't close and rain was coming in all the way.,Transport,synthetic_augmented,unverified,typo,g0235,train
+C00976,there was a fuel smell inside bus 9 this morning,Transport,synthetic_augmented,unverified,casual,g0236,train
+C00977,wi-fi coverage is very poor in the sports complex,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0190,train
+C00978,"To whom it may concern, I get a certificate warning every time I open the login page. Needs urgent attention.",Wi-Fi & Network,synthetic_augmented,unverified,polite,g0183,train
+C00979,Please provide jain food option for students who don't eat onion and galric.,Mess,synthetic_augmented,unverified,typo,g0083,test
+C00980,the wardrobe in my room has no lock so i cant keep my laptop safe,Hostel,synthetic_augmented,unverified,casual,g0038,train
+C00981,Food was cold during dinner today.,Mess,synthetic_handwritten,unverified,original,g0059,train
+C00982,Switchboard in my room gives a small shock when I plug in my charger.,Hostel,synthetic_handwritten,unverified,original,g0045,test
+C00983,Course registration shows incomplete even though every field is filled.,Academic,synthetic_handwritten,unverified,original,g0117,train
+C00984,Please build a covered waitiing area at the cliic entrance.,General,synthetic_augmented,unverified,typo,g0316,train
+C00985,Guest Wi-Fi login page keeps reloading after I enter my details.,Wi-Fi & Network,synthetic_handwritten,unverified,original,g0154,train
+C00986,"Internet is available but GitHub and Stack Overflow are blocked, which affects our project work.",Wi-Fi & Network,synthetic_handwritten,unverified,original,g0189,val
+C00987,"Course feedback form on the portal can't be submitted, it says session expired.",Academic,synthetic_handwritten,unverified,original,g0133,train
+C00988,"Reading room in the academic block is always locked, who keeps the key?",General,synthetic_handwritten,needs_review,ambiguous,g0400,val
+C00989,Room B-214 light keeps flickering and the swittch is loose.,Hostel,synthetic_augmented,unverified,typo,g0003,train
+C00990,"Hi, I'd like to report that fire extinguisher on our floor has expired, the date on it is last year.",Hostel,synthetic_augmented,unverified,polite,g0040,train
+C00991,"Hi, please allot a room on the ground floor, my leg is in a cast.",Hostel,synthetic_augmented,unverified,polite,g0047,train
+C00992,guest wi-fi login page keeps reloading after i enter my details,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0154,train
+C00993,my cgpa on the portal is different from the one on the provisional certificate,Academic,synthetic_augmented,unverified,casual,g0136,train
+C00994,video lectures keep buffering on the campus network,Wi-Fi & Network,synthetic_augmented,unverified,casual,g0165,train
+C00995,Recyling bins outside the auditorium are overflowiing.,General,synthetic_augmented,unverified,typo,g0308,test
+C00996,Found a small piece of plastic in the salad today.,Mess,synthetic_handwritten,unverified,original,g0069,train
+C00997,A group is talking loudly in the silent study area and the staff do nothing.,Library,synthetic_handwritten,unverified,original,g0268,val
+C00998,Security guard at the back gate was sleeping when I passed at 11 pm.,General,synthetic_handwritten,unverified,original,g0326,train
+C00999,Book stack numbering is confusing and there is no signboard for the section.,Library,synthetic_handwritten,unverified,original,g0298,test
