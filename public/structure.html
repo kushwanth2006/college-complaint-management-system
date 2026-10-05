@@ -484,6 +484,10 @@
             <h1 id="adminWelcome">Welcome back</h1>
             <p>Here's everything routed to your department right now.</p>
           </div>
+          <div class="complaint-export">
+            <button class="btn btn-ghost" type="button" onclick="downloadComplaintWorkbook('/api/admin/complaints/export.xlsx', this)">Download Excel</button>
+            <span>Department reports · contact details and images excluded</span>
+          </div>
         </div>
 
         <div class="stat-grid" id="adminStatGrid"></div>
@@ -563,7 +567,13 @@
         <div class="list-head" style="margin-top:28px;"><h2>Approved staff</h2></div>
         <div id="superApprovedList"></div>
 
-        <div class="list-head" style="margin-top:28px;"><h2>All complaints</h2></div>
+        <div class="list-head super-complaints-head" style="margin-top:28px;">
+          <h2>All complaints</h2>
+          <div class="complaint-export">
+            <button class="btn btn-ghost" type="button" onclick="downloadComplaintWorkbook('/api/superadmin/complaints/export.xlsx', this)">Download Excel</button>
+            <span>All reports · contact details and images excluded</span>
+          </div>
+        </div>
         <div id="superComplaintList"></div>
       </div>
     </main>

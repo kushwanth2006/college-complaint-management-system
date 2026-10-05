@@ -17,9 +17,13 @@ Campus complaint tracking for students, department staff, and super administrato
 
 Complaint images are limited to PNG, JPEG, GIF, or WebP data under 4 MB.
 
-## Complaint category model
+Department staff can download an Excel workbook containing individual complaints routed to their department. The super admin can download all complaints. Exports include complaint and triage details, but omit image payloads and student contact details.
 
-Category suggestions use a small multinomial Naive Bayes model trained from `data/complaint-category-dataset-v2.csv`. The checked-in model can be retrained with `npm run train:model`; training uses only the training split and excludes rows marked `needs_review`. Priority remains rule-based, including safety-related Critical terms. The supplied dataset is synthetic, so its confidence scores are not validated on real campus complaints. Staff should review category suggestions.
+## Complaint prediction models
+
+Run `npm run train:model` to preprocess the complaint text, train category and priority multinomial Naive Bayes models on the training split, evaluate both on validation and test splits, and save them as `lib/complaint-category-model.json` and `lib/complaint-priority-model.json`. Rows marked `needs_review` are excluded, and duplicate groups must stay within one split. Accuracy, macro-F1, per-label scores, and confusion matrices are saved with each model; test metrics are printed by the command.
+
+The category labels are synthetic. The source data has no dependable priority labels, so preprocessing assigns priority labels using the app's existing safety and service-disruption rubric. The priority model therefore learns to approximate those weak labels, not historical staff decisions. Safety terms still force Critical priority directly. The dataset and both models are project prototypes; evaluate on real, staff-confirmed, de-identified complaints before operational use.
 
 ## Tests
 

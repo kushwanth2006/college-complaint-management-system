@@ -115,6 +115,35 @@ async function api(path, { method = 'GET', body } = {}) {
   return data || {};
 }
 
+async function downloadComplaintWorkbook(path, button) {
+  setBtnLoading(button, true);
+  button.setAttribute('aria-busy', 'true');
+  try {
+    const response = await fetch(path, { credentials: 'same-origin' });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.error || 'Could not download the complaint workbook.');
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const disposition = response.headers.get('content-disposition') || '';
+    const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] || 'campusdesk-complaints.xlsx';
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Complaint workbook downloaded.');
+  } catch (err) {
+    showToast(err.message || 'Could not download the complaint workbook.');
+  } finally {
+    button.removeAttribute('aria-busy');
+    setBtnLoading(button, false);
+  }
+}
+
 function setBtnLoading(btn, loading) {
   if (!btn) return;
   btn.disabled = loading;

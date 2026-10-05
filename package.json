@@ -12,6 +12,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "connect-mongo": "^5.1.0",
+    "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "express-session": "^1.18.1",
     "mongodb": "^6.18.0",

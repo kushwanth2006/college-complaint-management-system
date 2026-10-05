@@ -1,7 +1,7 @@
-# Complaint category model data
+# Complaint model data
 
-`complaint-category-dataset-v2.csv` is the supplied dataset, copied into the project so model training is reproducible. It has 999 rows, exact application category names, group IDs, and train/validation/test splits. All examples are synthetic. The current training script uses only rows where `split=train` and `label_status` is not `needs_review`; validation and test rows stay out of training.
+`complaint-category-dataset-v2.csv` contains 999 synthetic complaint texts, category labels, group IDs, and train/validation/test splits. Every group stays in a single split to reduce near-duplicate leakage. The trainer trims and normalizes whitespace, excludes `needs_review` rows, and learns text features through the shared unigram/bigram preprocessing in `lib/category-classifier.js`.
 
-The model is a small multinomial Naive Bayes text classifier implemented with Node's standard library. Retrain it with `npm run train:model`. The generated model is `lib/complaint-category-model.json` and is loaded by the existing category suggestion flow. Training excludes ambiguous rows, but the included `unverified` examples are still synthetic; scores are not calibrated on real campus complaints. Use this model for a project prototype, keep staff review in the workflow, and evaluate against staff-confirmed, de-identified reports before operational use.
+The source has no priority annotations. During preprocessing, priority labels are generated with `suggestPriorityFromRules`, the app's safety and service-disruption rubric. This is weak-label supervision: priority evaluation measures how well the model approximates that rubric, not how well it matches staff decisions or real-world urgency. Safety-related terms still receive a direct Critical override in the app.
 
-Complaint priority remains governed by the existing safety and service-disruption rules. The dataset does not contain a dependable priority label.
+Run `npm run train:model` to train both models and evaluate them on the held-out validation and test splits. The category and priority model JSON files contain accuracy, macro-F1, per-label precision/recall/F1, and confusion matrices. Replace the synthetic source with approved, de-identified, staff-confirmed complaint data before relying on its predictions operationally.

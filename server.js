@@ -4,6 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs');
+const ExcelJS = require('exceljs');
 const { db, initDb } = require('./db/database');
 const { sendOtpEmail, isConfigured: isMailerConfigured, isDevelopmentFallbackEnabled } = require('./lib/mailer');
 const { analyzeComplaint, similarity } = require('./lib/complaint-ai');
@@ -85,6 +86,7 @@ app.get('/', async (req, res) => {
 
 const CATEGORIES = ['Hostel', 'Mess', 'Academic', 'Wi-Fi & Network', 'Transport', 'Library', 'General'];
 const HOSTELS = ['Leaders', 'Kings', 'Queens', 'B3', 'IGH', 'VVH'];
+const STAGES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 
 const OTP_TTL_MS = 10 * 60 * 1000;   // 10 minutes
 const RESET_TOKEN_TTL_MS = 10 * 60 * 1000;
@@ -227,6 +229,116 @@ async function publicComplaints(rows) {
   const routing = new Map();
   await Promise.all([...new Set(rows.map(row => row.category))].map(async category => routing.set(category, await getRoutingDetails(category))));
   return Promise.all(rows.map(row => publicComplaint(row, routing.get(row.category))));
+}
+
+async function departmentComplaintRows(department) {
+  return db.all(`
+    SELECT c.*, u.name as student_name, u.college_id as student_college_id, u.email as student_email, u.hostel as student_hostel
+    FROM complaints c
+    LEFT JOIN users u ON c.user_id = u.id
+    WHERE c.category = ?
+    ORDER BY c.id DESC
+  `, department);
+}
+
+async function allComplaintRows() {
+  return db.all(`
+    SELECT c.*, u.name as student_name, u.college_id as student_college_id, u.email as student_email, u.hostel as student_hostel
+    FROM complaints c
+    LEFT JOIN users u ON c.user_id = u.id
+    ORDER BY c.id DESC
+  `);
+}
+
+async function sendComplaintWorkbook(res, rows, scope) {
+  try {
+    const complaints = await publicComplaints(rows);
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'CampusDesk';
+    workbook.created = new Date();
+    workbook.subject = 'Complaint export';
+    workbook.title = 'CampusDesk complaints';
+
+    const worksheet = workbook.addWorksheet('Complaints', { views: [{ state: 'frozen', ySplit: 1 }] });
+    worksheet.columns = [
+      { header: 'Complaint ID', key: 'id', width: 18 },
+      { header: 'Department', key: 'category', width: 22 },
+      { header: 'Title', key: 'title', width: 34 },
+      { header: 'Description', key: 'description', width: 60 },
+      { header: 'Location', key: 'location', width: 24 },
+      { header: 'Status', key: 'status', width: 18 },
+      { header: 'Priority', key: 'priority', width: 14 },
+      { header: 'Priority reason', key: 'priorityReason', width: 42 },
+      { header: 'Assigned staff', key: 'officer', width: 24 },
+      { header: 'Submitted at', key: 'createdAt', width: 22, style: { numFmt: 'dd mmm yyyy hh:mm' } },
+      { header: 'SLA deadline', key: 'slaDeadline', width: 22, style: { numFmt: 'dd mmm yyyy hh:mm' } },
+      { header: 'SLA overdue', key: 'overdue', width: 14 },
+      { header: 'Progress note', key: 'note', width: 42 },
+      { header: 'Incident ID', key: 'incidentId', width: 18 },
+      { header: 'Incident reports', key: 'incidentReports', width: 16 },
+      { header: 'Affected students', key: 'affectedStudents', width: 18 },
+      { header: 'Urgent incident', key: 'urgentIncident', width: 16 },
+      { header: 'AI category', key: 'aiCategory', width: 22 },
+      { header: 'AI confidence (%)', key: 'aiConfidence', width: 18 },
+      { header: 'AI summary', key: 'aiSummary', width: 42 },
+      { header: 'AI keywords', key: 'aiKeywords', width: 30 },
+      { header: 'Suggested resolution', key: 'aiSuggestedResolution', width: 48 },
+      { header: 'Possible duplicate (%)', key: 'duplicateSimilarity', width: 22 },
+      { header: 'Feedback rating', key: 'feedbackRating', width: 16 },
+      { header: 'Feedback comments', key: 'feedbackComments', width: 42 }
+    ];
+
+    worksheet.getRow(1).height = 26;
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FF1C2541' } };
+    worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3EEE0' } };
+    worksheet.getRow(1).alignment = { vertical: 'middle', wrapText: true };
+    worksheet.autoFilter = { from: 'A1', to: `${worksheet.getColumn(worksheet.columnCount).letter}1` };
+    for (const key of ['description', 'priorityReason', 'note', 'aiSummary', 'aiSuggestedResolution', 'feedbackComments']) {
+      worksheet.getColumn(key).alignment = { vertical: 'top', wrapText: true };
+    }
+
+    for (const complaint of complaints) {
+      worksheet.addRow({
+        id: complaint.id,
+        category: complaint.category,
+        title: complaint.title,
+        description: complaint.description,
+        location: complaint.location,
+        status: STAGES[complaint.stageIndex] || 'Unknown',
+        priority: complaint.aiPriority,
+        priorityReason: complaint.aiPriorityReason,
+        officer: complaint.officer,
+        createdAt: complaint.createdAt ? new Date(complaint.createdAt) : null,
+        slaDeadline: complaint.slaDeadline ? new Date(complaint.slaDeadline) : null,
+        overdue: complaint.overdue ? 'Yes' : 'No',
+        note: complaint.note,
+        incidentId: complaint.incident?.id,
+        incidentReports: complaint.incident?.reportCount,
+        affectedStudents: complaint.incident?.affectedStudents,
+        urgentIncident: complaint.incident?.urgent ? 'Yes' : 'No',
+        aiCategory: complaint.aiCategory,
+        aiConfidence: complaint.aiConfidence,
+        aiSummary: complaint.aiSummary,
+        aiKeywords: Array.isArray(complaint.aiKeywords) ? complaint.aiKeywords.join(', ') : '',
+        aiSuggestedResolution: Array.isArray(complaint.aiSuggestedResolution) ? complaint.aiSuggestedResolution.join('\n') : '',
+        duplicateSimilarity: complaint.possibleDuplicate?.similarity,
+        feedbackRating: complaint.feedback?.rating,
+        feedbackComments: complaint.feedback?.comments
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const date = new Date().toISOString().slice(0, 10);
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="campusdesk-${scope}-complaints-${date}.xlsx"`,
+      'Cache-Control': 'no-store'
+    });
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error('Complaint workbook export failed:', error);
+    res.status(500).json({ error: 'Could not create the complaint workbook.' });
+  }
 }
 
 function cleanRequired(value, maxLength = 5000) {
@@ -634,16 +746,14 @@ app.get('/api/admin/me', async (req, res) => {
 /* ---------------- admin complaint routes (scoped to admin.department) ---------------- */
 
 app.get('/api/admin/complaints', requireAdminAuth, async (req, res) => {
-  const rows = await db.all(`
-    SELECT c.*, u.name as student_name, u.college_id as student_college_id, u.email as student_email, u.hostel as student_hostel
-    FROM complaints c
-    LEFT JOIN users u ON c.user_id = u.id
-    WHERE c.category = ?
-    ORDER BY c.id DESC
-  `, req.admin.department);
-
+  const rows = await departmentComplaintRows(req.admin.department);
   res.json({ complaints: await publicComplaints(rows) });
 });
+
+app.get('/api/admin/complaints/export.xlsx', requireAdminAuth, asyncRoute(async (req, res) => {
+  const rows = await departmentComplaintRows(req.admin.department);
+  await sendComplaintWorkbook(res, rows, 'department');
+}));
 
 app.patch('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
   const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
@@ -733,14 +843,14 @@ app.get('/api/superadmin/admins', requireSuperAdmin, async (req, res) => {
 });
 
 app.get('/api/superadmin/complaints', requireSuperAdmin, async (req, res) => {
-  const rows = await db.all(`
-    SELECT c.*, u.name as student_name, u.college_id as student_college_id, u.email as student_email, u.hostel as student_hostel
-    FROM complaints c
-    LEFT JOIN users u ON c.user_id = u.id
-    ORDER BY c.id DESC
-  `);
+  const rows = await allComplaintRows();
   res.json({ complaints: await publicComplaints(rows) });
 });
+
+app.get('/api/superadmin/complaints/export.xlsx', requireSuperAdmin, asyncRoute(async (req, res) => {
+  const rows = await allComplaintRows();
+  await sendComplaintWorkbook(res, rows, 'all');
+}));
 
 app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {
   const rows = await db.all('SELECT * FROM complaints ORDER BY id DESC');
