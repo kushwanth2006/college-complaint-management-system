@@ -660,7 +660,8 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 .sidebar{
   width:220px; flex-shrink:0; background:var(--ink); color:var(--paper);
   display:flex; flex-direction:column; padding:22px 16px; gap:4px;
-  box-sizing:border-box; min-height:100vh; max-height:100vh; overflow-y:auto;
+  position:fixed; inset:0 auto 0 0; z-index:20; box-sizing:border-box;
+  height:auto; min-height:0; max-height:none; overflow:hidden;
   scrollbar-width:none; -ms-overflow-style:none;
 }
 .sidebar::-webkit-scrollbar{display:none;}
@@ -671,7 +672,7 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 .side-spacer{flex:1;}
 .side-foot{font-size:11px; color:rgba(255,253,247,0.45); padding:10px 12px 0; border-top:1px solid rgba(255,253,247,0.12); margin-top:8px;}
 
-.dash-main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.dash-main{flex:0 0 calc(100% - 220px); width:calc(100% - 220px); min-width:0; margin-left:220px; box-sizing:border-box; display:flex; flex-direction:column;}
 .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--line); background:var(--paper);}
 .dash-menu-toggle{display:inline-flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; width:38px; height:38px; padding:0; border:1px solid var(--line); border-radius:8px; background:var(--paper); cursor:pointer; transition:background .15s ease, border-color .15s ease;}
 .dash-menu-toggle:hover{background:var(--parchment); border-color:var(--text-soft);}
@@ -892,6 +893,7 @@ button.stat-card.is-selected{box-shadow:0 0 0 2px var(--stat-color), var(--shado
   .hero-ctas .btn{flex:1 1 180px; text-align:center;}
   .dash-shell{flex-direction:column;}
   #view-dashboard .sidebar, .role-dash-shell .sidebar{position:fixed; inset:0 auto 0 0; z-index:40; width:min(280px, 82vw); box-sizing:border-box; padding:22px 16px; box-shadow:16px 0 34px rgba(28,37,65,.18); transform:translateX(-105%); transition:transform .22s ease;}
+  .dash-shell > .dash-main{flex:1 1 auto; width:100%; margin-left:0;}
   #view-dashboard .dash-shell.sidebar-collapsed .sidebar, .role-dash-shell.sidebar-collapsed .sidebar{display:flex;}
   #view-dashboard .dash-shell.menu-open .sidebar, .role-dash-shell.menu-open .sidebar{transform:translateX(0);}
   #view-dashboard .dashboard-menu-backdrop, .role-dash-shell .dashboard-menu-backdrop{position:fixed; inset:0; z-index:39; border:0; padding:0; background:rgba(28,37,65,.38); cursor:pointer;}
