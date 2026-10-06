@@ -156,6 +156,7 @@ function setBtnLoading(btn, loading) {
 let currentUser = null;      // { collegeId, name, hostel, email } — set from the server's response
 let ticketsCache = [];       // this student's complaints, loaded from /api/complaints
 let activeFilterCategory = 'All';
+let activeStudentOverviewFilter = 'All';
 let activeSearch = '';
 let stagedPhotoDataUrl = null;
 let modalReturnFocus = null;
@@ -623,6 +624,7 @@ function enterDashboard() {
   hideAllViewsExcept('view-dashboard');
 
   activeFilterCategory = 'All';
+  activeStudentOverviewFilter = 'All';
   activeSearch = '';
   syncDashboardMenuForViewport();
   document.getElementById('dashWelcome').textContent = 'Welcome back, ' + currentUser.name.split(' ')[0];
@@ -645,6 +647,7 @@ function initials(name) {
 
 function goToDashboardHome() {
   activeFilterCategory = 'All';
+  activeStudentOverviewFilter = 'All';
   activeSearch = '';
   const searchInput = document.getElementById('complaintSearchInput');
   if (searchInput) searchInput.value = '';
@@ -768,18 +771,25 @@ function renderStatGrid() {
   });
 
   const cards = [
-    { label: 'Total complaints', num: counts.total, dot: null },
-    { label: 'Awaiting routing', num: counts.open, dot: 'dot-red' },
-    { label: 'In progress', num: counts.progress, dot: 'icon-progress' },
-    { label: 'Resolved', num: counts.resolved, dot: 'dot-green' }
+    { label: 'Total complaints', num: counts.total, dot: null, filter: 'All' },
+    { label: 'Awaiting action', num: counts.open, dot: 'dot-red', filter: 'Awaiting action' },
+    { label: 'In progress', num: counts.progress, dot: 'icon-progress', filter: 'In progress' },
+    { label: 'Resolved', num: counts.resolved, dot: 'dot-green', filter: 'Resolved' }
   ];
 
   document.getElementById('statGrid').innerHTML = cards.map(c => `
-    <div class="stat-card">
+    <button type="button" class="stat-card${activeStudentOverviewFilter === c.filter && c.filter !== 'All' ? ' is-selected' : ''}" aria-pressed="${activeStudentOverviewFilter === c.filter && c.filter !== 'All'}" onclick="setStudentOverviewFilter('${c.filter}')">
       <div class="stat-num">${c.num}</div>
       <div class="stat-label">${c.dot === 'icon-progress' ? progressIcon() : c.dot ? `<span class="status-dot ${c.dot}"></span>` : ''}${c.label}</div>
-    </div>
+    </button>
   `).join('');
+}
+
+function setStudentOverviewFilter(filter) {
+  activeStudentOverviewFilter = filter === 'All' || filter === activeStudentOverviewFilter ? 'All' : filter;
+  renderStatGrid();
+  renderTicketList();
+  if (activeStudentOverviewFilter !== 'All') document.getElementById('ticketList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderFilterRow() {
@@ -808,6 +818,10 @@ function tkStripClass(category) {
 
 function renderTicketList() {
   let tickets = myTickets();
+
+  if (activeStudentOverviewFilter === 'Awaiting action') tickets = tickets.filter(t => t.stageIndex < 2);
+  else if (activeStudentOverviewFilter === 'In progress') tickets = tickets.filter(t => t.stageIndex === 2);
+  else if (activeStudentOverviewFilter === 'Resolved') tickets = tickets.filter(t => t.stageIndex >= 3);
 
   if (activeFilterCategory !== 'All') {
     tickets = tickets.filter(t => t.category === activeFilterCategory);
@@ -1312,22 +1326,27 @@ function renderAdminStatGrid() {
   });
 
   const cards = [
-    { label: 'Total incidents', num: counts.total, dot: null },
-    { label: 'Awaiting action', num: counts.open, dot: 'dot-red' },
-    { label: 'In progress', num: counts.progress, dot: 'icon-progress' },
-    { label: 'Resolved', num: counts.resolved, dot: 'dot-green' }
+    { label: 'Total incidents', num: counts.total, dot: null, filter: 'All' },
+    { label: 'Awaiting action', num: counts.open, dot: 'dot-red', filter: 'Awaiting action' },
+    { label: 'In progress', num: counts.progress, dot: 'icon-progress', filter: 'In Progress' },
+    { label: 'Resolved', num: counts.resolved, dot: 'dot-green', filter: 'Resolved' }
   ];
 
   document.getElementById('adminStatGrid').innerHTML = cards.map(c => `
-    <div class="stat-card">
+    <button type="button" class="stat-card${activeAdminFilterStage === c.filter && c.filter !== 'All' ? ' is-selected' : ''}" aria-pressed="${activeAdminFilterStage === c.filter && c.filter !== 'All'}" onclick="setAdminOverviewFilter('${c.filter}')">
       <div class="stat-num">${c.num}</div>
       <div class="stat-label">${c.dot === 'icon-progress' ? progressIcon() : c.dot ? `<span class="status-dot ${c.dot}"></span>` : ''}${c.label}</div>
-    </div>
+    </button>
   `).join('');
 }
 
+function setAdminOverviewFilter(stage) {
+  setAdminFilterStage(stage === activeAdminFilterStage && stage !== 'All' ? 'All' : stage);
+  if (activeAdminFilterStage !== 'All') document.getElementById('adminTicketList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderAdminFilterRow() {
-  const stages = ['All', ...STAGES];
+  const stages = ['All', 'Awaiting action', 'In Progress', 'Resolved', 'Submitted', 'Assigned', 'Closed'];
   document.getElementById('adminFilterRow').innerHTML = stages.map(s =>
     `<button type="button" class="filter-pill${s === activeAdminFilterStage ? ' active' : ''}" onclick="setAdminFilterStage('${s.replace(/'/g, "\\'")}')">${s}</button>`
   ).join('');
@@ -1335,6 +1354,7 @@ function renderAdminFilterRow() {
 
 function setAdminFilterStage(stage) {
   activeAdminFilterStage = stage;
+  renderAdminStatGrid();
   renderAdminFilterRow();
   renderAdminTicketList();
 }
@@ -1347,7 +1367,11 @@ function filterAdminTickets(value) {
 function renderAdminTicketList() {
   let tickets = adminTicketsCache;
 
-  if (activeAdminFilterStage !== 'All') {
+  if (activeAdminFilterStage === 'Awaiting action') {
+    tickets = tickets.filter(t => t.stageIndex < 2);
+  } else if (activeAdminFilterStage === 'Resolved') {
+    tickets = tickets.filter(t => t.stageIndex >= 3);
+  } else if (activeAdminFilterStage !== 'All') {
     const stageIdx = STAGES.indexOf(activeAdminFilterStage);
     tickets = tickets.filter(t => t.stageIndex === stageIdx);
   }
@@ -1407,8 +1431,8 @@ function renderAdminTicketList() {
           <select id="prioritySelect-${safeId}">${['Low','Medium','High','Critical'].map(p => `<option value="${p}"${p === t.aiPriority ? ' selected' : ''}>${p} priority</option>`).join('')}</select>
           <select id="categorySelect-${safeId}">${CATEGORIES.map(c => `<option value="${c}"${c === t.category ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}</select>
           <input type="text" id="noteInput-${safeId}" placeholder="Add an update note (optional)">
-          <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}')">AI recommendations</button>
-          <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}')">${t.incident ? 'Update incident' : 'Update'}</button>
+          <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}', this)">AI recommendations</button>
+          <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}', this)">${t.incident ? 'Update incident' : 'Update'}</button>
           <button class="btn btn-ghost small btn-delete" onclick="deleteAdminComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
         </div>
       </div>
@@ -1427,7 +1451,7 @@ async function deleteAdminComplaint(code) {
   } catch (err) { showToast(err.message); }
 }
 
-async function submitAdminStageUpdate(code) {
+async function submitAdminStageUpdate(code, button) {
   const safeId = code.replace(/[^A-Za-z0-9_-]/g, '');
   const select = document.getElementById('stageSelect-' + safeId);
   const noteInput = document.getElementById('noteInput-' + safeId);
@@ -1436,18 +1460,28 @@ async function submitAdminStageUpdate(code) {
   const stageIndex = parseInt(select.value, 10);
   const note = noteInput.value.trim();
 
+  setBtnLoading(button, true);
   try {
-    const data = await api('/api/admin/complaints/' + encodeURIComponent(code), {
+    const { complaint } = await api('/api/admin/complaints/' + encodeURIComponent(code), {
       method: 'PATCH',
       body: { stageIndex, note: note || undefined, priority, category }
     });
-    const refreshed = await api('/api/admin/complaints');
-    adminTicketsCache = refreshed.complaints || [];
+    const incidentId = complaint.incident?.id;
+    adminTicketsCache = adminTicketsCache.flatMap(ticket => {
+      const affected = ticket.id === complaint.id || (incidentId && ticket.incident?.id === incidentId);
+      if (!affected) return [ticket];
+      if (complaint.category !== currentAdmin.department) return [];
+      return [{ ...ticket, stageIndex: complaint.stageIndex, note: complaint.note, category: complaint.category,
+        officer: complaint.officer, aiPriority: complaint.aiPriority, aiPriorityReason: complaint.aiPriorityReason,
+        slaDeadline: complaint.slaDeadline, overdue: complaint.overdue, incident: complaint.incident }];
+    });
     showToast(code + ' updated.');
     renderAdminStatGrid();
     renderAdminTicketList();
   } catch (err) {
     showToast(err.message);
+  } finally {
+    setBtnLoading(button, false);
   }
 }
 
@@ -1915,10 +1949,10 @@ function renderSuperAdminAdmins() {
   const approved = superAdminAdmins.filter(a => a.status === 'approved');
 
   document.getElementById('superStatGrid').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${superAdminAdmins.length}</div><div class="stat-label">Total staff accounts</div></div>
-    <div class="stat-card"><div class="stat-num">${pending.length}</div><div class="stat-label"><span class="status-dot dot-red"></span>Pending approval</div></div>
-    <div class="stat-card"><div class="stat-num">${approved.length}</div><div class="stat-label"><span class="status-dot dot-green"></span>Approved</div></div>
-    <div class="stat-card"><div class="stat-num">${CATEGORIES.length}</div><div class="stat-label">Departments</div></div>
+    <button type="button" class="stat-card" onclick="focusSuperAdminSection('super-staff-accounts')"><div class="stat-num">${superAdminAdmins.length}</div><div class="stat-label">Total staff accounts</div></button>
+    <button type="button" class="stat-card" onclick="focusSuperAdminSection('super-pending-approval')"><div class="stat-num">${pending.length}</div><div class="stat-label"><span class="status-dot dot-red"></span>Pending approval</div></button>
+    <button type="button" class="stat-card" onclick="focusSuperAdminSection('super-approved-staff')"><div class="stat-num">${approved.length}</div><div class="stat-label"><span class="status-dot dot-green"></span>Approved</div></button>
+    <button type="button" class="stat-card" onclick="enterSuperAdminUserSearch()"><div class="stat-num">${CATEGORIES.length}</div><div class="stat-label">Departments</div></button>
   `;
 
   const pendingList = document.getElementById('superPendingList');
@@ -1972,6 +2006,10 @@ function renderSuperAdminAdmins() {
           </div>
         </div>
       </div>`).join('');
+}
+
+function focusSuperAdminSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function approveAdmin(id) {
@@ -2219,9 +2257,13 @@ function hidePageLoader() {
   document.body.classList.remove('page-loading');
 }
 
-async function openAiRecommendations(code) {
+async function openAiRecommendations(code, button) {
+  setBtnLoading(button, true);
+  openModal('<p role="status">Finding similar resolved complaints…</p>', true);
+  const request = superAdminComplaintDetailRequest;
   try {
     const data = await api('/api/admin/complaints/' + encodeURIComponent(code) + '/recommendations');
+    if (request !== superAdminComplaintDetailRequest) return;
     openModal(`
       <h3>AI recommendations</h3>
       <p class="modal-sub">Review these suggestions before taking action.</p>
@@ -2231,7 +2273,14 @@ async function openAiRecommendations(code) {
       <div class="detail-section-title">Similar resolved complaints</div>
       ${data.similar.length ? data.similar.map(item => `<div class="history-item"><strong>${escapeHtml(item.id)} · ${item.similarity}% similar</strong><span>${escapeHtml(item.title)}</span><small>Previous resolution: ${escapeHtml(item.resolution || 'Not recorded')}</small></div>`).join('') : '<p>No sufficiently similar resolved complaint was found.</p>'}
       <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">Close</button></div>`, true);
-  } catch (err) { showToast(err.message); }
+  } catch (err) {
+    if (request === superAdminComplaintDetailRequest) {
+      closeModal();
+      showToast(err.message);
+    }
+  } finally {
+    setBtnLoading(button, false);
+  }
 }
 
 /* Brighten only the dots near the pointer on authentication views. CSS draws
@@ -2299,35 +2348,28 @@ async function bootApp() {
     deptSelect.insertAdjacentHTML('beforeend', CATEGORIES.map(c => `<option value="${c}">${dropdownLabel(c)}</option>`).join(''));
   }
 
-  // If a session cookie from an earlier visit is still valid, skip straight
-  // to the right dashboard instead of showing the landing page. Student and
-  // admin sessions are mutually exclusive in practice, so try student first,
-  // then admin — the super-admin panel always requires re-entering the key.
+  // Restore either regular account with one request; the super-admin panel
+  // always requires re-entering the shared key.
   try {
-    const data = await api('/api/me');
-    if (data.user) {
-      currentUser = data.user;
+    const session = await api('/api/session');
+    if (session.user) {
+      currentUser = session.user;
       await loadMyTickets();
       enterDashboard();
       return;
     }
-  } catch (err) {
-    // Network error reaching /api/me — stay on the landing page.
-  }
-
-  try {
-    const data = await api('/api/admin/me');
-    if (data.admin) {
-      currentAdmin = data.admin;
+    if (session.admin) {
+      currentAdmin = session.admin;
       await loadAdminTickets();
       enterAdminDashboard();
     }
   } catch (err) {
-    // Not logged in as staff either — stay on the landing page.
+    // Network error reaching /api/session — stay on the landing page.
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   initAuthDotFields();
-  Promise.all([bootApp(), waitForPageLoad()]).finally(hidePageLoader);
+  waitForPageLoad().then(hidePageLoader);
+  bootApp().catch(hidePageLoader);
 });

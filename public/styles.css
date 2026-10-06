@@ -703,6 +703,10 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
   background:var(--paper); border:1px solid var(--line); border-top:3px solid var(--stat-color, var(--line));
   border-radius:10px; padding:18px; box-shadow:var(--shadow); animation:cardIn .35s ease both;
 }
+button.stat-card{appearance:none; width:100%; color:inherit; font:inherit; text-align:left; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+button.stat-card:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(28,37,65,.12);}
+button.stat-card:focus-visible{outline:3px solid rgba(47,111,237,.38); outline-offset:3px;}
+button.stat-card.is-selected{box-shadow:0 0 0 2px var(--stat-color), var(--shadow);}
 .stat-card:nth-child(1){--stat-color:#2F6FED;}
 .stat-card:nth-child(2){--stat-color:#E0433A;}
 .stat-card:nth-child(3){--stat-color:#F5A623;}

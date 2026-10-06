@@ -456,6 +456,28 @@ app.get('/api/me', async (req, res) => {
   res.json({ user: publicUser(user) });
 });
 
+app.get('/api/session', async (req, res) => {
+  if (req.session.userId) {
+    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
+    if (!user || (req.session.authVersion ?? 0) !== (user.auth_version || 0)) {
+      req.session.destroy(() => {});
+      return res.json({ user: null, admin: null });
+    }
+    return res.json({ user: publicUser(user), admin: null });
+  }
+
+  if (req.session.adminId) {
+    const admin = await db.get('SELECT * FROM admins WHERE id = ?', req.session.adminId);
+    if (!admin || admin.status !== 'approved' || (req.session.authVersion ?? 0) !== (admin.auth_version || 0)) {
+      req.session.destroy(() => {});
+      return res.json({ user: null, admin: null });
+    }
+    return res.json({ user: null, admin: publicAdmin(admin) });
+  }
+
+  res.json({ user: null, admin: null });
+});
+
 app.patch('/api/me', requireAuth, async (req, res) => {
   const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
   if (!user) return res.status(401).json({ error: 'Session invalid.' });
@@ -573,7 +595,7 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
     'SELECT * FROM complaints WHERE user_id = ? ORDER BY id DESC'
   , req.session.userId);
 
-  res.json({ complaints: await publicComplaints(rows, { includeSensitive: true }) });
+  res.json({ complaints: await publicComplaints(rows) });
 });
 
 app.post('/api/complaints/analyze', requireAuth, analysisLimit, async (req, res) => {
@@ -599,9 +621,11 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
   }
   if (!validPhoto(photo)) return res.status(400).json({ error: 'Photo must be a PNG, JPEG, GIF, or WebP image under 4 MB.' });
 
-  const code = await genComplaintCode();
-  const routing = await getRoutingDetails(category);
-  const complaints = await db.recentOpenComplaints(500);
+  const [code, routing, complaints] = await Promise.all([
+    genComplaintCode(),
+    getRoutingDetails(category),
+    db.recentOpenComplaints(500)
+  ]);
   const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
   const slaDeadline = new Date(Date.now() + SLA_HOURS[analysis.priority] * 60 * 60 * 1000);
 
@@ -612,13 +636,7 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
     routing.officer, routing.note, photo || null, analysis.category, analysis.confidence, analysis.priority, analysis.reason, analysis.summary,
     analysis.entities.keywords, analysis.entities.location, analysis.suggestedResolution, analysis.duplicate, slaDeadline);
 
-  await db.run(
-    'INSERT INTO complaint_history (complaint_id, previous_status, new_status, updated_by, remarks) VALUES (?, ?, ?, ?, ?)',
-    info.lastInsertRowid, null, 'Submitted', req.session.userId, 'Complaint submitted and analyzed.'
-  );
-
-  const row = await db.get('SELECT * FROM complaints WHERE id = ?', info.lastInsertRowid);
-  res.status(201).json({ complaint: await publicComplaint(row, undefined, { includeSensitive: true }) });
+  res.status(201).json({ complaint: await publicComplaint(info.row, routing) });
 });
 
 app.get('/api/complaints/:code/history', requireAuth, async (req, res) => {
@@ -804,7 +822,7 @@ app.get('/api/admin/complaints/:code/history', requireAdminAuth, async (req, res
 app.get('/api/admin/complaints/:code/recommendations', requireAdminAuth, async (req, res) => {
   const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
   if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
-  const rows = await db.all('SELECT * FROM complaints WHERE category = ? ORDER BY id DESC', req.admin.department);
+  const rows = await db.recentResolvedComplaints(req.admin.department, 150);
   const text = `${complaint.title} ${complaint.description}`;
   const similar = rows.filter(row => row.id !== complaint.id && row.stage_index >= 3)
     .map(row => ({ id: row.complaint_code, title: row.title, category: row.category, resolution: row.note, similarity: Math.round(similarity(text, `${row.title} ${row.description}`) * 100) }))

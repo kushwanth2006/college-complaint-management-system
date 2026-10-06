@@ -45,6 +45,17 @@ async function nextId(name) {
   return (result.value || result).seq;
 }
 
+async function reserveIds(name, count, session) {
+  if (!count) return [];
+  const result = await collection('counters').findOneAndUpdate(
+    { _id: name },
+    { $inc: { seq: count } },
+    { upsert: true, returnDocument: 'after', session }
+  );
+  const lastId = (result.value || result).seq;
+  return Array.from({ length: count }, (_, index) => lastId - count + index + 1);
+}
+
 function tableFrom(sql) {
   const match = sql.match(/\bFROM\s+(users|admins|complaints|password_resets|complaint_history|feedback)\b/i);
   if (!match) throw new Error(`Unsupported MongoDB query: ${sql}`);
@@ -78,7 +89,7 @@ async function attachComplaintStudents(complaints) {
 
 async function joinedComplaints(category) {
   const filter = category ? { category } : {};
-  const complaints = await collection('complaints').find(filter).sort({ id: -1 }).toArray();
+  const complaints = await collection('complaints').find(filter).project({ photo: 0 }).sort({ id: -1 }).toArray();
   return attachComplaintStudents(complaints);
 }
 
@@ -128,18 +139,22 @@ const db = {
       await session.withTransaction(async () => {
         await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
         const filter = complaint.incident_code ? { incident_code: complaint.incident_code } : { id: complaint.id };
-        const members = await collection('complaints').find(filter, { session }).toArray();
+        const members = await collection('complaints').find(filter, { session })
+          .project({ id: 1, stage_index: 1, incident_urgent: 1, sla_deadline: 1 })
+          .toArray();
         if (members.some(c => c.incident_urgent) && values.stage_index < 3) {
           values.ai_priority = 'Critical';
           values.sla_deadline = new Date(Math.min(...members.map(c => new Date(c.sla_deadline).getTime())));
         }
         await collection('complaints').updateMany(filter, { $set: values }, { session });
         const stages = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
-        for (const member of members) {
-          await collection('complaint_history').insertOne({ id: await nextId('complaint_history'), created_at: new Date(), complaint_id: member.id,
-            previous_status: stages[member.stage_index], new_status: stages[values.stage_index], updated_by: actor,
-            remarks: `Incident update: ${values.note}` }, { session });
-        }
+        const historyIds = await reserveIds('complaint_history', members.length, session);
+        const createdAt = new Date();
+        await collection('complaint_history').insertMany(members.map((member, index) => ({
+          id: historyIds[index], created_at: createdAt, complaint_id: member.id,
+          previous_status: stages[member.stage_index], new_status: stages[values.stage_index], updated_by: actor,
+          remarks: `Incident update: ${values.note}`
+        })), { session });
       });
     } finally { await session.endSession(); }
   },
@@ -175,6 +190,17 @@ const db = {
     const boundedLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 500;
     return collection('complaints')
       .find({ stage_index: { $lt: 3 } })
+      .project({ id: 1, complaint_code: 1, title: 1, description: 1, stage_index: 1 })
+      .sort({ id: -1 })
+      .limit(boundedLimit)
+      .toArray();
+  },
+
+  async recentResolvedComplaints(category, limit = 150) {
+    const boundedLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 300) : 150;
+    return collection('complaints')
+      .find({ category, stage_index: { $gte: 3 } })
+      .project({ id: 1, complaint_code: 1, title: 1, description: 1, category: 1, note: 1, stage_index: 1 })
       .sort({ id: -1 })
       .limit(boundedLimit)
       .toArray();
@@ -206,7 +232,13 @@ const db = {
             Object.assign(document, original);
             // A shared write serializes matching across concurrent server processes.
             await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
-            const rows = await collection('complaints').find({ stage_index: { $lt: 3 }, created_at: { $gte: new Date(document.created_at.getTime() - 600000) } }, { session }).sort({ id: 1 }).toArray();
+            const rows = await collection('complaints')
+              .find({ stage_index: { $lt: 3 }, created_at: { $gte: new Date(document.created_at.getTime() - 600000) } }, { session })
+              .project({ id: 1, complaint_code: 1, category: 1, title: 1, description: 1, location: 1, user_id: 1, created_at: 1,
+                stage_index: 1, note: 1, ai_priority: 1, sla_deadline: 1, incident_code: 1, incident_seed_id: 1,
+                incident_started_at: 1, incident_title: 1, incident_urgent: 1 })
+              .sort({ id: 1 })
+              .toArray();
             const group = assignIncident(document, rows);
             const seed = group.members.find(r => r.id === group.metadata.incident_seed_id);
             if (seed && seed.id !== document.id) {
@@ -220,10 +252,13 @@ const db = {
               ...group.metadata, ai_priority: group.priority, sla_deadline: group.deadline,
               ...(group.metadata.incident_urgent ? { ai_priority_reason: document.ai_priority_reason } : {})
             } }, { session });
+            const [historyId] = await reserveIds('complaint_history', 1, session);
+            await collection('complaint_history').insertOne({ id: historyId, created_at: new Date(), complaint_id: document.id,
+              previous_status: null, new_status: 'Submitted', updated_by: document.user_id, remarks: 'Complaint submitted and analyzed.' }, { session });
           });
         } finally { await session.endSession(); }
       } else await collection(name).insertOne(document);
-      return { changes: 1, lastInsertRowid: document.id };
+      return { changes: 1, lastInsertRowid: document.id, ...(name === 'complaints' ? { row: document } : {}) };
     }
 
     const update = sql.match(/^UPDATE (\w+) SET (.+) WHERE id = \?$/i);
@@ -285,6 +320,9 @@ async function initDb() {
     collection('admins').createIndex({ college_id: 1 }, { unique: true, sparse: true }),
     collection('complaints').createIndex({ complaint_code: 1 }, { unique: true }),
     collection('complaints').createIndex({ user_id: 1 }),
+    collection('complaints').createIndex({ stage_index: 1, id: -1 }),
+    collection('complaints').createIndex({ category: 1, stage_index: 1, id: -1 }),
+    collection('complaints').createIndex({ stage_index: 1, created_at: 1, id: 1 }),
     collection('complaints').createIndex({ incident_code: 1 }),
     collection('complaints').createIndex({ created_at: 1, stage_index: 1 }),
     collection('password_resets').createIndex({ user_id: 1 }),
