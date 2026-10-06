@@ -72,6 +72,17 @@ const asyncRoute = (handler) => (req, res, next) => {
   Promise.resolve(handler(req, res, next)).catch(next);
 };
 
+function requestedPage(req, defaultPageSize = 50) {
+  const page = Number(req.query.page || 1);
+  const pageSize = Number(req.query.pageSize || defaultPageSize);
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) return null;
+  return { page, pageSize };
+}
+
+function pageInfo(page, pageSize, total) {
+  return { page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Browsers auto-request this; there's no favicon asset yet, so just
@@ -187,7 +198,7 @@ function requireSuperAdmin(req, res, next) {
   next();
 }
 
-async function publicComplaint(c, suppliedRouting) {
+async function publicComplaint(c, suppliedRouting, { includeSensitive = false } = {}) {
   const routing = suppliedRouting || await getRoutingDetails(c.category);
   return {
     id: c.complaint_code,
@@ -201,12 +212,14 @@ async function publicComplaint(c, suppliedRouting) {
     // Preserve staff progress updates, but keep submitted/routed complaints
     // in sync with the current department handler and the no-handler fallback.
     note: c.stage_index <= 1 ? routing.note : c.note,
-    photo: c.photo || null,
     createdAt: c.created_at,
     studentName: c.student_name || null,
     studentCollegeId: c.student_college_id || null,
-    studentEmail: c.student_email || null,
-    studentHostel: c.student_hostel || null,
+    ...(includeSensitive ? {
+      photo: c.photo || null,
+      studentEmail: c.student_email || null,
+      studentHostel: c.student_hostel || null
+    } : {}),
     aiCategory: c.ai_category || null,
     aiConfidence: c.ai_confidence || null,
     aiPriority: c.ai_priority || null,
@@ -225,10 +238,10 @@ async function publicComplaint(c, suppliedRouting) {
   };
 }
 
-async function publicComplaints(rows) {
+async function publicComplaints(rows, options = {}) {
   const routing = new Map();
   await Promise.all([...new Set(rows.map(row => row.category))].map(async category => routing.set(category, await getRoutingDetails(category))));
-  return Promise.all(rows.map(row => publicComplaint(row, routing.get(row.category))));
+  return Promise.all(rows.map(row => publicComplaint(row, routing.get(row.category), options)));
 }
 
 async function departmentComplaintRows(department) {
@@ -560,7 +573,7 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
     'SELECT * FROM complaints WHERE user_id = ? ORDER BY id DESC'
   , req.session.userId);
 
-  res.json({ complaints: await publicComplaints(rows) });
+  res.json({ complaints: await publicComplaints(rows, { includeSensitive: true }) });
 });
 
 app.post('/api/complaints/analyze', requireAuth, analysisLimit, async (req, res) => {
@@ -605,7 +618,7 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
   );
 
   const row = await db.get('SELECT * FROM complaints WHERE id = ?', info.lastInsertRowid);
-  res.status(201).json({ complaint: await publicComplaint(row) });
+  res.status(201).json({ complaint: await publicComplaint(row, undefined, { includeSensitive: true }) });
 });
 
 app.get('/api/complaints/:code/history', requireAuth, async (req, res) => {
@@ -843,13 +856,48 @@ app.get('/api/superadmin/admins', requireSuperAdmin, async (req, res) => {
 });
 
 app.get('/api/superadmin/complaints', requireSuperAdmin, async (req, res) => {
-  const rows = await allComplaintRows();
-  res.json({ complaints: await publicComplaints(rows) });
+  const page = requestedPage(req);
+  if (!page) return res.status(400).json({ error: 'Invalid complaint page.' });
+  const result = await db.complaintPage(page);
+  res.json({ complaints: await publicComplaints(result.rows), pagination: pageInfo(page.page, page.pageSize, result.total) });
 });
 
 app.get('/api/superadmin/complaints/export.xlsx', requireSuperAdmin, asyncRoute(async (req, res) => {
   const rows = await allComplaintRows();
   await sendComplaintWorkbook(res, rows, 'all');
+}));
+
+app.get('/api/superadmin/complaints/:code', requireSuperAdmin, asyncRoute(async (req, res) => {
+  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
+  if (!complaint) return res.status(404).json({ error: 'Complaint not found.' });
+  const student = complaint.user_id ? await db.get('SELECT * FROM users WHERE id = ?', complaint.user_id) : null;
+  const row = {
+    ...complaint,
+    student_name: student?.name,
+    student_college_id: student?.college_id,
+    student_email: student?.email,
+    student_hostel: student?.hostel
+  };
+  res.json({ complaint: await publicComplaint(row, undefined, { includeSensitive: true }) });
+}));
+
+app.get('/api/superadmin/students/complaints', requireSuperAdmin, asyncRoute(async (req, res) => {
+  const page = requestedPage(req);
+  if (!page) return res.status(400).json({ error: 'Invalid student page.' });
+  const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 80) : '';
+  const result = await db.studentComplaintSummaryPage({ ...page, search });
+  res.json({ students: result.students, pagination: pageInfo(page.page, page.pageSize, result.total) });
+}));
+
+app.get('/api/superadmin/students/:studentId/complaints', requireSuperAdmin, asyncRoute(async (req, res) => {
+  const studentId = Number(req.params.studentId);
+  if (!Number.isSafeInteger(studentId) || studentId < 1) return res.status(400).json({ error: 'Invalid student.' });
+  const student = await db.get('SELECT id FROM users WHERE id = ?', studentId);
+  if (!student) return res.status(404).json({ error: 'Student not found.' });
+  const page = requestedPage(req, 25);
+  if (!page) return res.status(400).json({ error: 'Invalid complaint page.' });
+  const result = await db.complaintPage({ ...page, userId: studentId });
+  res.json({ complaints: await publicComplaints(result.rows), pagination: pageInfo(page.page, page.pageSize, result.total) });
 }));
 
 app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {

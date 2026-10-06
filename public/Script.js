@@ -90,16 +90,18 @@ function fmtDate(iso) {
    Talks to the same-origin Express API. Throws an Error with a
    user-facing .message (and .code, when the server sends one, e.g.
    NO_ACCOUNT / WRONG_PASSWORD) so callers can just try/catch. */
-async function api(path, { method = 'GET', body } = {}) {
+async function api(path, { method = 'GET', body, signal } = {}) {
   let res;
   try {
     res = await fetch(path, {
       method,
       credentials: 'same-origin',
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      signal
     });
   } catch (networkErr) {
+    if (networkErr.name === 'AbortError') throw networkErr;
     throw new Error('Could not reach the server — check that it\u2019s running and try again.');
   }
 
@@ -157,6 +159,7 @@ let activeFilterCategory = 'All';
 let activeSearch = '';
 let stagedPhotoDataUrl = null;
 let modalReturnFocus = null;
+let superAdminComplaintDetailRequest = 0;
 let notifSeen = false;
 let pendingReset = null;   // { collegeId, resetToken? }
 
@@ -166,8 +169,18 @@ let adminTicketsCache = [];     // complaints routed to currentAdmin's departmen
 let activeAdminFilterStage = 'All';
 let activeAdminSearch = '';
 let superAdminAdmins = [];      // all staff accounts, loaded in the super-admin panel
-let superAdminComplaints = [];  // all complaints, loaded for super-admin deletion
+let superAdminComplaints = [];  // current paginated complaint results
 let superAdminComplaintsError = null;
+let superAdminComplaintPagination = { page: 1, pageSize: 50, total: 0, totalPages: 0 };
+let superAdminComplaintController = null;
+let superAdminComplaintRequest = 0;
+let superAdminStudentSummaries = [];
+let superAdminStudentPagination = { page: 1, pageSize: 50, total: 0, totalPages: 0 };
+let superAdminStudentError = null;
+let superAdminStudentSearchTimer = null;
+let superAdminStudentSearchController = null;
+let superAdminStudentSearchRequest = 0;
+const superAdminStudentComplaintPages = new Map();
 let superAdminSearchResults = { students: [], staff: [] }; // last "Manage credentials" search
 
 /* ---------------- View switching ---------------- */
@@ -905,6 +918,7 @@ function escapeHtml(str) {
 
 /* ---------------- Modals ---------------- */
 function openModal(html, isWide = false) {
+  superAdminComplaintDetailRequest++;
   modalReturnFocus = document.activeElement;
   const content = document.getElementById('modalContent');
   content.innerHTML = html;
@@ -915,6 +929,7 @@ function openModal(html, isWide = false) {
   setTimeout(() => content.focus(), 0);
 }
 function closeModal() {
+  superAdminComplaintDetailRequest++;
   const backdrop = document.getElementById('modalBackdrop');
   backdrop.classList.add('closing');
   setTimeout(() => {
@@ -1468,7 +1483,11 @@ async function handleSuperAdminLogout() {
 async function enterSuperAdminDashboard() {
   hideAllViewsExcept('view-superadmin-dashboard');
   syncRoleDashboardMenu('view-superadmin-dashboard');
-  await Promise.all([loadSuperAdminAdmins(), loadSuperAdminComplaints()]);
+  await Promise.all([
+    loadSuperAdminAdmins(),
+    loadSuperAdminComplaints(superAdminComplaintPagination.page || 1),
+    loadSuperAdminStudentSummaries(superAdminStudentPagination.page || 1)
+  ]);
   renderSuperAdminAdmins();
   renderSuperAdminComplaints();
   renderSuperAdminStudentComplaints();
@@ -1492,15 +1511,53 @@ async function loadSuperAdminAdmins() {
   }
 }
 
-async function loadSuperAdminComplaints() {
+async function loadSuperAdminComplaints(page = 1) {
+  superAdminComplaintController?.abort();
+  const controller = new AbortController();
+  superAdminComplaintController = controller;
+  const request = ++superAdminComplaintRequest;
+  const list = document.getElementById('superComplaintList');
+  if (list) list.setAttribute('aria-busy', 'true');
   try {
-    const data = await api('/api/superadmin/complaints');
+    const params = new URLSearchParams({ page: String(page), pageSize: String(superAdminComplaintPagination.pageSize) });
+    const data = await api(`/api/superadmin/complaints?${params}`, { signal: controller.signal });
+    if (request !== superAdminComplaintRequest) return;
     superAdminComplaints = data.complaints || [];
+    superAdminComplaintPagination = data.pagination || superAdminComplaintPagination;
     superAdminComplaintsError = null;
   } catch (err) {
+    if (err.name === 'AbortError' || request !== superAdminComplaintRequest) return;
     superAdminComplaints = [];
     superAdminComplaintsError = err.message || 'Could not load complaints.';
     showToast(err.message || 'Could not load complaints.');
+  } finally {
+    if (request === superAdminComplaintRequest && list) list.setAttribute('aria-busy', 'false');
+  }
+}
+
+async function loadSuperAdminStudentSummaries(page = 1, search = document.getElementById('superStudentComplaintSearch')?.value.trim() || '') {
+  superAdminStudentSearchController?.abort();
+  const controller = new AbortController();
+  superAdminStudentSearchController = controller;
+  const request = ++superAdminStudentSearchRequest;
+  const list = document.getElementById('superStudentComplaintList');
+  if (list) list.setAttribute('aria-busy', 'true');
+  try {
+    const params = new URLSearchParams({ page: String(page), pageSize: String(superAdminStudentPagination.pageSize), search });
+    const data = await api(`/api/superadmin/students/complaints?${params}`, { signal: controller.signal });
+    if (request !== superAdminStudentSearchRequest) return;
+    superAdminStudentSummaries = data.students || [];
+    superAdminStudentPagination = data.pagination || superAdminStudentPagination;
+    superAdminStudentError = null;
+    superAdminStudentComplaintPages.clear();
+  } catch (err) {
+    if (err.name === 'AbortError' || request !== superAdminStudentSearchRequest) return;
+    superAdminStudentSummaries = [];
+    superAdminStudentError = err.message || 'Could not load student complaints.';
+    superAdminStudentPagination = { ...superAdminStudentPagination, page: 1, total: 0, totalPages: 0 };
+    showToast(superAdminStudentError);
+  } finally {
+    if (request === superAdminStudentSearchRequest && list) list.setAttribute('aria-busy', 'false');
   }
 }
 
@@ -1508,25 +1565,28 @@ function renderSuperAdminComplaints() {
   const list = document.getElementById('superComplaintList');
   if (!list) return;
   if (superAdminComplaints.length === 0) {
-    list.innerHTML = '<div class="empty-state"><h3>No complaints</h3><div>Complaints will appear here.</div></div>';
+    list.innerHTML = superAdminComplaintsError
+      ? '<div class="empty-state"><h3>Could not load complaints</h3><div>Check your connection, then try again.</div><button class="btn btn-ghost small" type="button" data-super-complaint-action="retry" style="margin-top:12px;">Retry</button></div>'
+      : '<div class="empty-state"><h3>No complaints</h3><div>Complaints will appear here.</div></div>';
+    bindSuperAdminComplaintActions(list);
+    renderSuperAdminComplaintPagination();
     return;
   }
 
-  list.innerHTML = consolidateTickets(superAdminComplaints).sort((a, b) => Number(Boolean(b.incident?.urgent)) - Number(Boolean(a.incident?.urgent))).map(t => {
+  list.innerHTML = superAdminComplaints.map(t => {
     const stageName = STAGES[t.stageIndex] || 'Submitted';
     const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
     const dotClass = statusDotClass(t.stageIndex);
-    const safeId = t.id.replace(/'/g, "\\'");
     const studentInfo = t.studentName ? `${escapeHtml(t.studentName)} (${escapeHtml(t.studentCollegeId || '')})` : '';
 
     return `
-      <div class="tk-card clickable" onclick="openSuperAdminComplaintModal('${safeId}')">
+      <div class="tk-card">
         <div class="tk-strip" style="background:${tkStripClass(t.category)}"></div>
         <div class="tk-body">
           <div class="tk-top">
             <div>
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span class="tk-id mono">${t.id}</span>
+                <span class="tk-id mono">${escapeHtml(t.id)}</span>
                 <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
               </div>
               <div class="tk-title">${escapeHtml(t.title)}</div>
@@ -1539,14 +1599,44 @@ function renderSuperAdminComplaints() {
               </div>
             </div>
             <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
-              <button type="button" class="btn btn-ghost small" onclick="event.stopPropagation(); openSuperAdminComplaintModal('${safeId}')">View details →</button>
-              <button type="button" class="btn btn-ghost small btn-delete" onclick="event.stopPropagation(); deleteSuperAdminComplaint('${safeId}')">Delete</button>
+              <button type="button" class="btn btn-ghost small" data-super-complaint-action="view" data-complaint-id="${escapeHtml(t.id)}">View details →</button>
+              <button type="button" class="btn btn-ghost small btn-delete" data-super-complaint-action="delete" data-complaint-id="${escapeHtml(t.id)}">Delete</button>
             </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+  bindSuperAdminComplaintActions(list);
+  renderSuperAdminComplaintPagination();
+}
+
+function bindSuperAdminComplaintActions(list) {
+  list.onclick = event => {
+    const button = event.target.closest('button[data-super-complaint-action]');
+    if (!button) return;
+    if (button.dataset.superComplaintAction === 'view') openSuperAdminComplaintModal(button.dataset.complaintId);
+    else if (button.dataset.superComplaintAction === 'delete') deleteSuperAdminComplaint(button.dataset.complaintId);
+    else if (button.dataset.superComplaintAction === 'retry') enterSuperAdminDashboard();
+  };
+}
+
+function renderSuperAdminComplaintPagination() {
+  const pagination = document.getElementById('superComplaintPagination');
+  if (!pagination) return;
+  const { page, pageSize, total, totalPages } = superAdminComplaintPagination;
+  if (!totalPages || totalPages <= 1) { pagination.innerHTML = ''; return; }
+  const first = (page - 1) * pageSize + 1;
+  const last = Math.min(page * pageSize, total);
+  pagination.innerHTML = `
+    <button class="btn btn-ghost small" type="button" data-page="${page - 1}"${page <= 1 ? ' disabled' : ''}>Previous</button>
+    <span>Showing ${first}–${last} of ${total} complaints · Page ${page} of ${totalPages}</span>
+    <button class="btn btn-ghost small" type="button" data-page="${page + 1}"${page >= totalPages ? ' disabled' : ''}>Next</button>
+  `;
+  pagination.querySelectorAll('button[data-page]').forEach(button => button.addEventListener('click', async () => {
+    await loadSuperAdminComplaints(Number(button.dataset.page));
+    renderSuperAdminComplaints();
+  }));
 }
 
 function renderSuperAdminStudentComplaints() {
@@ -1556,71 +1646,172 @@ function renderSuperAdminStudentComplaints() {
   const clear = document.getElementById('clearSuperStudentComplaintSearch');
   if (!list || !count || !search || !clear) return;
 
-  const query = search.value.trim().toLocaleLowerCase();
   clear.disabled = !search.value;
-  const groups = new Map();
-  for (const complaint of superAdminComplaints) {
-    const collegeId = String(complaint.studentCollegeId || '').trim();
-    const key = collegeId ? `student:${collegeId.toLocaleUpperCase()}` : `unlinked:${complaint.id}`;
-    if (!groups.has(key)) groups.set(key, {
-      name: complaint.studentName || 'Student record unavailable',
-      collegeId,
-      complaints: []
-    });
-    groups.get(key).complaints.push(complaint);
-  }
-
-  const students = [...groups.values()]
-    .filter(student => !query || `${student.name} ${student.collegeId}`.toLocaleLowerCase().includes(query))
-    .sort((a, b) => b.complaints.length - a.complaints.length || a.name.localeCompare(b.name));
-  const reportCount = students.reduce((total, student) => total + student.complaints.length, 0);
-  count.textContent = `${students.length} ${students.length === 1 ? 'student' : 'students'} · ${reportCount} ${reportCount === 1 ? 'complaint' : 'complaints'}`;
-
-  if (students.length === 0) {
-    list.innerHTML = superAdminComplaintsError
-      ? '<div class="empty-state"><h3>Could not load student complaints</h3><div>Check your connection, then try again.</div><button class="btn btn-ghost small" type="button" onclick="enterSuperAdminDashboard()" style="margin-top:12px;">Retry</button></div>'
-      : superAdminComplaints.length
-        ? '<div class="empty-state"><h3>No matching students</h3><div>Try another name or College ID.</div></div>'
-        : '<div class="empty-state"><h3>No complaints yet</h3><div>Student complaint totals will appear here.</div></div>';
+  renderSuperAdminStudentPagination();
+  if (superAdminStudentError) {
+    count.textContent = 'Student complaint totals could not be loaded.';
+    list.innerHTML = '<div class="empty-state"><h3>Could not load student complaints</h3><div>Check your connection, then try again.</div><button class="btn btn-ghost small" type="button" data-student-action="retry-summaries" style="margin-top:12px;">Retry</button></div>';
+    bindSuperAdminStudentSummaryActions(list);
     return;
   }
 
-  list.innerHTML = students.map(student => `
-    <details class="student-complaint-group">
+  const { page, pageSize, total } = superAdminStudentPagination;
+  const first = total ? (page - 1) * pageSize + 1 : 0;
+  const last = Math.min(page * pageSize, total);
+  count.textContent = total
+    ? `Showing ${first}–${last} of ${total} students. Each count includes that student’s full complaint history.`
+    : '';
+
+  if (superAdminStudentSummaries.length === 0) {
+    list.innerHTML = total || search.value.trim()
+      ? '<div class="empty-state"><h3>No matching students</h3><div>Try another name or College ID.</div></div>'
+      : '<div class="empty-state"><h3>No complaints yet</h3><div>Student complaint totals will appear here.</div></div>';
+    list.onclick = null;
+    return;
+  }
+
+  list.innerHTML = superAdminStudentSummaries.map(student => `
+    <details class="student-complaint-group" data-student-id="${escapeHtml(String(student.studentId))}">
       <summary>
-        <span class="student-complaint-person">${escapeHtml(student.name)}</span>
+        <span class="student-complaint-person">${escapeHtml(student.name || 'Student record unavailable')}</span>
         ${student.collegeId ? `<span class="student-complaint-id mono">${escapeHtml(student.collegeId)}</span>` : ''}
-        <span class="student-complaint-total">${student.complaints.length} ${student.complaints.length === 1 ? 'complaint' : 'complaints'}</span>
+        <span class="student-complaint-total">${student.complaintCount} ${student.complaintCount === 1 ? 'complaint' : 'complaints'}</span>
       </summary>
-      <ul class="student-complaint-items">
-        ${student.complaints.map(complaint => {
-          const safeId = complaint.id.replace(/'/g, "\\'");
-          return `
-            <li class="student-complaint-item">
-              <div class="student-complaint-copy">
-                <strong>${escapeHtml(complaint.title || 'Untitled complaint')}</strong>
-                <p>${escapeHtml(complaint.description || 'No description provided.')}</p>
-                <span>${escapeHtml(complaint.category || 'General')} · ${escapeHtml(complaint.aiPriority || 'Unassigned')} · ${escapeHtml(STAGES[complaint.stageIndex] || 'Submitted')} · ${escapeHtml(fmtDate(complaint.createdAt))}</span>
-              </div>
-              <button class="btn btn-ghost small" type="button" onclick="openSuperAdminComplaintModal('${safeId}')">View complaint</button>
-            </li>
-          `;
-        }).join('')}
-      </ul>
+      <div class="student-complaint-items" data-student-complaint-list aria-live="polite"><p class="field-hint">Open to load complaint details.</p></div>
     </details>
   `).join('');
+
+  list.querySelectorAll('details[data-student-id]').forEach(details => details.addEventListener('toggle', () => {
+    if (details.open) loadSuperAdminStudentComplaintPage(details, 1);
+  }));
+  bindSuperAdminStudentSummaryActions(list);
+}
+
+function bindSuperAdminStudentSummaryActions(list) {
+  list.onclick = event => {
+    const button = event.target.closest('button[data-student-action]');
+    if (!button) return;
+    if (button.dataset.studentAction === 'retry-summaries') {
+      loadSuperAdminStudentSummaries(1).then(renderSuperAdminStudentComplaints);
+    } else if (button.dataset.studentAction === 'retry-details' || button.dataset.studentAction === 'load-more') {
+      const details = button.closest('details[data-student-id]');
+      if (details) loadSuperAdminStudentComplaintPage(details, Number(button.dataset.page));
+    } else if (button.dataset.studentAction === 'view-complaint') {
+      openSuperAdminComplaintModal(button.dataset.complaintId);
+    }
+  };
+}
+
+function renderSuperAdminStudentPagination() {
+  const pagination = document.getElementById('superStudentComplaintPagination');
+  if (!pagination) return;
+  const { page, pageSize, total, totalPages } = superAdminStudentPagination;
+  if (!totalPages || totalPages <= 1) { pagination.innerHTML = ''; return; }
+  pagination.innerHTML = `
+    <button class="btn btn-ghost small" type="button" data-page="${page - 1}"${page <= 1 ? ' disabled' : ''}>Previous</button>
+    <span>Page ${page} of ${totalPages} · ${total} students</span>
+    <button class="btn btn-ghost small" type="button" data-page="${page + 1}"${page >= totalPages ? ' disabled' : ''}>Next</button>
+  `;
+  pagination.querySelectorAll('button[data-page]').forEach(button => button.addEventListener('click', async () => {
+    await loadSuperAdminStudentSummaries(Number(button.dataset.page));
+    renderSuperAdminStudentComplaints();
+  }));
+}
+
+function scheduleSuperAdminStudentSearch(event) {
+  const search = document.getElementById('superStudentComplaintSearch');
+  const clear = document.getElementById('clearSuperStudentComplaintSearch');
+  if (!search || event?.isComposing) return;
+  if (clear) clear.disabled = !search.value;
+  clearTimeout(superAdminStudentSearchTimer);
+  superAdminStudentSearchTimer = setTimeout(async () => {
+    await loadSuperAdminStudentSummaries(1, search.value.trim());
+    renderSuperAdminStudentComplaints();
+  }, 300);
 }
 
 function clearSuperAdminStudentSearch() {
   const search = document.getElementById('superStudentComplaintSearch');
   if (!search) return;
+  clearTimeout(superAdminStudentSearchTimer);
   search.value = '';
-  renderSuperAdminStudentComplaints();
+  loadSuperAdminStudentSummaries(1, '').then(renderSuperAdminStudentComplaints);
   search.focus();
 }
 
-function openSuperAdminComplaintModal(code) {
-  const t = superAdminComplaints.find(c => c.id === code);
+async function loadSuperAdminStudentComplaintPage(details, page) {
+  const studentId = details.dataset.studentId;
+  const container = details.querySelector('[data-student-complaint-list]');
+  if (!studentId || !container) return;
+  const state = superAdminStudentComplaintPages.get(studentId) || { complaints: [], page: 0, totalPages: 0, total: 0, loading: false, error: null };
+  if (state.loading || (state.page >= page && !state.error)) return;
+  state.loading = true;
+  state.error = null;
+  superAdminStudentComplaintPages.set(studentId, state);
+  renderStudentComplaintDetails(details, state);
+  try {
+    const params = new URLSearchParams({ page: String(page), pageSize: '25' });
+    const data = await api(`/api/superadmin/students/${encodeURIComponent(studentId)}/complaints?${params}`);
+    state.complaints = page === 1 ? data.complaints || [] : state.complaints.concat(data.complaints || []);
+    state.page = page;
+    state.totalPages = data.pagination?.totalPages || 0;
+    state.total = data.pagination?.total || 0;
+  } catch (err) {
+    state.error = err.message || 'Could not load this student’s complaints.';
+  } finally {
+    state.loading = false;
+    superAdminStudentComplaintPages.set(studentId, state);
+    if (details.isConnected) renderStudentComplaintDetails(details, state);
+  }
+}
+
+function renderStudentComplaintDetails(details, state) {
+  const container = details.querySelector('[data-student-complaint-list]');
+  if (!container) return;
+  if (state.loading && state.complaints.length === 0) {
+    container.innerHTML = '<p class="field-hint" role="status">Loading complaints…</p>';
+    return;
+  }
+  if (state.error && state.complaints.length === 0) {
+    container.innerHTML = `<div class="empty-state"><h3>Could not load complaints</h3><div>${escapeHtml(state.error)}</div><button class="btn btn-ghost small" type="button" data-student-action="retry-details" data-page="${state.page + 1}" style="margin-top:12px;">Retry</button></div>`;
+    return;
+  }
+  container.innerHTML = `
+    <ul class="student-complaint-list">
+      ${state.complaints.map(complaint => `
+        <li class="student-complaint-item">
+          <div class="student-complaint-copy">
+            <strong>${escapeHtml(complaint.title || 'Untitled complaint')}</strong>
+            <p>${escapeHtml(complaint.description || 'No description provided.')}</p>
+            <span>${escapeHtml(complaint.category || 'General')} · ${escapeHtml(complaint.aiPriority || 'Unassigned')} · ${escapeHtml(STAGES[complaint.stageIndex] || 'Submitted')} · ${escapeHtml(fmtDate(complaint.createdAt))}</span>
+          </div>
+          <button class="btn btn-ghost small" type="button" data-student-action="view-complaint" data-complaint-id="${escapeHtml(complaint.id)}">View complaint</button>
+        </li>
+      `).join('')}
+    </ul>
+    ${state.error ? `<p class="field-hint" role="status">${escapeHtml(state.error)}</p>` : ''}
+    ${state.loading ? '<p class="field-hint" role="status">Loading more complaints…</p>' : ''}
+    ${state.page < state.totalPages ? `<button class="btn btn-ghost small" type="button" data-student-action="load-more" data-page="${state.page + 1}">Load more complaints (${state.total - state.complaints.length} remaining)</button>` : ''}
+  `;
+}
+
+async function openSuperAdminComplaintModal(code) {
+  if (!code) return;
+  openModal('<p role="status">Loading complaint details…</p>', true);
+  const request = superAdminComplaintDetailRequest;
+  try {
+    const data = await api('/api/superadmin/complaints/' + encodeURIComponent(code));
+    if (request !== superAdminComplaintDetailRequest) return;
+    renderSuperAdminComplaintModal(data.complaint);
+  } catch (err) {
+    if (request === superAdminComplaintDetailRequest) {
+      closeModal();
+      showToast(err.message || 'Could not load complaint details.');
+    }
+  }
+}
+
+function renderSuperAdminComplaintModal(t) {
   if (!t) return;
 
   const stageName = STAGES[t.stageIndex] || 'Submitted';
@@ -1656,10 +1847,11 @@ function openSuperAdminComplaintModal(code) {
     </div>
   ` : '';
 
-  openModal(`
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
     <div class="modal-header-row">
       <div style="display:flex; align-items:center; gap:10px;">
-        <span class="tk-id mono" style="font-size:16px; font-weight:700;">${t.id}</span>
+        <span class="tk-id mono" style="font-size:16px; font-weight:700;">${escapeHtml(t.id)}</span>
         <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
       </div>
       <button type="button" class="close-x-btn" onclick="closeModal()" aria-label="Close modal" title="Close (x)">&times;</button>
@@ -1668,7 +1860,7 @@ function openSuperAdminComplaintModal(code) {
     <h3 style="font-size:20px; margin-bottom:8px;">${escapeHtml(t.title)}</h3>
     <div class="tk-meta" style="margin-bottom:16px;">
       <span class="tk-cat" style="--chip-color:${(CATEGORY_META[t.category] || CATEGORY_META['General']).color}">${categoryIcon(t.category, 12)}${escapeHtml(t.category)}</span>
-      <span>📅 ${fmtDate(t.createdAt)}</span>
+      <span>📅 ${escapeHtml(fmtDate(t.createdAt))}</span>
     </div>
 
     <div class="detail-section-title">Complaint Description</div>
@@ -1685,10 +1877,13 @@ function openSuperAdminComplaintModal(code) {
     </div>
 
     <div class="modal-actions" style="margin-top:24px;">
-      <button class="btn btn-ghost btn-delete" onclick="deleteSuperAdminComplaintFromModal('${t.id.replace(/'/g, "\\'")}')">Delete complaint</button>
+      <button class="btn btn-ghost btn-delete" type="button" data-delete-super-complaint="${escapeHtml(t.id)}">Delete complaint</button>
       <button class="btn btn-primary" onclick="closeModal()">Close</button>
     </div>
-  `, true);
+  `;
+  content.querySelector('[data-delete-super-complaint]')?.addEventListener('click', event => {
+    deleteSuperAdminComplaintFromModal(event.currentTarget.dataset.deleteSuperComplaint);
+  });
 }
 
 async function deleteSuperAdminComplaintFromModal(code) {
@@ -1700,8 +1895,15 @@ async function deleteSuperAdminComplaint(code) {
   if (!confirm(`Delete ${code}? This cannot be undone.`)) return;
   try {
     await api('/api/superadmin/complaints/' + encodeURIComponent(code), { method: 'DELETE' });
-    superAdminComplaints = superAdminComplaints.filter(t => t.id !== code);
     superAdminComplaintsError = null;
+    superAdminStudentComplaintPages.clear();
+    const page = superAdminComplaints.length === 1 && superAdminComplaintPagination.page > 1
+      ? superAdminComplaintPagination.page - 1
+      : superAdminComplaintPagination.page;
+    await Promise.all([
+      loadSuperAdminComplaints(page),
+      loadSuperAdminStudentSummaries(superAdminStudentPagination.page, document.getElementById('superStudentComplaintSearch')?.value.trim() || '')
+    ]);
     renderSuperAdminComplaints();
     renderSuperAdminStudentComplaints();
     showToast(code + ' deleted.');

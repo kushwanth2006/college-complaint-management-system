@@ -66,19 +66,62 @@ function selectFilter(sql, params) {
   return {};
 }
 
-async function joinedComplaints(category) {
-  const filter = category ? { category } : {};
-  const complaints = await collection('complaints').find(filter).sort({ id: -1 }).toArray();
+async function attachComplaintStudents(complaints) {
   const userIds = [...new Set(complaints.map(item => item.user_id))];
-  const users = await collection('users').find({ id: { $in: userIds } }).toArray();
+  const users = await collection('users').find({ id: { $in: userIds } }).project({ id: 1, name: 1, college_id: 1 }).toArray();
   const byId = new Map(users.map(user => [user.id, user]));
   return complaints.map(item => {
     const user = byId.get(item.user_id) || {};
-    return { ...item, student_name: user.name, student_college_id: user.college_id, student_email: user.email, student_hostel: user.hostel };
+    return { ...item, student_name: user.name, student_college_id: user.college_id };
   });
 }
 
+async function joinedComplaints(category) {
+  const filter = category ? { category } : {};
+  const complaints = await collection('complaints').find(filter).sort({ id: -1 }).toArray();
+  return attachComplaintStudents(complaints);
+}
+
+async function pagedComplaints({ category, userId, page, pageSize }) {
+  const filter = {};
+  if (category) filter.category = category;
+  if (userId != null) filter.user_id = Number(userId);
+  const [complaints, total] = await Promise.all([
+    collection('complaints').find(filter).sort({ id: -1 }).skip((page - 1) * pageSize).limit(pageSize).toArray(),
+    collection('complaints').countDocuments(filter)
+  ]);
+  return { rows: await attachComplaintStudents(complaints), total };
+}
+
+async function studentComplaintSummaryPage({ search, page, pageSize }) {
+  const pipeline = [
+    { $group: { _id: '$user_id', complaintCount: { $sum: 1 } } },
+    { $lookup: { from: 'users', localField: '_id', foreignField: 'id', as: 'student' } },
+    { $unwind: { path: '$student', preserveNullAndEmptyArrays: true } }
+  ];
+  if (search) {
+    const pattern = escapeRegex(search);
+    pipeline.push({ $match: { $or: [
+      { 'student.name': { $regex: pattern, $options: 'i' } },
+      { 'student.college_id': { $regex: pattern, $options: 'i' } }
+    ] } });
+  }
+  pipeline.push({ $facet: {
+    students: [
+      { $sort: { complaintCount: -1, 'student.name': 1 } },
+      { $skip: (page - 1) * pageSize },
+      { $limit: pageSize },
+      { $project: { _id: 0, studentId: '$_id', name: '$student.name', collegeId: '$student.college_id', complaintCount: 1 } }
+    ],
+    total: [{ $count: 'count' }]
+  } });
+  const [result] = await collection('complaints').aggregate(pipeline).toArray();
+  return { students: result?.students || [], total: result?.total?.[0]?.count || 0 };
+}
+
 const db = {
+  complaintPage: pagedComplaints,
+  studentComplaintSummaryPage,
   async updateIncident(complaint, values, actor) {
     const session = client.startSession();
     try {

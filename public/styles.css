@@ -660,7 +660,10 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 .sidebar{
   width:220px; flex-shrink:0; background:var(--ink); color:var(--paper);
   display:flex; flex-direction:column; padding:22px 16px; gap:4px;
+  box-sizing:border-box; min-height:100vh; max-height:100vh; overflow-y:auto;
+  scrollbar-width:none; -ms-overflow-style:none;
 }
+.sidebar::-webkit-scrollbar{display:none;}
 .sidebar .brand{color:var(--paper); margin-bottom:22px; padding:0 6px;}
 .side-link{padding:10px 12px; border-radius:8px; font-size:14px; font-weight:600; color:rgba(255,253,247,0.72); transition:background .15s ease, color .15s ease;}
 .side-link:hover{background:rgba(255,253,247,0.08); color:var(--paper);}
@@ -864,6 +867,7 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 
 /* Small-screen layout: keep the existing UI, but let every dashboard and
    form control reflow instead of forcing a desktop-width layout. */
+@media (min-width:701px){.dash-menu-toggle{display:none;}}
 @media (max-width:700px){
   .wrap{padding-left:16px; padding-right:16px;}
   .site-nav .wrap{position:relative; padding:12px 16px; gap:10px;}
@@ -932,12 +936,15 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 .student-complaint-id{font-size:12px;color:var(--text-soft);}
 .student-complaint-total{padding:4px 9px;border:1px solid var(--line);border-radius:999px;background:var(--parchment);color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap;}
 .student-complaint-items{margin:0;padding:0 15px 4px 41px;list-style:none;}
+.student-complaint-list{margin:0;padding:0;list-style:none;}
 .student-complaint-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid var(--line);}
 .student-complaint-copy{min-width:0;}
 .student-complaint-copy strong{display:block;color:var(--ink);font-size:14px;overflow-wrap:anywhere;}
 .student-complaint-copy p{margin:4px 0;color:var(--text);font-size:13px;line-height:1.5;overflow-wrap:anywhere;}
 .student-complaint-copy span{color:var(--text-soft);font-size:11.5px;}
 .student-complaint-item .btn{flex-shrink:0;}
+.super-pagination{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0 28px;color:var(--text-soft);font-size:12px;}
+.super-pagination span{text-align:center;}
 .credential-search-form{display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:8px;}
 .credential-search-form input{min-width:260px;}
 .cred-edit-form{display:grid; grid-template-columns:repeat(3,1fr) auto; gap:10px; align-items:end; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);}
