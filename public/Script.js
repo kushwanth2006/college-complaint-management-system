@@ -167,6 +167,7 @@ let activeAdminFilterStage = 'All';
 let activeAdminSearch = '';
 let superAdminAdmins = [];      // all staff accounts, loaded in the super-admin panel
 let superAdminComplaints = [];  // all complaints, loaded for super-admin deletion
+let superAdminComplaintsError = null;
 let superAdminSearchResults = { students: [], staff: [] }; // last "Manage credentials" search
 
 /* ---------------- View switching ---------------- */
@@ -1470,6 +1471,15 @@ async function enterSuperAdminDashboard() {
   await Promise.all([loadSuperAdminAdmins(), loadSuperAdminComplaints()]);
   renderSuperAdminAdmins();
   renderSuperAdminComplaints();
+  renderSuperAdminStudentComplaints();
+}
+
+async function openSuperAdminStudentComplaintsFromSearch() {
+  closeRoleDashboardMenu('view-superadmin-search', { restoreFocus: false });
+  await enterSuperAdminDashboard();
+  const section = document.getElementById('super-student-complaints');
+  section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  section?.focus({ preventScroll: true });
 }
 
 async function loadSuperAdminAdmins() {
@@ -1486,8 +1496,10 @@ async function loadSuperAdminComplaints() {
   try {
     const data = await api('/api/superadmin/complaints');
     superAdminComplaints = data.complaints || [];
+    superAdminComplaintsError = null;
   } catch (err) {
     superAdminComplaints = [];
+    superAdminComplaintsError = err.message || 'Could not load complaints.';
     showToast(err.message || 'Could not load complaints.');
   }
 }
@@ -1535,6 +1547,76 @@ function renderSuperAdminComplaints() {
       </div>
     `;
   }).join('');
+}
+
+function renderSuperAdminStudentComplaints() {
+  const list = document.getElementById('superStudentComplaintList');
+  const count = document.getElementById('superStudentComplaintCount');
+  const search = document.getElementById('superStudentComplaintSearch');
+  const clear = document.getElementById('clearSuperStudentComplaintSearch');
+  if (!list || !count || !search || !clear) return;
+
+  const query = search.value.trim().toLocaleLowerCase();
+  clear.disabled = !search.value;
+  const groups = new Map();
+  for (const complaint of superAdminComplaints) {
+    const collegeId = String(complaint.studentCollegeId || '').trim();
+    const key = collegeId ? `student:${collegeId.toLocaleUpperCase()}` : `unlinked:${complaint.id}`;
+    if (!groups.has(key)) groups.set(key, {
+      name: complaint.studentName || 'Student record unavailable',
+      collegeId,
+      complaints: []
+    });
+    groups.get(key).complaints.push(complaint);
+  }
+
+  const students = [...groups.values()]
+    .filter(student => !query || `${student.name} ${student.collegeId}`.toLocaleLowerCase().includes(query))
+    .sort((a, b) => b.complaints.length - a.complaints.length || a.name.localeCompare(b.name));
+  const reportCount = students.reduce((total, student) => total + student.complaints.length, 0);
+  count.textContent = `${students.length} ${students.length === 1 ? 'student' : 'students'} · ${reportCount} ${reportCount === 1 ? 'complaint' : 'complaints'}`;
+
+  if (students.length === 0) {
+    list.innerHTML = superAdminComplaintsError
+      ? '<div class="empty-state"><h3>Could not load student complaints</h3><div>Check your connection, then try again.</div><button class="btn btn-ghost small" type="button" onclick="enterSuperAdminDashboard()" style="margin-top:12px;">Retry</button></div>'
+      : superAdminComplaints.length
+        ? '<div class="empty-state"><h3>No matching students</h3><div>Try another name or College ID.</div></div>'
+        : '<div class="empty-state"><h3>No complaints yet</h3><div>Student complaint totals will appear here.</div></div>';
+    return;
+  }
+
+  list.innerHTML = students.map(student => `
+    <details class="student-complaint-group">
+      <summary>
+        <span class="student-complaint-person">${escapeHtml(student.name)}</span>
+        ${student.collegeId ? `<span class="student-complaint-id mono">${escapeHtml(student.collegeId)}</span>` : ''}
+        <span class="student-complaint-total">${student.complaints.length} ${student.complaints.length === 1 ? 'complaint' : 'complaints'}</span>
+      </summary>
+      <ul class="student-complaint-items">
+        ${student.complaints.map(complaint => {
+          const safeId = complaint.id.replace(/'/g, "\\'");
+          return `
+            <li class="student-complaint-item">
+              <div class="student-complaint-copy">
+                <strong>${escapeHtml(complaint.title || 'Untitled complaint')}</strong>
+                <p>${escapeHtml(complaint.description || 'No description provided.')}</p>
+                <span>${escapeHtml(complaint.category || 'General')} · ${escapeHtml(complaint.aiPriority || 'Unassigned')} · ${escapeHtml(STAGES[complaint.stageIndex] || 'Submitted')} · ${escapeHtml(fmtDate(complaint.createdAt))}</span>
+              </div>
+              <button class="btn btn-ghost small" type="button" onclick="openSuperAdminComplaintModal('${safeId}')">View complaint</button>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    </details>
+  `).join('');
+}
+
+function clearSuperAdminStudentSearch() {
+  const search = document.getElementById('superStudentComplaintSearch');
+  if (!search) return;
+  search.value = '';
+  renderSuperAdminStudentComplaints();
+  search.focus();
 }
 
 function openSuperAdminComplaintModal(code) {
@@ -1619,7 +1701,9 @@ async function deleteSuperAdminComplaint(code) {
   try {
     await api('/api/superadmin/complaints/' + encodeURIComponent(code), { method: 'DELETE' });
     superAdminComplaints = superAdminComplaints.filter(t => t.id !== code);
+    superAdminComplaintsError = null;
     renderSuperAdminComplaints();
+    renderSuperAdminStudentComplaints();
     showToast(code + ' deleted.');
   } catch (err) { showToast(err.message); }
 }

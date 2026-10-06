@@ -915,12 +915,37 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 }
 
 /* Super admin: manage student/staff credentials */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.super-student-history{margin:0 0 30px;scroll-margin-top:18px;}
+.super-student-history .list-head{margin-bottom:8px;}
+.super-student-search{display:flex;align-items:center;gap:8px;width:min(100%,520px);padding:7px 8px 7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);}
+.super-student-search:focus-within{border-color:var(--brass);box-shadow:0 0 0 3px rgba(173,124,36,.14);}
+.super-student-search input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:14px;}
+.super-student-search button{border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--parchment);color:var(--ink);font:600 12px Inter,sans-serif;cursor:pointer;}
+.super-student-search button:disabled{opacity:.5;cursor:not-allowed;}
+.student-complaint-group{margin:0 0 10px;border:1px solid var(--line);border-radius:9px;background:var(--paper);box-shadow:0 1px 2px rgba(28,37,65,.04);}
+.student-complaint-group summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 15px;background:var(--paper);border-radius:9px;cursor:pointer;list-style:none;}
+.student-complaint-group summary::-webkit-details-marker{display:none;}
+.student-complaint-group summary::before{content:'▸';color:var(--teal);font-size:16px;}
+.student-complaint-group[open] summary::before{content:'▾';}
+.student-complaint-person{flex:1 1 180px;color:var(--ink);font-weight:700;overflow-wrap:anywhere;}
+.student-complaint-id{font-size:12px;color:var(--text-soft);}
+.student-complaint-total{padding:4px 9px;border:1px solid var(--line);border-radius:999px;background:var(--parchment);color:var(--ink);font-size:11px;font-weight:700;white-space:nowrap;}
+.student-complaint-items{margin:0;padding:0 15px 4px 41px;list-style:none;}
+.student-complaint-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid var(--line);}
+.student-complaint-copy{min-width:0;}
+.student-complaint-copy strong{display:block;color:var(--ink);font-size:14px;overflow-wrap:anywhere;}
+.student-complaint-copy p{margin:4px 0;color:var(--text);font-size:13px;line-height:1.5;overflow-wrap:anywhere;}
+.student-complaint-copy span{color:var(--text-soft);font-size:11.5px;}
+.student-complaint-item .btn{flex-shrink:0;}
 .credential-search-form{display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:8px;}
 .credential-search-form input{min-width:260px;}
 .cred-edit-form{display:grid; grid-template-columns:repeat(3,1fr) auto; gap:10px; align-items:end; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);}
 .cred-edit-form .field{margin-bottom:0;}
 .cred-edit-form .btn{white-space:nowrap;}
 @media (max-width:720px){
+  .student-complaint-item{align-items:flex-start;flex-direction:column;gap:8px;}
+  .student-complaint-items{padding-left:24px;padding-right:12px;}
   .cred-edit-form{grid-template-columns:1fr;}
   .credential-search-form{flex-direction:column;}
   .credential-search-form input{min-width:0; width:100%;}

@@ -530,6 +530,7 @@
     <aside class="sidebar" id="superAdminDashboardSidebar" aria-hidden="true">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
       <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-superadmin-dashboard', { restoreFocus: false }); return false;">▣ Staff accounts</a>
+      <a class="side-link" href="#super-student-complaints" onclick="closeRoleDashboardMenu('view-superadmin-dashboard', { restoreFocus: false });">▤ Student complaints</a>
       <a class="side-link" href="#" onclick="closeRoleDashboardMenu('view-superadmin-dashboard', { restoreFocus: false }); enterSuperAdminUserSearch(); return false;">🔎 Manage credentials</a>
       <div class="side-spacer"></div>
       <a class="side-link" href="#" onclick="handleSuperAdminLogout(); return false;">← Log out</a>
@@ -561,6 +562,22 @@
 
         <div class="stat-grid" id="superStatGrid"></div>
 
+        <section id="super-student-complaints" class="super-student-history" aria-labelledby="superStudentComplaintsTitle" tabindex="-1">
+          <div class="list-head">
+            <div>
+              <h2 id="superStudentComplaintsTitle">Complaints by student</h2>
+              <p class="field-hint">See each student’s total reports and expand the list to review their complaints.</p>
+            </div>
+          </div>
+          <label class="sr-only" for="superStudentComplaintSearch">Search students by name or College ID</label>
+          <div class="super-student-search">
+            <input id="superStudentComplaintSearch" type="text" placeholder="Search by student name or College ID" autocomplete="off" oninput="renderSuperAdminStudentComplaints()">
+            <button id="clearSuperStudentComplaintSearch" type="button" aria-label="Clear student search" onclick="clearSuperAdminStudentSearch()" disabled>Clear</button>
+          </div>
+          <p id="superStudentComplaintCount" class="field-hint" aria-live="polite"></p>
+          <div id="superStudentComplaintList"></div>
+        </section>
+
         <div class="list-head"><h2>Pending approval</h2></div>
         <div id="superPendingList"></div>
 
@@ -586,6 +603,7 @@
     <aside class="sidebar" id="superAdminSearchSidebar" aria-hidden="true">
       <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
       <a class="side-link" href="#" onclick="closeRoleDashboardMenu('view-superadmin-search', { restoreFocus: false }); switchView('view-superadmin-search','view-superadmin-dashboard'); enterSuperAdminDashboard(); return false;">▣ Staff accounts</a>
+      <a class="side-link" href="#super-student-complaints" onclick="openSuperAdminStudentComplaintsFromSearch(); return false;">▤ Student complaints</a>
       <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-superadmin-search', { restoreFocus: false }); return false;">🔎 Manage credentials</a>
       <div class="side-spacer"></div>
       <a class="side-link" href="#" onclick="handleSuperAdminLogout(); return false;">← Log out</a>
