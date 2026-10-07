@@ -6,13 +6,13 @@ Campus complaint tracking for students, department staff, and super administrato
 
 - Node.js 20 or newer
 - A MongoDB connection string
-- A Resend API key and verified sender address, or SMTP credentials, for password-reset email outside explicit development mode
+- SMTP credentials for password-reset email outside explicit development mode
 
 ## Setup
 
 1. Run `npm install`.
 2. Create `.env` with `MONGODB_URI`, `SESSION_SECRET`, and `SUPERADMIN_KEY`; both secrets must be at least 32 characters.
-3. For password-reset email, configure Resend with `RESEND_API_KEY` and `EMAIL_FROM` (a sender address on a verified Resend domain). If Resend is not configured, the app can use SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `EMAIL_FROM`. For local development without either provider, set both `NODE_ENV=development` and `DEV_LOG_OTP=true` to explicitly enable terminal-only OTP logging.
+3. For password-reset email, configure SMTP with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `SMTP_SECURE` and `EMAIL_FROM`. Gmail requires an App Password for `SMTP_PASS`. For local development without SMTP, set both `NODE_ENV=development` and `DEV_LOG_OTP=true` to explicitly enable terminal-only OTP logging.
 4. Run `npm start` and open `http://localhost:3000`.
 
 The interface uses separate page URLs: `/` for the landing and student sign-in, `/student` for the student dashboard, `/staff` for department staff, and `/admin` for the super-admin area.

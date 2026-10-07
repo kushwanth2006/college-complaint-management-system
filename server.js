@@ -20,7 +20,7 @@ if (!SESSION_SECRET || SESSION_SECRET.length < 32 || !SUPERADMIN_KEY || SUPERADM
   throw new Error('SESSION_SECRET and SUPERADMIN_KEY must each be set to at least 32 characters.');
 }
 if (!isMailerConfigured() && !isDevelopmentFallbackEnabled()) {
-  throw new Error('Configure Resend with RESEND_API_KEY and EMAIL_FROM, configure SMTP_HOST/SMTP_USER/SMTP_PASS, or explicitly enable the development OTP fallback.');
+  throw new Error('Configure SMTP_HOST/SMTP_USER/SMTP_PASS, or explicitly enable the development OTP fallback.');
 }
 const MIN_PASSWORD_LENGTH = 8;
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
