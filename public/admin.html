@@ -25,7 +25,7 @@
     <p class="auth-sub">Enter the super admin key to approve staff accounts and assign departments.</p>
     <form id="superAdminLoginForm" onsubmit="handleSuperAdminLogin(event);">
       <div class="field">
-        <label>Super admin key</label>
+        <label for="superAdminKey">Super admin key</label>
         <input type="password" id="superAdminKey" placeholder="" required>
       </div>
       <button class="btn btn-primary auth-submit" type="submit">Unlock</button>
@@ -146,7 +146,7 @@
 
         <form id="superAdminSearchForm" class="credential-search-form" onsubmit="handleSuperAdminPeopleSearch(event);">
           <div class="field" style="flex:1; margin-bottom:0;">
-            <label>College ID</label>
+            <label for="superAdminSearchInput">College ID</label>
             <input type="text" id="superAdminSearchInput" placeholder="e.g. VTU28243 or TTS28243" autocomplete="off">
             <div class="field-hint">You can also type just part of the ID — matching students and staff will both show up.</div>
           </div>

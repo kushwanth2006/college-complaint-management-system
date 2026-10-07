@@ -185,11 +185,11 @@
     <p class="auth-sub">Use your college ID to reach your dashboard.</p>
     <form id="loginForm" onsubmit="handleLogin(event);">
       <div class="field">
-        <label>College ID</label>
+        <label for="loginCollegeId">College ID</label>
         <input type="text" id="loginCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
       </div>
       <div class="field">
-        <label>Password</label>
+        <label for="loginPassword">Password</label>
         <div class="pw-wrap">
           <input type="password" id="loginPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('loginPassword', this)">
@@ -223,8 +223,8 @@
         <div class="field-hint" id="regCollegeIdHint">Use VTU followed by five digits (example: VTU28243).</div>
       </div>
       <div class="field">
-        <label>Student type</label>
-        <div class="residency-options" role="radiogroup" aria-label="Student type">
+        <span class="field-label" id="studentTypeLabel">Student type</span>
+        <div class="residency-options" role="radiogroup" aria-labelledby="studentTypeLabel">
           <label class="residency-option"><input type="radio" name="studentType" value="dayscholar" required onchange="updateStudentResidenceFields()"> Day scholar</label>
           <label class="residency-option"><input type="radio" name="studentType" value="hostel" required onchange="updateStudentResidenceFields()"> Hostel</label>
         </div>
@@ -243,7 +243,7 @@
         </select>
       </div>
       <div class="field">
-        <label>Password</label>
+        <label for="regPassword">Password</label>
         <div class="pw-wrap">
           <input type="password" id="regPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('regPassword', this)">
@@ -265,7 +265,7 @@
     <p class="auth-sub">Enter your college ID and we'll email a verification code to your registered address.</p>
     <form id="forgotForm" onsubmit="handleForgot(event);">
       <div class="field">
-        <label>College ID</label>
+        <label for="forgotCollegeId">College ID</label>
         <input type="text" id="forgotCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
       </div>
       <button class="btn btn-primary auth-submit" type="submit" id="forgotSubmitBtn">Send code</button>
@@ -282,14 +282,14 @@
     <p class="auth-sub">We sent a 6-digit code to <span id="otpEmailTarget" class="mono">your email</span>.</p>
     <form id="otpForm" onsubmit="handleVerifyOtp(event);">
       <div class="field">
-        <label>Verification code</label>
+        <span class="field-label" id="otpCodeLabel">Verification code</span>
         <div class="otp-row" id="otpRow">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="0">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="1">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="2">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="3">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="4">
-          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="5">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="0" aria-label="Verification code, digit 1 of 6" aria-describedby="otpCodeLabel">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="1" aria-label="Verification code, digit 2 of 6" aria-describedby="otpCodeLabel">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="2" aria-label="Verification code, digit 3 of 6" aria-describedby="otpCodeLabel">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="3" aria-label="Verification code, digit 4 of 6" aria-describedby="otpCodeLabel">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="4" aria-label="Verification code, digit 5 of 6" aria-describedby="otpCodeLabel">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="5" aria-label="Verification code, digit 6 of 6" aria-describedby="otpCodeLabel">
         </div>
       </div>
       <button class="btn btn-primary auth-submit" type="submit" id="otpSubmitBtn">Verify code</button>
@@ -306,7 +306,7 @@
     <p class="auth-sub">Code verified — choose a new password for your account.</p>
     <form id="resetPasswordForm" onsubmit="handleResetPassword(event);">
       <div class="field">
-        <label>New password</label>
+        <label for="newPassword">New password</label>
         <div class="pw-wrap">
           <input type="password" id="newPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('newPassword', this)">
@@ -315,7 +315,7 @@
         </div>
       </div>
       <div class="field">
-        <label>Confirm new password</label>
+        <label for="confirmPassword">Confirm new password</label>
         <div class="pw-wrap">
           <input type="password" id="confirmPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('confirmPassword', this)">

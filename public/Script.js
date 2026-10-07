@@ -1094,28 +1094,28 @@ function openNewComplaintForm() {
     <h3>Raise a complaint</h3>
     <p class="modal-sub">This reaches the right department automatically — no need to pick who it goes to.</p>
     <div class="field">
-      <label>Category</label>
-      <select id="ncCategory">
+      <label for="ncCategory">Category</label>
+      <select id="ncCategory" aria-label="Complaint category">
         ${CATEGORIES.map(c => `<option value="${c}">${dropdownLabel(c)}</option>`).join('')}
       </select>
     </div>
     <div class="field">
-      <label>Subject</label>
+      <label for="ncTitle">Subject</label>
       <input type="text" id="ncTitle" placeholder="Short summary of the issue">
     </div>
     <div class="field">
-      <label>Details</label>
+      <label for="ncDesc">Details</label>
       <textarea id="ncDesc" rows="4" placeholder="What happened, where, and when?"></textarea>
     </div>
     <div class="field">
-      <label>Location</label>
+      <label for="ncLocation">Location</label>
       <input type="text" id="ncLocation" placeholder="Example: Boys Hostel Block B">
     </div>
     <div id="ncRelevance" class="nc-relevance" role="status" aria-live="polite" tabindex="-1" hidden></div>
     <button type="button" class="btn btn-ghost ai-analyze-btn" onclick="analyzeNewComplaint()">Analyze with AI</button>
     <div id="ncAiResult" class="ai-result" aria-live="polite"></div>
     <div class="field">
-      <label>Photo (optional)</label>
+      <label for="ncPhotoInput">Photo (optional)</label>
       <button type="button" class="photo-drop" id="ncPhotoDrop" onclick="document.getElementById('ncPhotoInput').click()">Click to attach a photo</button>
       <input type="file" id="ncPhotoInput" accept="image/*" style="display:none" onchange="handleNcPhoto(event)">
     </div>
@@ -1239,8 +1239,8 @@ function openFeedbackForm(code) {
   openModal(`
     <h3>Rate the resolution</h3>
     <p class="modal-sub">Your feedback closes ${escapeHtml(code)}.</p>
-    <div class="field"><label>Rating</label><select id="feedbackRating"><option value="5">5 - Excellent</option><option value="4">4 - Good</option><option value="3">3 - Satisfactory</option><option value="2">2 - Poor</option><option value="1">1 - Very poor</option></select></div>
-    <div class="field"><label>Comments (optional)</label><textarea id="feedbackComments" rows="3"></textarea></div>
+    <div class="field"><label for="feedbackRating">Rating</label><select id="feedbackRating"><option value="5">5 - Excellent</option><option value="4">4 - Good</option><option value="3">3 - Satisfactory</option><option value="2">2 - Poor</option><option value="1">1 - Very poor</option></select></div>
+    <div class="field"><label for="feedbackComments">Comments (optional)</label><textarea id="feedbackComments" rows="3"></textarea></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitFeedback('${code.replace(/'/g, "\\'")}')">Submit feedback</button></div>`);
 }
 
@@ -1287,15 +1287,15 @@ function openSettingsModal() {
   openModal(`
     <h3>Settings</h3>
     <p class="modal-sub">Update your profile details.</p>
-    <div class="field"><label>Full name</label><input type="text" id="setName" value="${escapeHtml(currentUser.name)}"></div>
+    <div class="field"><label for="setName">Full name</label><input type="text" id="setName" value="${escapeHtml(currentUser.name)}"></div>
     <div class="field">
-      <label>Residence</label>
+      <label for="setHostel">Residence</label>
       <select id="setHostel">
         ${RESIDENCES.map(h => `<option value="${h}"${h === currentUser.hostel ? ' selected' : ''}>${dropdownLabel(h)}</option>`).join('')}
       </select>
     </div>
     <div class="field">
-      <label>New password</label>
+      <label for="setPassword">New password</label>
       <div class="pw-wrap">
         <input type="password" id="setPassword" placeholder="Leave blank to keep current password">
         <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('setPassword', this)">
@@ -1587,11 +1587,15 @@ function renderAdminTicketList() {
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
         ${deletedView ? `<div class="deleted-note">Moved to Deleted ${fmtDate(t.deletedAt)} · by ${escapeHtml(t.deletedByRole === 'student' ? 'student' : t.deletedByRole === 'staff' ? 'department staff' : 'super admin')}</div>` : `<div class="admin-controls">
+          <label class="sr-only" for="stageSelect-${safeId}">Incident status</label>
           <select id="stageSelect-${safeId}">
             ${STAGES.map((s, si) => `<option value="${si}"${si === t.stageIndex ? ' selected' : ''}>${dropdownLabel(s)}</option>`).join('')}
           </select>
+          <label class="sr-only" for="prioritySelect-${safeId}">Incident priority</label>
           <select id="prioritySelect-${safeId}">${['Low','Medium','High','Critical'].map(p => `<option value="${p}"${p === t.aiPriority ? ' selected' : ''}>${p} priority</option>`).join('')}</select>
+          <label class="sr-only" for="categorySelect-${safeId}">Incident department</label>
           <select id="categorySelect-${safeId}">${CATEGORIES.map(c => `<option value="${c}"${c === t.category ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}</select>
+          <label class="sr-only" for="noteInput-${safeId}">Update note (optional)</label>
           <input type="text" id="noteInput-${safeId}" placeholder="Add an update note (optional)">
           <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}', this)">AI recommendations</button>
           <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}', this)">${t.incident ? 'Update incident' : 'Update'}</button>
@@ -2024,19 +2028,19 @@ function renderSuperAdminComplaintModal(t) {
     <div class="detail-section-title">Student Information</div>
     <div class="detail-student-card">
       <div class="detail-student-item">
-        <label>Student Name</label>
+        <span class="detail-label">Student Name</span>
         <span>${escapeHtml(t.studentName || 'N/A')}</span>
       </div>
       <div class="detail-student-item">
-        <label>College ID</label>
+        <span class="detail-label">College ID</span>
         <span>${escapeHtml(t.studentCollegeId || 'N/A')}</span>
       </div>
       <div class="detail-student-item">
-        <label>Email</label>
+        <span class="detail-label">Email</span>
         <span>${escapeHtml(t.studentEmail || 'N/A')}</span>
       </div>
       <div class="detail-student-item">
-        <label>Hostel</label>
+        <span class="detail-label">Hostel</span>
         <span>${escapeHtml(t.studentHostel || 'N/A')}</span>
       </div>
     </div>
@@ -2138,6 +2142,7 @@ function renderSuperAdminAdmins() {
             <span class="stamp"><span class="status-dot dot-red"></span>Pending</span>
           </div>
           <div class="admin-controls">
+            <label class="sr-only" for="approveDept-${a.id}">Department for ${escapeHtml(a.name)}</label>
             <select id="approveDept-${a.id}">
               ${CATEGORIES.map(c => `<option value="${c}"${c === a.requestedDepartment ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}
             </select>
@@ -2166,6 +2171,7 @@ function renderSuperAdminAdmins() {
             <span class="stamp stage-resolved"><span class="status-dot dot-green"></span>Approved</span>
           </div>
           <div class="admin-controls">
+            <label class="sr-only" for="reassignDept-${a.id}">Department for ${escapeHtml(a.name)}</label>
             <select id="reassignDept-${a.id}">
               ${CATEGORIES.map(c => `<option value="${c}"${c === a.department ? ' selected' : ''}>${dropdownLabel(c)}</option>`).join('')}
             </select>
@@ -2289,15 +2295,15 @@ function renderSuperAdminSearchResults() {
         </div>
         <div class="cred-edit-form">
           <div class="field">
-            <label>Username (College ID)</label>
+        <label for="studCollegeId-${s.id}">Username (College ID)</label>
             <input type="text" id="studCollegeId-${s.id}" value="${escapeHtml(s.collegeId)}">
           </div>
           <div class="field">
-            <label>Email</label>
+        <label for="studEmail-${s.id}">Email</label>
             <input type="email" id="studEmail-${s.id}" value="${escapeHtml(s.email)}">
           </div>
           <div class="field">
-            <label>New password <span style="font-weight:400; color:var(--text-soft);">(leave blank to keep current)</span></label>
+        <label for="studPassword-${s.id}">New password <span style="font-weight:400; color:var(--text-soft);">(leave blank to keep current)</span></label>
             <input type="password" id="studPassword-${s.id}" placeholder="••••••••">
           </div>
           <button class="btn btn-primary small" onclick="saveSuperAdminStudentCredentials(${s.id})">Save changes</button>
@@ -2319,15 +2325,15 @@ function renderSuperAdminSearchResults() {
         </div>
         <div class="cred-edit-form">
           <div class="field">
-            <label>Username (College ID)</label>
+        <label for="staffCollegeId-${a.id}">Username (College ID)</label>
             <input type="text" id="staffCollegeId-${a.id}" value="${escapeHtml(a.collegeId || '')}">
           </div>
           <div class="field">
-            <label>Email</label>
+        <label for="staffEmail-${a.id}">Email</label>
             <input type="email" id="staffEmail-${a.id}" value="${escapeHtml(a.email)}">
           </div>
           <div class="field">
-            <label>New password <span style="font-weight:400; color:var(--text-soft);">(leave blank to keep current)</span></label>
+        <label for="staffPassword-${a.id}">New password <span style="font-weight:400; color:var(--text-soft);">(leave blank to keep current)</span></label>
             <input type="password" id="staffPassword-${a.id}" placeholder="••••••••">
           </div>
           <button class="btn btn-primary small" onclick="saveSuperAdminStaffCredentials(${a.id})">Save changes</button>

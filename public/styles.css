@@ -121,7 +121,7 @@ body{
 .tabs{display:flex; border:1px solid var(--line); border-radius:7px; overflow:hidden; margin-bottom:20px;}
 .tab{flex:1; text-align:center; padding:9px; font-size:13.5px; font-weight:600; cursor:pointer; color:var(--text-soft); background:var(--parchment);}
 .tab.active{background:var(--ink); color:var(--paper);}
-label{display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-soft); margin:14px 0 6px;}
+label,.field-label{display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-soft); margin:14px 0 6px;}
 label:first-of-type{margin-top:0;}
 input[type=text], input[type=password], input[type=email], select, textarea{
   width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px;
@@ -679,7 +679,7 @@ footer.wrap{display:flex; justify-content:space-between; padding:26px 24px 40px;
 .side-link:hover{background:rgba(255,253,247,0.08); color:var(--paper);}
 .side-link.active{background:rgba(255,253,247,0.12); color:var(--paper);}
 .side-spacer{flex:1;}
-.side-foot{font-size:11px; color:rgba(255,253,247,0.45); padding:10px 12px 0; border-top:1px solid rgba(255,253,247,0.12); margin-top:8px;}
+.side-foot{font-size:11px; color:var(--paper); padding:10px 12px 0; border-top:1px solid rgba(255,253,247,0.12); margin-top:8px;}
 
 .dash-main{flex:0 0 calc(100% - 220px); width:calc(100% - 220px); min-width:0; margin-left:220px; box-sizing:border-box; display:flex; flex-direction:column;}
 .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid var(--line); background:var(--paper);}
@@ -748,7 +748,7 @@ button.stat-card.is-selected{box-shadow:0 0 0 2px var(--stat-color), var(--shado
   font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700; padding:3px 9px 3px 7px; border-radius:20px;
   background:color-mix(in srgb, var(--chip-color, var(--parchment)) 14%, var(--parchment));
   border:1px solid color-mix(in srgb, var(--chip-color, var(--line)) 30%, var(--line));
-  color:color-mix(in srgb, var(--chip-color, var(--text-soft)) 65%, var(--text));
+  color:var(--ink);
   display:inline-flex; align-items:center; gap:4px;
 }
 .tk-desc{font-size:13.5px; color:var(--text); margin:10px 0 0; line-height:1.5;}
@@ -834,7 +834,7 @@ button.stat-card.is-selected{box-shadow:0 0 0 2px var(--stat-color), var(--shado
   border-radius:8px;
   font-size:13px;
 }
-.detail-student-item label{
+.detail-student-item .detail-label{
   display:block;
   font-size:11px;
   color:var(--text-soft);

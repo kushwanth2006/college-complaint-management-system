@@ -25,11 +25,11 @@
     <p class="auth-sub">For hostel, mess, academic, and other staff handling complaints for their department.</p>
     <form id="adminLoginForm" onsubmit="handleAdminLogin(event);">
       <div class="field">
-        <label>College ID</label>
+        <label for="adminLoginCollegeId">College ID</label>
         <input type="text" id="adminLoginCollegeId" placeholder="TTS12345" maxlength="8" required>
       </div>
       <div class="field">
-        <label>Password</label>
+        <label for="adminLoginPassword">Password</label>
         <div class="pw-wrap">
           <input type="password" id="adminLoginPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminLoginPassword', this)">
@@ -51,26 +51,26 @@
     <h2>Register as department staff</h2>
     <p class="auth-sub">Your account needs approval and a department assignment from the super admin before you can log in.</p>
     <form id="adminRegisterForm" onsubmit="handleAdminRegister(event);">
-      <div class="field"><label>Full name</label><input type="text" id="adminRegName" placeholder="Your full name" required></div>
+      <div class="field"><label for="adminRegName">Full name</label><input type="text" id="adminRegName" placeholder="Your full name" required></div>
       <div class="field">
-        <label>Email</label>
+        <label for="adminRegEmail">Email</label>
         <input type="email" id="adminRegEmail" placeholder="TTS28243@veltech.edu.in" required aria-describedby="adminRegEmailHint" oninput="validateStaffEmailField()">
         <div class="field-hint" id="adminRegEmailHint">Use your staff ID followed by @veltech.edu.in.</div>
       </div>
       <div class="field">
-        <label>College ID</label>
+        <label for="adminRegCollegeId">College ID</label>
         <input type="text" id="adminRegCollegeId" placeholder="EX: TTS28243" pattern="[Tt][Tt][Ss][0-9]{5}" minlength="8" maxlength="8" required aria-describedby="adminRegCollegeIdHint" oninput="validateStaffCollegeIdField(this, 'adminRegCollegeIdHint')">
         <div class="field-hint" id="adminRegCollegeIdHint">Starts with <b>TTS</b>, followed by exactly 5 digits (e.g. TTS12345).</div>
       </div>
       <div class="field">
-        <label>Department</label>
+        <label for="adminRegDepartment">Department</label>
         <select id="adminRegDepartment" required>
           <option value="" disabled selected>Select the department you handle</option>
         </select>
         <div class="field-hint">This is a request — the super admin makes the final assignment.</div>
       </div>
       <div class="field">
-        <label>Password</label>
+        <label for="adminRegPassword">Password</label>
         <div class="pw-wrap">
           <input type="password" id="adminRegPassword" placeholder="" required>
           <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminRegPassword', this)">
