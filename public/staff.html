@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Department Staff — Complaint Box</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/styles.css">
+</head><body class="page-loading">
+
+<div class="page-loader" id="pageLoader" role="status" aria-live="polite" aria-label="Loading CCMS">
+  <div class="page-loader-inner">
+    <div class="page-loader-spinner" aria-hidden="true"></div>
+    <p class="page-loader-text">Loading CCMS<span class="page-loader-dots" aria-hidden="true"></span></p>
+  </div>
+</div>
+
+<div class="page-shimmer" id="pageShimmer"></div>
+
+<!-- ================= DEPARTMENT STAFF AUTH VIEWS ================= -->
+<div id="view-admin-login" class="view auth-view">
+  <a href="#" class="auth-back" onclick="switchView('view-admin-login','view-landing'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Department staff login</h2>
+    <p class="auth-sub">For hostel, mess, academic, and other staff handling complaints for their department.</p>
+    <form id="adminLoginForm" onsubmit="handleAdminLogin(event);">
+      <div class="field">
+        <label>College ID</label>
+        <input type="text" id="adminLoginCollegeId" placeholder="TTS12345" maxlength="8" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="adminLoginPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminLoginPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit">Log in</button>
+    </form>
+    <div class="auth-switch">New department staff? <a href="#" onclick="switchView('view-admin-login','view-admin-register'); return false;">Register</a></div>
+    <div class="auth-switch" style="margin-top:2px;"><a href="#" style="font-size:11.5px;" onclick="switchView('view-admin-login','view-superadmin-login'); return false;">Super admin →</a></div>
+  </div>
+</div>
+
+<div id="view-admin-register" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-admin-register','view-admin-login'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Register as department staff</h2>
+    <p class="auth-sub">Your account needs approval and a department assignment from the super admin before you can log in.</p>
+    <form id="adminRegisterForm" onsubmit="handleAdminRegister(event);">
+      <div class="field"><label>Full name</label><input type="text" id="adminRegName" placeholder="Your full name" required></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="adminRegEmail" placeholder="TTS28243@veltech.edu.in" required aria-describedby="adminRegEmailHint" oninput="validateStaffEmailField()">
+        <div class="field-hint" id="adminRegEmailHint">Use your staff ID followed by @veltech.edu.in.</div>
+      </div>
+      <div class="field">
+        <label>College ID</label>
+        <input type="text" id="adminRegCollegeId" placeholder="EX: TTS28243" pattern="[Tt][Tt][Ss][0-9]{5}" minlength="8" maxlength="8" required aria-describedby="adminRegCollegeIdHint" oninput="validateStaffCollegeIdField(this, 'adminRegCollegeIdHint')">
+        <div class="field-hint" id="adminRegCollegeIdHint">Starts with <b>TTS</b>, followed by exactly 5 digits (e.g. TTS12345).</div>
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <select id="adminRegDepartment" required>
+          <option value="" disabled selected>Select the department you handle</option>
+        </select>
+        <div class="field-hint">This is a request — the super admin makes the final assignment.</div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="adminRegPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('adminRegPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit">Request access</button>
+    </form>
+    <div class="auth-switch">Already approved? <a href="#" onclick="switchView('view-admin-register','view-admin-login'); return false;">Log in</a></div>
+  </div>
+</div>
+
+<div id="view-admin-pending" class="view auth-view" style="display:none;">
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Request submitted</h2>
+    <p class="auth-sub">Your account is waiting on the super admin to assign a department and approve access. Come back and log in once that's done.</p>
+    <div class="auth-switch"><a href="#" onclick="switchView('view-admin-pending','view-admin-login'); return false;">Back to staff login</a></div>
+  </div>
+</div>
+
+<!-- ================= DEPARTMENT STAFF DASHBOARD ================= -->
+<div id="view-admin-dashboard" class="view" style="display:none;">
+  <div class="dash-shell role-dash-shell">
+    <aside class="sidebar" id="adminDashboardSidebar" aria-hidden="true">
+      <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+      <a class="side-link active" href="#" onclick="closeRoleDashboardMenu('view-admin-dashboard', { restoreFocus: false }); goToAdminDashboardHome(); return false;">▣ Dashboard</a>
+      <div class="side-spacer"></div>
+      <a class="side-link" href="#" onclick="handleAdminLogout(); return false;">← Log out</a>
+      <div class="side-foot" id="adminSideFoot">Logged in as staff</div>
+    </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeRoleDashboardMenu('view-admin-dashboard')"></button>
+
+    <main class="dash-main">
+      <div class="topbar">
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="adminDashboardSidebar" aria-expanded="false" onclick="toggleRoleDashboardMenu('view-admin-dashboard')">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="top-right">
+          <div class="user-block">
+            <div class="avatar" id="adminAvatar">ST</div>
+            <div>
+              <div class="user-name" id="adminUserName">Staff</div>
+              <div class="user-sub" id="adminUserSub">Department</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-body">
+        <div class="dash-head">
+          <div>
+            <h1 id="adminWelcome">Welcome back</h1>
+            <p>Here's everything routed to your department right now.</p>
+          </div>
+          <div class="complaint-export">
+            <button class="btn btn-ghost" type="button" onclick="downloadComplaintWorkbook('/api/admin/complaints/export.xlsx', this)">Download Excel</button>
+            <span>Department reports · contact details and images excluded</span>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="adminStatGrid"></div>
+
+        <div class="list-head">
+          <h2 id="adminComplaintListTitle">Department complaints</h2>
+          <div class="filter-row" id="adminFilterRow"></div>
+        </div>
+
+        <div class="complaints-search">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Search department complaints" aria-label="Search department complaints" oninput="filterAdminTickets(this.value)">
+        </div>
+
+        <div id="adminTicketList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/Script.js"></script>
+</body>
+</html>

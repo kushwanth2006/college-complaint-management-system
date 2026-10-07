@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vel Tech — Complaint Tracking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/styles.css">
+</head><body class="page-loading">
+
+<div class="page-loader" id="pageLoader" role="status" aria-live="polite" aria-label="Loading CCMS">
+  <div class="page-loader-inner">
+    <div class="page-loader-spinner" aria-hidden="true"></div>
+    <p class="page-loader-text">Loading CCMS<span class="page-loader-dots" aria-hidden="true"></span></p>
+  </div>
+</div>
+
+<div class="page-shimmer" id="pageShimmer"></div>
+
+<!-- ================= LANDING VIEW ================= -->
+<div id="view-landing" class="view">
+  <nav class="site-nav">
+    <div class="wrap">
+      <div class="brand"><span class="brand-mark"></span>Vel Tech Complaint Box</div>
+      <div class="nav-links">
+        <a href="#features" onclick="scrollToSection('features'); return false;">Features</a>
+        <a href="#about" onclick="scrollToSection('about'); return false;">About</a>
+        <a href="/staff">Staff login</a>
+      </div>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="#" onclick="switchView('view-landing','view-login'); return false;">Log in</a>
+        <a class="btn btn-primary" href="#" onclick="switchView('view-landing','view-register'); return false;">Register</a>
+      </div>
+      <button class="nav-toggle" id="mobileNavToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
+      <div class="mobile-nav" id="mobileNav">
+        <a href="#" onclick="closeMobileNav(); switchView('view-landing','view-login'); return false;">Log in</a>
+        <a href="#" onclick="closeMobileNav(); switchView('view-landing','view-register'); return false;">Register</a>
+        <a href="/staff" onclick="closeMobileNav()">Staff login</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-dot"></span>Live tracking, not a suggestion box</span>
+        <h1>Every campus issue,<br>tracked like a ticket<br>that can't get <em>lost</em>.</h1>
+        <p class="lede">Report hostel, mess, academic, or infrastructure problems in under a minute. Watch it move from submitted to resolved, with a real person's name attached at every step.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#" onclick="switchView('view-landing','view-login'); return false;">Log in to raise a complaint</a>
+          <a class="btn btn-ghost" href="#features" onclick="scrollToSection('features'); return false;">See how tracking works</a>
+        </div>
+        <div class="hero-chips" id="categoryChips"></div>
+      </div>
+
+      <div class="ticket-stage">
+        <div class="ticket" id="heroTicket">
+          <div class="ticket-top">
+            <div class="ticket-notch left"></div><div class="ticket-notch right"></div>
+            <div class="ticket-id mono">CDT-2481</div>
+            <div class="ticket-title">Wi-Fi dead zone — Block C, 3rd floor</div>
+            <div class="ticket-meta">
+              <span>Wi-Fi &amp; Network</span>
+              <span>Wi-Fi &amp; Network department</span>
+            </div>
+          </div>
+          <div class="ticket-bottom">
+            <div class="status-row">
+              <span class="stamp" id="heroStamp"><span class="status-dot dot-red"></span>Submitted</span>
+            </div>
+            <div class="stage-track" id="heroTrack">
+              <span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div class="ticket-note" id="heroNote">The complaint is routed to the respective Wi-Fi &amp; Network department.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section feat-section" id="features">
+    <div class="wrap">
+      <div class="section-head reveal-up" style="justify-content:center; text-align:center; display:block;">
+        <span class="kicker">BUILT FOR EVERY ROLE</span>
+        <h2>One system, three very different views.</h2>
+      </div>
+
+      <div class="feat-tablist reveal-up" role="tablist" aria-label="Complaint Box features by role">
+        <button class="feat-tab active" type="button" role="tab" aria-selected="true" aria-controls="feat-panel-student" onclick="selectFeatureTab('student')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3Z"/><path d="M5 13.18v4L12 21l7-3.82v-4"/></svg>
+          Students
+        </button>
+        <button class="feat-tab" type="button" role="tab" aria-selected="false" aria-controls="feat-panel-staff" onclick="selectFeatureTab('staff')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          Wardens &amp; Maintenance
+        </button>
+        <button class="feat-tab" type="button" role="tab" aria-selected="false" aria-controls="feat-panel-admin" onclick="selectFeatureTab('admin')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Admins
+        </button>
+      </div>
+
+      <div class="feat-panels reveal-up">
+        <div class="feat-panel active" id="feat-panel-student" role="tabpanel">
+          <div class="feat-copy">
+            <span class="feat-badge">For Students</span>
+            <h3>Raise it once, never chase it twice.</h3>
+            <p>Pick a category, describe the issue, attach a photo if it helps — done in under a minute. From there you watch it move through submitted, routed, worked on, and verified, with a real department name attached at every stage.</p>
+            <a class="btn btn-primary" href="#" onclick="switchView('view-landing','view-register'); return false;">Get started</a>
+          </div>
+          <div class="feat-mock">
+            <div class="mock-row"><span class="mock-name">Wi-Fi dead zone — Block C</span><span class="mock-stamp submitted">Submitted</span></div>
+            <div class="mock-row"><span class="mock-name">Leaking tap — Hostel D washroom</span><span class="mock-stamp progress">In progress</span></div>
+            <div class="mock-row"><span class="mock-name">Mess menu not followed</span><span class="mock-stamp resolved">Resolved</span></div>
+          </div>
+        </div>
+
+        <div class="feat-panel" id="feat-panel-staff" role="tabpanel">
+          <div class="feat-copy">
+            <span class="feat-badge">For Wardens &amp; Maintenance</span>
+            <h3>Work orders that find the right person automatically.</h3>
+            <p>Every complaint is routed straight to the department that owns it — no forwarded emails, no guessing. Staff log progress, upload proof of work, and hand it back for the student to verify before it can close.</p>
+            <a class="btn btn-ghost" href="/staff">Staff login</a>
+          </div>
+          <div class="feat-mock">
+            <div class="mock-row"><span class="mock-name">Assigned to: Hostel D warden</span><span class="mock-stamp progress">In progress</span></div>
+            <div class="mock-row"><span class="mock-name">Proof of work uploaded</span><span class="mock-stamp progress">Awaiting review</span></div>
+            <div class="mock-row"><span class="mock-name">Student verified &amp; rated</span><span class="mock-stamp resolved">Closed</span></div>
+          </div>
+        </div>
+
+        <div class="feat-panel" id="feat-panel-admin" role="tabpanel">
+          <div class="feat-copy">
+            <span class="feat-badge">For Admins</span>
+            <h3>Full visibility, with zero manual chasing.</h3>
+            <p>See every open case across hostel, mess, academic, and infrastructure categories in one place, track resolution times by department, and approve staff accounts before they can touch a single ticket.</p>
+            <a class="btn btn-ghost" href="/admin">Admin overview</a>
+          </div>
+          <div class="feat-mock">
+            <div class="mock-row"><span class="mock-name">Pending staff approvals</span><span class="mock-stamp submitted">3 waiting</span></div>
+            <div class="mock-row"><span class="mock-name">Open cases this week</span><span class="mock-stamp progress">12 active</span></div>
+            <div class="mock-row"><span class="mock-name">Avg. resolution time</span><span class="mock-stamp resolved">2.4 days</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="section-head reveal-up" style="max-width:640px;">
+        <span class="kicker">ABOUT COMPLAINT BOX</span>
+        <h2>Built for one college, by the people who run it.</h2>
+        <p class="reveal-up reveal-delay" style="margin-top:14px; font-size:15px; color:var(--ink-soft); line-height:1.65;">
+          Complaint Box is the college's official channel for reporting hostel, mess, academic, transport, library,
+          Wi-Fi, and general campus issues. Every complaint reaches the right department automatically and stays
+          visible to you until it's resolved — log in with your college ID to raise one and follow it through.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="demo-cta wrap reveal-up">
+      <h2>Ready to raise a complaint?</h2>
+      <p>Log in with your college ID, or register if this is your first time.</p>
+      <div class="hero-ctas" style="justify-content:center;">
+        <a class="btn btn-primary" href="#" onclick="switchView('view-landing','view-login'); return false;">Log in</a>
+        <a class="btn btn-ghost" href="#" onclick="switchView('view-landing','view-register'); return false;">Register</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <span>© 2026 Complaint Box</span>
+    <span>Prototype — mock data only</span>
+  </footer>
+</div>
+
+<!-- ================= AUTH VIEWS ================= -->
+<div id="view-login" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-login','view-landing'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Log in</h2>
+    <p class="auth-sub">Use your college ID to reach your dashboard.</p>
+    <form id="loginForm" onsubmit="handleLogin(event);">
+      <div class="field">
+        <label>College ID</label>
+        <input type="text" id="loginCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('loginPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div style="text-align:right; margin-top:8px;"><a href="#" class="forgot-link" style="font-size:12.5px;" onclick="switchView('view-login','view-forgot'); return false;">Forgot password?</a></div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit">Log in</button>
+    </form>
+    <div class="auth-switch">New here? <a href="#" onclick="switchView('view-login','view-register'); return false;">Create an account</a></div>
+  </div>
+</div>
+
+<div id="view-register" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-register','view-landing'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Create your account</h2>
+    <p class="auth-sub">Register with your college ID to start raising complaints.</p>
+    <form id="registerForm" onsubmit="handleRegister(event);">
+      <div class="field"><label for="regName">Full name</label><input type="text" id="regName" placeholder="EX: Kushwanth Reddy" required></div>
+      <div class="field">
+        <label for="regEmail">College email</label>
+        <input type="email" id="regEmail" placeholder="VTU28243@veltech.edu.in" autocomplete="email" required oninput="validateStudentEmailField()" aria-describedby="regEmailHint">
+        <div class="field-hint" id="regEmailHint">Use your College ID followed by @veltech.edu.in.</div>
+      </div>
+      <div class="field">
+        <label for="regCollegeId">College ID</label>
+        <input type="text" id="regCollegeId" placeholder="EX: VTU28243" maxlength="8" minlength="8" pattern="[Vv][Tt][Uu][0-9]{5}" autocomplete="username" required oninput="validateCollegeIdField(this)" aria-describedby="regCollegeIdHint">
+        <div class="field-hint" id="regCollegeIdHint">Use VTU followed by five digits (example: VTU28243).</div>
+      </div>
+      <div class="field">
+        <label>Student type</label>
+        <div class="residency-options" role="radiogroup" aria-label="Student type">
+          <label class="residency-option"><input type="radio" name="studentType" value="dayscholar" required onchange="updateStudentResidenceFields()"> Day scholar</label>
+          <label class="residency-option"><input type="radio" name="studentType" value="hostel" required onchange="updateStudentResidenceFields()"> Hostel</label>
+        </div>
+      </div>
+      <div class="field" id="regHostelField" hidden>
+        <label for="regHostel">Hostel</label>
+        <select id="regHostel" disabled>
+          <option value="" disabled selected>Select your hostel</option>
+          <option value="B3">B3</option>
+          <option value="Leaders">Leaders</option>
+          <option value="Prince">Prince</option>
+          <option value="Kings">Kings</option>
+          <option value="Queens">Queens</option>
+          <option value="IGH">IGH</option>
+          <option value="VVH">VVH</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('regPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit">Register</button>
+    </form>
+    <div class="auth-switch">Already have an account? <a href="#" onclick="switchView('view-register','view-login'); return false;">Log in</a></div>
+  </div>
+</div>
+
+<div id="view-forgot" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-forgot','view-login'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Reset your password</h2>
+    <p class="auth-sub">Enter your college ID and we'll email a verification code to your registered address.</p>
+    <form id="forgotForm" onsubmit="handleForgot(event);">
+      <div class="field">
+        <label>College ID</label>
+        <input type="text" id="forgotCollegeId" placeholder="EX: VTU28243" maxlength="8" required>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit" id="forgotSubmitBtn">Send code</button>
+    </form>
+    <div class="auth-switch">Remembered it? <a href="#" onclick="switchView('view-forgot','view-login'); return false;">Back to log in</a></div>
+  </div>
+</div>
+
+<div id="view-forgot-otp" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-forgot-otp','view-forgot'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Enter verification code</h2>
+    <p class="auth-sub">We sent a 6-digit code to <span id="otpEmailTarget" class="mono">your email</span>.</p>
+    <form id="otpForm" onsubmit="handleVerifyOtp(event);">
+      <div class="field">
+        <label>Verification code</label>
+        <div class="otp-row" id="otpRow">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="0">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="2">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="3">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="4">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-otp-index="5">
+        </div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit" id="otpSubmitBtn">Verify code</button>
+    </form>
+    <div class="auth-switch">Didn't get it? <a href="#" onclick="handleResendOtp(); return false;" id="resendOtpLink">Resend code</a></div>
+  </div>
+</div>
+
+<div id="view-forgot-reset" class="view auth-view" style="display:none;">
+  <a href="#" class="auth-back" onclick="switchView('view-forgot-reset','view-login'); return false;">← Back</a>
+  <div class="auth-card">
+    <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+    <h2>Set a new password</h2>
+    <p class="auth-sub">Code verified — choose a new password for your account.</p>
+    <form id="resetPasswordForm" onsubmit="handleResetPassword(event);">
+      <div class="field">
+        <label>New password</label>
+        <div class="pw-wrap">
+          <input type="password" id="newPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('newPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm new password</label>
+        <div class="pw-wrap">
+          <input type="password" id="confirmPassword" placeholder="" required>
+          <button type="button" class="eye-toggle" aria-label="Show password" onclick="togglePasswordVisibility('confirmPassword', this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none"><path class="eye-open" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle class="eye-open" cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path class="eye-closed" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M7.4 7.5C4.9 8.9 3 12 3 12s4 7 11 7c1.6 0 3-.35 4.2-.9M16.7 6.4C15.3 5.6 13.7 5 12 5c-.5 0-1 .04-1.5.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary auth-submit" type="submit">Save new password</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/Script.js"></script>
+</body>
+</html>

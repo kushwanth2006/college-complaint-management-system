@@ -8,6 +8,7 @@ const ExcelJS = require('exceljs');
 const { db, initDb } = require('./db/database');
 const { sendOtpEmail, isConfigured: isMailerConfigured, isDevelopmentFallbackEnabled } = require('./lib/mailer');
 const { analyzeComplaint, similarity } = require('./lib/complaint-ai');
+const { checkComplaintRelevance } = require('./lib/complaint-relevance');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ if (!isMailerConfigured() && !isDevelopmentFallbackEnabled()) {
   throw new Error('SMTP_HOST, SMTP_USER, and SMTP_PASS must be set unless the development OTP fallback is explicitly enabled.');
 }
 const MIN_PASSWORD_LENGTH = 8;
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
 
 // Photos are sent as base64 data URLs in the JSON body, so the default
 // ~100kb express.json() limit is too small — bump it.
@@ -83,25 +85,51 @@ function pageInfo(page, pageSize, total) {
   return { page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
 }
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Browsers auto-request this; there's no favicon asset yet, so just
 // answer quietly instead of letting it 404 in the console.
 app.get('/favicon.ico', async (req, res) => res.status(204).end());
 
 app.get('/', async (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'structure.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+for (const [route, page] of Object.entries({
+  '/student': 'student.html',
+  '/staff': 'staff.html',
+  '/admin': 'admin.html'
+})) {
+  app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', page)));
+}
 
 /* ---------------- constants (kept in sync with Script.js) ---------------- */
 
 const CATEGORIES = ['Hostel', 'Mess', 'Academic', 'Wi-Fi & Network', 'Transport', 'Library', 'General'];
 const HOSTELS = ['Leaders', 'Kings', 'Queens', 'B3', 'IGH', 'VVH'];
+const RESIDENCES = [...HOSTELS, 'Day Scholar'];
 const STAGES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 
 const OTP_TTL_MS = 10 * 60 * 1000;   // 10 minutes
 const RESET_TOKEN_TTL_MS = 10 * 60 * 1000;
 const SLA_HOURS = { Critical: 2, High: 8, Medium: 24, Low: 72 };
+
+async function predictCategoryWithFastApi(text) {
+  try {
+    const response = await fetch(`${ML_SERVICE_URL}/predict-category`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(1500)
+    });
+    if (!response.ok) return null;
+    const prediction = await response.json();
+    if (!CATEGORIES.includes(prediction.category) || !Number.isFinite(prediction.confidence) || prediction.confidence < 0 || prediction.confidence > 100) return null;
+    return { category: prediction.category, confidence: prediction.confidence };
+  } catch {
+    return null;
+  }
+}
 
 /* ---------------- helpers ---------------- */
 
@@ -122,12 +150,12 @@ function publicUser(u) {
 }
 
 function isValidCollegeId(id) {
-  return /^VTU.{5}$/i.test(id) && id.length === 8;
+  return /^VTU\d{5}$/i.test(id);
 }
 
 /* Department staff use a separate TTS-prefixed College ID — never VTU. */
 function isValidStaffCollegeId(id) {
-  return /^TTS.{5}$/i.test(id) && id.length === 8;
+  return /^TTS\d{5}$/i.test(id);
 }
 
 function isValidEmail(email) {
@@ -233,6 +261,8 @@ async function publicComplaint(c, suppliedRouting, { includeSensitive = false } 
     , aiSuggestedResolution: c.ai_suggested_resolution || []
     , slaDeadline: c.sla_deadline || null
     , overdue: c.sla_deadline ? Date.now() > new Date(c.sla_deadline).getTime() && c.stage_index < 3 : false
+    , deletedAt: c.deleted_at || null
+    , deletedByRole: c.deleted_by_role || null
     , feedback: c.feedback || null
     , studentUpdates: c.student_updates || []
   };
@@ -368,25 +398,29 @@ function validPhoto(value) {
 /* ---------------- auth routes ---------------- */
 
 app.post('/api/register', authLimit, async (req, res) => {
-  const { name, email, collegeId, hostel, password } = req.body || {};
+  const { name, email, collegeId, studentType, hostel: requestedHostel, password } = req.body || {};
 
-  if (!name || !email || !collegeId || !hostel || !password) {
+  if (!name || !email || !collegeId || !studentType || !password) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
   const cleanId = String(collegeId).trim().toUpperCase();
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanName = cleanRequired(name, 100);
+  const hostel = studentType === 'dayscholar' ? 'Day Scholar' : requestedHostel;
 
   if (!isValidCollegeId(cleanId)) {
-    return res.status(400).json({ error: 'College ID must start with VTU and be exactly 8 characters.' });
+    return res.status(400).json({ error: 'College ID must be VTU followed by exactly five digits (e.g. VTU28243).' });
   }
-  if (!isValidEmail(cleanEmail)) {
-    return res.status(400).json({ error: 'Enter a valid email address.' });
+  if (cleanEmail !== `${cleanId.toLowerCase()}@veltech.edu.in`) {
+    return res.status(400).json({ error: 'Email must match your College ID and end with @veltech.edu.in.' });
   }
   if (!cleanName) return res.status(400).json({ error: 'Enter a valid name.' });
   if (String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
-  if (!HOSTELS.includes(hostel)) {
+  if (!['dayscholar', 'hostel'].includes(studentType)) {
+    return res.status(400).json({ error: 'Choose Day scholar or Hostel.' });
+  }
+  if (studentType === 'hostel' && !HOSTELS.includes(hostel)) {
     return res.status(400).json({ error: 'Please select a hostel from the list.' });
   }
 
@@ -485,10 +519,10 @@ app.patch('/api/me', requireAuth, async (req, res) => {
   const { name, hostel, password } = req.body || {};
   const cleanName = cleanRequired(name, 100);
   if (!cleanName || !hostel) {
-    return res.status(400).json({ error: "Name and hostel can't be empty." });
+    return res.status(400).json({ error: "Name and residence can't be empty." });
   }
-  if (!HOSTELS.includes(hostel)) {
-    return res.status(400).json({ error: 'Please select a hostel from the list.' });
+  if (!RESIDENCES.includes(hostel)) {
+    return res.status(400).json({ error: 'Please select a valid residence.' });
   }
   if (password && String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
 
@@ -598,13 +632,21 @@ app.get('/api/complaints', requireAuth, async (req, res) => {
   res.json({ complaints: await publicComplaints(rows) });
 });
 
+app.get('/api/complaints/deleted', requireAuth, async (req, res) => {
+  const rows = await db.deletedComplaintRows({ userId: req.session.userId });
+  res.json({ complaints: await publicComplaints(rows) });
+});
+
 app.post('/api/complaints/analyze', requireAuth, analysisLimit, async (req, res) => {
-  const { title, description } = req.body || {};
+  const { title, description, location } = req.body || {};
   const cleanTitle = cleanRequired(title, 200);
   const cleanDescription = cleanRequired(description, 5000);
   if (!cleanTitle || !cleanDescription) return res.status(400).json({ error: 'Add a subject and description within the allowed length.' });
+  const relevance = checkComplaintRelevance({ title: cleanTitle, description: cleanDescription, location });
+  if (!relevance.allowed) return res.status(422).json({ error: relevance.message, code: relevance.code });
   const complaints = await db.recentOpenComplaints(500);
-  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
+  const categoryPrediction = await predictCategoryWithFastApi(`${cleanTitle} ${cleanDescription}`);
+  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints, categoryPrediction });
   if (analysis.duplicate) analysis.duplicate = { similarity: analysis.duplicate.similarity };
   res.json({ analysis });
 });
@@ -620,13 +662,16 @@ app.post('/api/complaints', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Unrecognized category.' });
   }
   if (!validPhoto(photo)) return res.status(400).json({ error: 'Photo must be a PNG, JPEG, GIF, or WebP image under 4 MB.' });
+  const relevance = checkComplaintRelevance({ title: cleanTitle, description: cleanDescription, location });
+  if (!relevance.allowed) return res.status(422).json({ error: relevance.message, code: relevance.code });
 
-  const [code, routing, complaints] = await Promise.all([
+  const [code, routing, complaints, categoryPrediction] = await Promise.all([
     genComplaintCode(),
     getRoutingDetails(category),
-    db.recentOpenComplaints(500)
+    db.recentOpenComplaints(500),
+    predictCategoryWithFastApi(`${cleanTitle} ${cleanDescription}`)
   ]);
-  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints });
+  const analysis = analyzeComplaint({ title: cleanTitle, description: cleanDescription, complaints, categoryPrediction });
   const slaDeadline = new Date(Date.now() + SLA_HOURS[analysis.priority] * 60 * 60 * 1000);
 
   const info = await db.run(
@@ -671,12 +716,9 @@ app.post('/api/complaints/:code/feedback', requireAuth, async (req, res) => {
 });
 
 app.delete('/api/complaints/:code', requireAuth, async (req, res) => {
-  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
-  if (!complaint || complaint.user_id !== req.session.userId) return res.status(404).json({ error: 'Complaint not found.' });
-  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
-  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
-  const result = await db.run('DELETE FROM complaints WHERE complaint_code = ? AND user_id = ?', req.params.code, req.session.userId);
-  if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
+  const deleted = await db.softDeleteComplaint({ complaintCode: req.params.code, userId: req.session.userId,
+    deletedByRole: 'student', deletedById: req.session.userId });
+  if (!deleted) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
 });
 
@@ -700,10 +742,10 @@ app.post('/api/admin/register', authLimit, async (req, res) => {
     if (cleanId.startsWith('VTU')) {
       return res.status(400).json({ error: "That's a student ID. Staff must register with a TTS College ID, e.g. TTS12345." });
     }
-    return res.status(400).json({ error: 'College ID must start with TTS and be exactly 8 characters.' });
+    return res.status(400).json({ error: 'College ID must be TTS followed by exactly five digits (e.g. TTS12345).' });
   }
-  if (!isValidEmail(cleanEmail)) {
-    return res.status(400).json({ error: 'Enter a valid email address.' });
+  if (cleanEmail !== `${cleanId.toLowerCase()}@veltech.edu.in`) {
+    return res.status(400).json({ error: 'Email must match the staff ID and end with @veltech.edu.in.' });
   }
   if (!cleanName) return res.status(400).json({ error: 'Enter a valid name.' });
   if (String(password).length < MIN_PASSWORD_LENGTH) return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
@@ -781,6 +823,11 @@ app.get('/api/admin/complaints', requireAdminAuth, async (req, res) => {
   res.json({ complaints: await publicComplaints(rows) });
 });
 
+app.get('/api/admin/complaints/deleted', requireAdminAuth, async (req, res) => {
+  const rows = await db.deletedComplaintRows({ category: req.admin.department });
+  res.json({ complaints: await publicComplaints(rows) });
+});
+
 app.get('/api/admin/complaints/export.xlsx', requireAdminAuth, asyncRoute(async (req, res) => {
   const rows = await departmentComplaintRows(req.admin.department);
   await sendComplaintWorkbook(res, rows, 'department');
@@ -831,12 +878,9 @@ app.get('/api/admin/complaints/:code/recommendations', requireAdminAuth, async (
 });
 
 app.delete('/api/admin/complaints/:code', requireAdminAuth, async (req, res) => {
-  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
-  if (!complaint || complaint.category !== req.admin.department) return res.status(404).json({ error: 'Complaint not found.' });
-  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
-  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
-  const result = await db.run('DELETE FROM complaints WHERE complaint_code = ? AND category = ?', req.params.code, req.admin.department);
-  if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
+  const deleted = await db.softDeleteComplaint({ complaintCode: req.params.code, category: req.admin.department,
+    deletedByRole: 'staff', deletedById: req.admin.id });
+  if (!deleted) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
 });
 
@@ -937,12 +981,9 @@ app.get('/api/superadmin/analytics', requireSuperAdmin, async (req, res) => {
 });
 
 app.delete('/api/superadmin/complaints/:code', requireSuperAdmin, async (req, res) => {
-  const complaint = await db.get('SELECT * FROM complaints WHERE complaint_code = ?', req.params.code);
-  if (!complaint) return res.status(404).json({ error: 'Complaint not found.' });
-  await db.run('DELETE FROM complaint_history WHERE complaint_id = ?', complaint.id);
-  await db.run('DELETE FROM feedback WHERE complaint_id = ?', complaint.id);
-  const result = await db.run('DELETE FROM complaints WHERE complaint_code = ?', req.params.code);
-  if (!result.changes) return res.status(404).json({ error: 'Complaint not found.' });
+  const deleted = await db.softDeleteComplaint({ complaintCode: req.params.code,
+    deletedByRole: 'superadmin', deletedById: null });
+  if (!deleted) return res.status(404).json({ error: 'Complaint not found.' });
   res.json({ ok: true });
 });
 
@@ -1010,10 +1051,10 @@ app.patch('/api/superadmin/students/:id/credentials', requireSuperAdmin, async (
   const cleanEmail = String(email).trim().toLowerCase();
 
   if (!isValidCollegeId(cleanId)) {
-    return res.status(400).json({ error: 'College ID must start with VTU and be exactly 8 characters.' });
+    return res.status(400).json({ error: 'College ID must be VTU followed by exactly five digits (e.g. VTU28243).' });
   }
-  if (!isValidEmail(cleanEmail)) {
-    return res.status(400).json({ error: 'Enter a valid email address.' });
+  if (cleanEmail !== `${cleanId.toLowerCase()}@veltech.edu.in`) {
+    return res.status(400).json({ error: 'Email must match the College ID and end with @veltech.edu.in.' });
   }
   const idConflict = await db.get('SELECT id FROM users WHERE college_id = ? AND id != ?', cleanId, student.id);
   if (idConflict) return res.status(409).json({ error: 'That College ID is already used by another student.' });
@@ -1047,10 +1088,10 @@ app.patch('/api/superadmin/staff/:id/credentials', requireSuperAdmin, async (req
   const cleanEmail = String(email).trim().toLowerCase();
 
   if (!isValidStaffCollegeId(cleanId)) {
-    return res.status(400).json({ error: 'College ID must start with TTS and be exactly 8 characters.' });
+    return res.status(400).json({ error: 'College ID must be TTS followed by exactly five digits (e.g. TTS12345).' });
   }
-  if (!isValidEmail(cleanEmail)) {
-    return res.status(400).json({ error: 'Enter a valid email address.' });
+  if (cleanEmail !== `${cleanId.toLowerCase()}@veltech.edu.in`) {
+    return res.status(400).json({ error: 'Email must match the staff ID and end with @veltech.edu.in.' });
   }
   const idConflict = await db.get('SELECT id FROM admins WHERE college_id = ? AND id != ?', cleanId, staff.id);
   if (idConflict) return res.status(409).json({ error: 'That College ID is already used by another staff account.' });

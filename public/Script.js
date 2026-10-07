@@ -33,11 +33,12 @@ const CATEGORIES = ['Hostel', 'Mess', 'Academic', 'Wi-Fi & Network', 'Transport'
 const STAGES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 
 const HOSTELS = ['Leaders', 'Kings', 'Queens', 'B3', 'IGH', 'VVH'];
+const RESIDENCES = [...HOSTELS, 'Day Scholar'];
 
 const DROPDOWN_ICONS = {
   'Hostel': '🏠', 'Mess': '🍽️', 'Academic': '🎓', 'Wi-Fi & Network': '📶',
   'Transport': '🚌', 'Library': '📚', 'General': '✨',
-  'Leaders': '🏆', 'Kings': '👑', 'Queens': '👑', 'B3': '🛏️', 'IGH': '🏢', 'VVH': '🏢',
+  'Leaders': '🏆', 'Kings': '👑', 'Queens': '👑', 'B3': '🛏️', 'IGH': '🏢', 'VVH': '🏢', 'Day Scholar': '🎓',
   'Submitted': '📨', 'Routed': '📍', 'In Progress': '⚙️', 'Resolved': '✅'
 };
 
@@ -155,6 +156,8 @@ function setBtnLoading(btn, loading) {
 /* ---------------- Session state ---------------- */
 let currentUser = null;      // { collegeId, name, hostel, email } — set from the server's response
 let ticketsCache = [];       // this student's complaints, loaded from /api/complaints
+let deletedTicketsCache = [];
+let activeStudentComplaintView = 'active';
 let activeFilterCategory = 'All';
 let activeStudentOverviewFilter = 'All';
 let activeSearch = '';
@@ -167,6 +170,7 @@ let pendingReset = null;   // { collegeId, resetToken? }
 /* ---------------- Admin / super-admin session state ---------------- */
 let currentAdmin = null;        // { id, name, email, department } — approved department staff
 let adminTicketsCache = [];     // complaints routed to currentAdmin's department
+let adminDeletedTicketsCache = [];
 let activeAdminFilterStage = 'All';
 let activeAdminSearch = '';
 let superAdminAdmins = [];      // all staff accounts, loaded in the super-admin panel
@@ -185,6 +189,23 @@ const superAdminStudentComplaintPages = new Map();
 let superAdminSearchResults = { students: [], staff: [] }; // last "Manage credentials" search
 
 /* ---------------- View switching ---------------- */
+const VIEW_ROUTES = {
+  'view-landing': '/',
+  'view-login': '/',
+  'view-register': '/',
+  'view-forgot': '/',
+  'view-forgot-otp': '/',
+  'view-forgot-reset': '/',
+  'view-dashboard': '/student',
+  'view-admin-login': '/staff',
+  'view-admin-register': '/staff',
+  'view-admin-pending': '/staff',
+  'view-admin-dashboard': '/staff',
+  'view-superadmin-login': '/admin',
+  'view-superadmin-dashboard': '/admin',
+  'view-superadmin-search': '/admin'
+};
+
 function triggerPageShimmer() {
   const bar = document.getElementById('pageShimmer');
   if (!bar) return;
@@ -198,6 +219,12 @@ function switchView(fromId, toId) {
   closeMobileNav();
   const from = document.getElementById(fromId);
   const to = document.getElementById(toId);
+  const destination = VIEW_ROUTES[toId];
+
+  if (!to && destination && window.location.pathname !== destination) {
+    window.location.assign(destination);
+    return;
+  }
 
   triggerPageShimmer();
 
@@ -329,7 +356,7 @@ function startHeroDemo() {
 /* ---------------- Auth ---------------- */
 
 function isValidCollegeId(id) {
-  return /^VTU.{5}$/i.test(id) && id.length === 8;
+  return /^VTU\d{5}$/i.test(id);
 }
 
 function validateCollegeIdField(input, hintId) {
@@ -338,7 +365,8 @@ function validateCollegeIdField(input, hintId) {
   if (!hint) return;
   if (val.length === 0) {
     hint.className = 'field-hint';
-    hint.innerHTML = 'Starts with <b>VTU</b>, followed by 5 characters (8 total).';
+    hint.textContent = 'Use VTU followed by five digits (example: VTU28243).';
+    validateStudentEmailField();
     return;
   }
   if (isValidCollegeId(val)) {
@@ -346,14 +374,49 @@ function validateCollegeIdField(input, hintId) {
     hint.textContent = 'Looks good.';
   } else {
     hint.className = 'field-hint err';
-    hint.textContent = 'Must start with VTU followed by 5 characters — 8 total (e.g. VTU28243).';
+    hint.textContent = 'Use VTU followed by exactly five digits (e.g. VTU28243).';
   }
+  validateStudentEmailField();
+}
+
+function validateStudentEmailField() {
+  const input = document.getElementById('regEmail');
+  const collegeId = document.getElementById('regCollegeId')?.value.trim();
+  const hint = document.getElementById('regEmailHint');
+  if (!input || !hint) return;
+  if (!input.value.trim()) {
+    hint.className = 'field-hint';
+    hint.textContent = 'Use your College ID followed by @veltech.edu.in.';
+    return;
+  }
+  if (!isValidCollegeId(collegeId)) {
+    hint.className = 'field-hint';
+    hint.textContent = 'Enter a valid College ID first; the email must use that same ID.';
+    return;
+  }
+  const expected = `${collegeId.toLowerCase()}@veltech.edu.in`;
+  const matches = input.value.trim().toLowerCase() === expected;
+  hint.className = matches ? 'field-hint ok' : 'field-hint err';
+  hint.textContent = matches
+    ? 'Email matches your College ID.'
+    : `Use ${collegeId}@veltech.edu.in.`;
+}
+
+function updateStudentResidenceFields() {
+  const isHostel = document.querySelector('input[name="studentType"]:checked')?.value === 'hostel';
+  const field = document.getElementById('regHostelField');
+  const select = document.getElementById('regHostel');
+  if (!field || !select) return;
+  field.hidden = !isHostel;
+  select.disabled = !isHostel;
+  select.required = isHostel;
+  if (!isHostel) select.value = '';
 }
 
 /* Staff (department) college IDs use a separate TTS prefix, e.g. TTS12345 —
    case doesn't matter, but staff must never register with a VTU (student) ID. */
 function isValidStaffCollegeId(id) {
-  return /^TTS.{5}$/i.test(id) && id.length === 8;
+  return /^TTS\d{5}$/i.test(id);
 }
 
 function validateStaffCollegeIdField(input, hintId) {
@@ -362,7 +425,8 @@ function validateStaffCollegeIdField(input, hintId) {
   if (!hint) return;
   if (val.length === 0) {
     hint.className = 'field-hint';
-    hint.innerHTML = 'Starts with <b>TTS</b>, followed by 5 characters (8 total).';
+    hint.innerHTML = 'Starts with <b>TTS</b>, followed by exactly 5 digits (e.g. TTS12345).';
+    validateStaffEmailField();
     return;
   }
   if (isValidStaffCollegeId(val)) {
@@ -373,7 +437,33 @@ function validateStaffCollegeIdField(input, hintId) {
     hint.textContent = "That's a student ID. Staff accounts use a TTS ID, e.g. TTS12345.";
   } else {
     hint.className = 'field-hint err';
-    hint.textContent = 'Must start with TTS followed by 5 characters — 8 total (e.g. TTS12345).';
+    hint.textContent = 'Must be TTS followed by exactly 5 digits (e.g. TTS12345).';
+  }
+  validateStaffEmailField();
+}
+
+function validateStaffEmailField() {
+  const input = document.getElementById('adminRegEmail');
+  const collegeId = document.getElementById('adminRegCollegeId')?.value.trim().toUpperCase();
+  const hint = document.getElementById('adminRegEmailHint');
+  if (!input || !hint) return;
+
+  if (!input.value.trim()) {
+    hint.className = 'field-hint';
+    hint.textContent = 'Use your staff ID followed by @veltech.edu.in.';
+    return;
+  }
+  if (!isValidStaffCollegeId(collegeId)) {
+    hint.className = 'field-hint';
+    hint.textContent = 'Enter a valid staff ID first; the email must match it.';
+    return;
+  }
+  if (input.value.trim().toLowerCase() === `${collegeId.toLowerCase()}@veltech.edu.in`) {
+    hint.className = 'field-hint ok';
+    hint.textContent = 'Email matches your staff ID.';
+  } else {
+    hint.className = 'field-hint err';
+    hint.textContent = `Use ${collegeId}@veltech.edu.in.`;
   }
 }
 
@@ -416,31 +506,38 @@ async function handleRegister(event) {
   const name = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const collegeId = document.getElementById('regCollegeId').value.trim().toUpperCase();
-  const hostel = document.getElementById('regHostel').value;
+  const studentType = document.querySelector('input[name="studentType"]:checked')?.value;
+  const selectedHostel = document.getElementById('regHostel').value;
+  const hostel = studentType === 'dayscholar' ? 'Day Scholar' : selectedHostel;
   const password = document.getElementById('regPassword').value;
 
-  if (!name || !email || !collegeId || !hostel || !password) {
+  if (!name || !email || !collegeId || !studentType || !password) {
     showToast('Please fill in every field.');
     return;
   }
   if (!isValidCollegeId(collegeId)) {
-    showToast('College ID must start with VTU and be exactly 8 characters.');
+    showToast('College ID must be VTU followed by exactly five digits (e.g. VTU28243).');
     validateCollegeIdField(document.getElementById('regCollegeId'));
     return;
   }
-  if (!isValidEmail(email)) {
-    showToast('Enter a valid email address.');
+  if (email.toLowerCase() !== `${collegeId.toLowerCase()}@veltech.edu.in`) {
+    showToast('Email must match your College ID and end with @veltech.edu.in.');
+    document.getElementById('regEmail').focus();
     return;
   }
-  if (!HOSTELS.includes(hostel)) {
+  if (studentType === 'hostel' && !HOSTELS.includes(hostel)) {
     showToast('Please select a hostel from the list.');
+    return;
+  }
+  if (!['dayscholar', 'hostel'].includes(studentType)) {
+    showToast('Choose Day scholar or Hostel.');
     return;
   }
 
   const btn = document.querySelector('#registerForm .auth-submit');
   setBtnLoading(btn, true);
   try {
-    const data = await api('/api/register', { method: 'POST', body: { name, email, collegeId, hostel, password } });
+    const data = await api('/api/register', { method: 'POST', body: { name, email, collegeId, studentType, hostel, password } });
     currentUser = data.user;
     ticketsCache = [];
     enterDashboard();
@@ -615,16 +712,22 @@ async function handleLogout() {
   try { await api('/api/logout', { method: 'POST' }); } catch (err) { /* clear local state regardless */ }
   currentUser = null;
   ticketsCache = [];
+  deletedTicketsCache = [];
   switchView('view-dashboard', 'view-landing');
   showToast('Logged out.');
 }
 
 /* ---------------- Dashboard ---------------- */
 function enterDashboard() {
+  if (!document.getElementById('view-dashboard')) {
+    window.location.assign('/student');
+    return;
+  }
   hideAllViewsExcept('view-dashboard');
 
   activeFilterCategory = 'All';
   activeStudentOverviewFilter = 'All';
+  activeStudentComplaintView = 'active';
   activeSearch = '';
   syncDashboardMenuForViewport();
   document.getElementById('dashWelcome').textContent = 'Welcome back, ' + currentUser.name.split(' ')[0];
@@ -648,6 +751,7 @@ function initials(name) {
 function goToDashboardHome() {
   activeFilterCategory = 'All';
   activeStudentOverviewFilter = 'All';
+  activeStudentComplaintView = 'active';
   activeSearch = '';
   const searchInput = document.getElementById('complaintSearchInput');
   if (searchInput) searchInput.value = '';
@@ -749,10 +853,15 @@ function syncRoleDashboardMenu(viewId) {
    cache — no need to round-trip to the server for every keystroke. */
 async function loadMyTickets() {
   try {
-    const data = await api('/api/complaints');
-    ticketsCache = data.complaints || [];
+    const [active, deleted] = await Promise.all([
+      api('/api/complaints'),
+      api('/api/complaints/deleted')
+    ]);
+    ticketsCache = active.complaints || [];
+    deletedTicketsCache = deleted.complaints || [];
   } catch (err) {
     ticketsCache = [];
+    deletedTicketsCache = [];
     showToast(err.message || 'Could not load your complaints.');
   }
 }
@@ -786,6 +895,7 @@ function renderStatGrid() {
 }
 
 function setStudentOverviewFilter(filter) {
+  activeStudentComplaintView = 'active';
   activeStudentOverviewFilter = filter === 'All' || filter === activeStudentOverviewFilter ? 'All' : filter;
   renderStatGrid();
   renderTicketList();
@@ -793,15 +903,24 @@ function setStudentOverviewFilter(filter) {
 }
 
 function renderFilterRow() {
-  const cats = ['All', ...CATEGORIES];
+  const cats = ['All', 'Deleted', ...CATEGORIES];
   document.getElementById('filterRow').innerHTML = cats.map(c => {
-    const icon = c === 'All' ? '' : categoryIcon(c, 13);
-    return `<button type="button" class="filter-pill${c === activeFilterCategory ? ' active' : ''}" onclick="setFilterCategory('${c.replace(/'/g, "\\'")}')">${icon}${c}</button>`;
+    const icon = c === 'All' || c === 'Deleted' ? '' : categoryIcon(c, 13);
+    const active = c === 'Deleted' ? activeStudentComplaintView === 'deleted' : activeStudentComplaintView === 'active' && c === activeFilterCategory;
+    return `<button type="button" class="filter-pill${active ? ' active' : ''}" aria-pressed="${active}" onclick="setFilterCategory('${c.replace(/'/g, "\\'")}')">${icon}${c}</button>`;
   }).join('');
 }
 
 function setFilterCategory(cat) {
-  activeFilterCategory = cat;
+  if (cat === 'Deleted') {
+    activeStudentComplaintView = 'deleted';
+    activeFilterCategory = 'All';
+    activeStudentOverviewFilter = 'All';
+    renderStatGrid();
+  } else {
+    activeStudentComplaintView = 'active';
+    activeFilterCategory = cat;
+  }
   renderFilterRow();
   renderTicketList();
 }
@@ -817,13 +936,14 @@ function tkStripClass(category) {
 }
 
 function renderTicketList() {
-  let tickets = myTickets();
+  const deletedView = activeStudentComplaintView === 'deleted';
+  let tickets = deletedView ? deletedTicketsCache : myTickets();
 
-  if (activeStudentOverviewFilter === 'Awaiting action') tickets = tickets.filter(t => t.stageIndex < 2);
-  else if (activeStudentOverviewFilter === 'In progress') tickets = tickets.filter(t => t.stageIndex === 2);
-  else if (activeStudentOverviewFilter === 'Resolved') tickets = tickets.filter(t => t.stageIndex >= 3);
+  if (!deletedView && activeStudentOverviewFilter === 'Awaiting action') tickets = tickets.filter(t => t.stageIndex < 2);
+  else if (!deletedView && activeStudentOverviewFilter === 'In progress') tickets = tickets.filter(t => t.stageIndex === 2);
+  else if (!deletedView && activeStudentOverviewFilter === 'Resolved') tickets = tickets.filter(t => t.stageIndex >= 3);
 
-  if (activeFilterCategory !== 'All') {
+  if (!deletedView && activeFilterCategory !== 'All') {
     tickets = tickets.filter(t => t.category === activeFilterCategory);
   }
   if (activeSearch) {
@@ -839,19 +959,20 @@ function renderTicketList() {
   );
 
   const list = document.getElementById('ticketList');
+  document.getElementById('studentComplaintListTitle').textContent = deletedView ? 'Deleted complaints' : 'Your complaints';
   if (tickets.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
-        <h3>No complaints match this view</h3>
-        <div>Try a different filter, or raise a new complaint to get started.</div>
+        <h3>${deletedView ? 'No deleted complaints' : 'No complaints match this view'}</h3>
+        <div>${deletedView ? 'Complaints you or department staff move to Deleted will appear here.' : 'Try a different filter, or raise a new complaint to get started.'}</div>
       </div>`;
     return;
   }
 
   list.innerHTML = tickets.map((t, i) => {
-    const stageName = STAGES[t.stageIndex];
-    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
-    const dotClass = statusDotClass(t.stageIndex);
+    const stageName = deletedView ? 'Deleted' : STAGES[t.stageIndex];
+    const stampClass = deletedView ? ' stage-deleted' : t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
+    const dotClass = deletedView ? 'dot-deleted' : statusDotClass(t.stageIndex);
     const trackDots = STAGES.map((_, i) => `<span class="dot${i <= t.stageIndex ? ' on' : ''}"></span>`).join('');
 
     return `
@@ -862,7 +983,7 @@ function renderTicketList() {
           <div>
             <div class="tk-id mono">${t.id}</div>
             <div class="tk-title">${escapeHtml(t.title)}</div>
-              ${incidentSummary(t)}
+              ${deletedView ? '' : incidentSummary(t)}
             <div class="tk-meta">
               <span class="tk-cat" style="--chip-color:${(CATEGORY_META[t.category] || CATEGORY_META['General']).color}">${categoryIcon(t.category, 12)}${t.category}</span>
               <span>${fmtDate(t.createdAt)}</span>
@@ -877,11 +998,11 @@ function renderTicketList() {
         ${t.aiSummary ? `<div class="ai-ticket-meta"><strong>AI summary:</strong> ${escapeHtml(t.aiSummary)} <span class="ai-priority">${escapeHtml(t.aiPriority || 'Unrated')} priority</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
-        <div class="admin-controls">
+        ${deletedView ? `<div class="deleted-note">Moved to Deleted ${fmtDate(t.deletedAt)} · by ${escapeHtml(t.deletedByRole === 'student' ? 'student' : t.deletedByRole === 'staff' ? 'department staff' : 'super admin')}</div>` : `<div class="admin-controls">
           <button class="btn btn-ghost small" onclick="openComplaintHistory('${t.id.replace(/'/g, "\\'")}')">Timeline</button>
           ${t.stageIndex >= 3 && !t.feedback ? `<button class="btn btn-primary small" onclick="openFeedbackForm('${t.id.replace(/'/g, "\\'")}')">Give feedback</button>` : ''}
           <button class="btn btn-ghost small btn-delete" onclick="deleteStudentComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
-        </div>
+        </div>`}
       </div>
     </div>`;
   }).join('');
@@ -908,12 +1029,16 @@ function closeMobileNav() {
 }
 
 async function deleteStudentComplaint(code) {
-  if (!confirm(`Delete ${code}? This cannot be undone.`)) return;
+  if (!confirm(`Move ${code} to Deleted? You and department staff can view it there.`)) return;
   try {
     await api('/api/complaints/' + encodeURIComponent(code), { method: 'DELETE' });
-    ticketsCache = ticketsCache.filter(t => t.id !== code);
-    goToDashboardHome();
-    showToast(code + ' deleted.');
+    activeStudentComplaintView = 'deleted';
+    activeStudentOverviewFilter = 'All';
+    await loadMyTickets();
+    renderStatGrid();
+    renderFilterRow();
+    renderTicketList();
+    showToast(code + ' moved to Deleted.');
   } catch (err) { showToast(err.message); }
 }
 
@@ -986,6 +1111,7 @@ function openNewComplaintForm() {
       <label>Location</label>
       <input type="text" id="ncLocation" placeholder="Example: Boys Hostel Block B">
     </div>
+    <div id="ncRelevance" class="nc-relevance" role="status" aria-live="polite" tabindex="-1" hidden></div>
     <button type="button" class="btn btn-ghost ai-analyze-btn" onclick="analyzeNewComplaint()">Analyze with AI</button>
     <div id="ncAiResult" class="ai-result" aria-live="polite"></div>
     <div class="field">
@@ -998,16 +1124,38 @@ function openNewComplaintForm() {
       <button class="btn btn-primary" onclick="submitNewComplaint()">Submit complaint</button>
     </div>
   `);
+  ['ncTitle', 'ncDesc', 'ncLocation'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const notice = document.getElementById('ncRelevance');
+      notice.hidden = true;
+      notice.textContent = '';
+      document.getElementById('ncAiResult').classList.remove('show');
+    });
+  });
+}
+
+function showComplaintRelevanceError(message) {
+  const notice = document.getElementById('ncRelevance');
+  if (!notice) return false;
+  notice.textContent = message;
+  notice.hidden = false;
+  document.getElementById('ncAiResult')?.classList.remove('show');
+  notice.focus();
+  return true;
 }
 
 async function analyzeNewComplaint() {
   const title = document.getElementById('ncTitle').value.trim();
   const description = document.getElementById('ncDesc').value.trim();
+  const location = document.getElementById('ncLocation').value.trim();
   if (!title || !description) { showToast('Add a subject and description first.'); return; }
   const button = document.querySelector('.ai-analyze-btn');
   setBtnLoading(button, true);
   try {
-    const { analysis } = await api('/api/complaints/analyze', { method: 'POST', body: { title, description } });
+    const { analysis } = await api('/api/complaints/analyze', { method: 'POST', body: { title, description, location } });
+    const notice = document.getElementById('ncRelevance');
+    notice.hidden = true;
+    notice.textContent = '';
     document.getElementById('ncCategory').value = analysis.category;
     document.getElementById('ncAiResult').innerHTML = `
       <strong>AI suggestion</strong>
@@ -1018,7 +1166,8 @@ async function analyzeNewComplaint() {
       <small>You can change the suggested category before submitting.</small>`;
     document.getElementById('ncAiResult').classList.add('show');
   } catch (err) {
-    showToast(err.message);
+    if (err.code?.startsWith('COMPLAINT_')) showComplaintRelevanceError(err.message);
+    else showToast(err.message);
   } finally {
     setBtnLoading(button, false);
   }
@@ -1069,7 +1218,8 @@ async function submitNewComplaint() {
     showToast('Complaint filed — ' + data.complaint.id);
     goToDashboardHome();
   } catch (err) {
-    showToast(err.message);
+    if (err.code?.startsWith('COMPLAINT_')) showComplaintRelevanceError(err.message);
+    else showToast(err.message);
     setBtnLoading(btn, false);
   }
 }
@@ -1139,9 +1289,9 @@ function openSettingsModal() {
     <p class="modal-sub">Update your profile details.</p>
     <div class="field"><label>Full name</label><input type="text" id="setName" value="${escapeHtml(currentUser.name)}"></div>
     <div class="field">
-      <label>Hostel</label>
+      <label>Residence</label>
       <select id="setHostel">
-        ${HOSTELS.map(h => `<option value="${h}"${h === currentUser.hostel ? ' selected' : ''}>${dropdownLabel(h)}</option>`).join('')}
+        ${RESIDENCES.map(h => `<option value="${h}"${h === currentUser.hostel ? ' selected' : ''}>${dropdownLabel(h)}</option>`).join('')}
       </select>
     </div>
     <div class="field">
@@ -1165,7 +1315,7 @@ async function saveSettings() {
   const hostel = document.getElementById('setHostel').value;
   const password = document.getElementById('setPassword').value;
 
-  if (!name || !hostel) { showToast('Name and hostel can\u2019t be empty.'); return; }
+  if (!name || !hostel) { showToast('Name and residence can\u2019t be empty.'); return; }
   if (password && password.length < 8) { showToast('Password must be at least 8 characters.'); return; }
 
   const btn = document.querySelector('.modal-actions .btn-primary');
@@ -1214,13 +1364,13 @@ async function handleAdminRegister(event) {
     if (collegeId.startsWith('VTU')) {
       showToast("That's a student ID. Staff must register with a TTS College ID, e.g. TTS12345.");
     } else {
-      showToast('College ID must start with TTS and be exactly 8 characters.');
+      showToast('Staff ID must be TTS followed by exactly five digits (e.g. TTS12345).');
     }
     validateStaffCollegeIdField(document.getElementById('adminRegCollegeId'), 'adminRegCollegeIdHint');
     return;
   }
-  if (!isValidEmail(email)) {
-    showToast('Enter a valid email address.');
+  if (email.toLowerCase() !== `${collegeId.toLowerCase()}@veltech.edu.in`) {
+    showToast('Email must match the staff ID and end with @veltech.edu.in.');
     return;
   }
 
@@ -1262,6 +1412,7 @@ async function handleAdminLogout() {
   try { await api('/api/admin/logout', { method: 'POST' }); } catch (err) { /* clear local state regardless */ }
   currentAdmin = null;
   adminTicketsCache = [];
+  adminDeletedTicketsCache = [];
   switchView('view-admin-dashboard', 'view-admin-login');
   showToast('Logged out.');
 }
@@ -1280,6 +1431,10 @@ function hideAllViewsExcept(visibleId) {
 }
 
 function enterAdminDashboard() {
+  if (!document.getElementById('view-admin-dashboard')) {
+    window.location.assign('/staff');
+    return;
+  }
   hideAllViewsExcept('view-admin-dashboard');
 
   activeAdminFilterStage = 'All';
@@ -1308,10 +1463,15 @@ function goToAdminDashboardHome() {
 
 async function loadAdminTickets() {
   try {
-    const data = await api('/api/admin/complaints');
-    adminTicketsCache = data.complaints || [];
+    const [active, deleted] = await Promise.all([
+      api('/api/admin/complaints'),
+      api('/api/admin/complaints/deleted')
+    ]);
+    adminTicketsCache = active.complaints || [];
+    adminDeletedTicketsCache = deleted.complaints || [];
   } catch (err) {
     adminTicketsCache = [];
+    adminDeletedTicketsCache = [];
     showToast(err.message || 'Could not load department complaints.');
   }
 }
@@ -1346,9 +1506,9 @@ function setAdminOverviewFilter(stage) {
 }
 
 function renderAdminFilterRow() {
-  const stages = ['All', 'Awaiting action', 'In Progress', 'Resolved', 'Submitted', 'Assigned', 'Closed'];
+  const stages = ['All', 'Awaiting action', 'In Progress', 'Resolved', 'Submitted', 'Assigned', 'Closed', 'Deleted'];
   document.getElementById('adminFilterRow').innerHTML = stages.map(s =>
-    `<button type="button" class="filter-pill${s === activeAdminFilterStage ? ' active' : ''}" onclick="setAdminFilterStage('${s.replace(/'/g, "\\'")}')">${s}</button>`
+    `<button type="button" class="filter-pill${s === activeAdminFilterStage ? ' active' : ''}" aria-pressed="${s === activeAdminFilterStage}" onclick="setAdminFilterStage('${s.replace(/'/g, "\\'")}')">${s}</button>`
   ).join('');
 }
 
@@ -1365,13 +1525,14 @@ function filterAdminTickets(value) {
 }
 
 function renderAdminTicketList() {
-  let tickets = adminTicketsCache;
+  const deletedView = activeAdminFilterStage === 'Deleted';
+  let tickets = deletedView ? adminDeletedTicketsCache : adminTicketsCache;
 
-  if (activeAdminFilterStage === 'Awaiting action') {
+  if (!deletedView && activeAdminFilterStage === 'Awaiting action') {
     tickets = tickets.filter(t => t.stageIndex < 2);
-  } else if (activeAdminFilterStage === 'Resolved') {
+  } else if (!deletedView && activeAdminFilterStage === 'Resolved') {
     tickets = tickets.filter(t => t.stageIndex >= 3);
-  } else if (activeAdminFilterStage !== 'All') {
+  } else if (!deletedView && activeAdminFilterStage !== 'All') {
     const stageIdx = STAGES.indexOf(activeAdminFilterStage);
     tickets = tickets.filter(t => t.stageIndex === stageIdx);
   }
@@ -1387,21 +1548,22 @@ function renderAdminTicketList() {
     (priorityRank[b.aiPriority] || 0) - (priorityRank[a.aiPriority] || 0) || new Date(b.createdAt) - new Date(a.createdAt)
   );
 
-  tickets = consolidateTickets(tickets);
+  if (!deletedView) tickets = consolidateTickets(tickets);
   const list = document.getElementById('adminTicketList');
+  document.getElementById('adminComplaintListTitle').textContent = deletedView ? 'Deleted complaints' : 'Department complaints';
   if (tickets.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
-        <h3>No complaints match this view</h3>
-        <div>Try a different filter — nothing routed to your department fits it right now.</div>
+        <h3>${deletedView ? 'No deleted complaints' : 'No complaints match this view'}</h3>
+        <div>${deletedView ? 'Complaints moved to Deleted by students, staff, or the super admin will appear here.' : 'Try a different filter — nothing routed to your department fits it right now.'}</div>
       </div>`;
     return;
   }
 
   list.innerHTML = tickets.map((t, i) => {
-    const stageName = STAGES[t.stageIndex];
-    const stampClass = t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
-    const dotClass = statusDotClass(t.stageIndex);
+    const stageName = deletedView ? 'Deleted' : STAGES[t.stageIndex];
+    const stampClass = deletedView ? ' stage-deleted' : t.stageIndex === 2 ? ' stage-progress' : t.stageIndex >= 3 ? ' stage-resolved' : '';
+    const dotClass = deletedView ? 'dot-deleted' : statusDotClass(t.stageIndex);
     const trackDots = STAGES.map((_, si) => `<span class="dot${si <= t.stageIndex ? ' on' : ''}"></span>`).join('');
     const safeId = t.id.replace(/[^A-Za-z0-9_-]/g, '');
 
@@ -1413,8 +1575,8 @@ function renderAdminTicketList() {
           <div>
             <div class="tk-id mono">${t.id}</div>
             <div class="tk-title">${escapeHtml(t.title)}</div>
-              ${incidentSummary(t)}
-              ${incidentReports(t, adminTicketsCache)}
+              ${deletedView ? '' : incidentSummary(t)}
+              ${deletedView ? '' : incidentReports(t, adminTicketsCache)}
             <div class="tk-meta"><span>${fmtDate(t.createdAt)}</span></div>
           </div>
           <span class="stamp${stampClass}"><span class="status-dot ${dotClass}"></span>${stageName}</span>
@@ -1424,7 +1586,7 @@ function renderAdminTicketList() {
         ${t.location ? `<div class="tk-meta"><span>📍 ${escapeHtml(t.location)}</span>${t.overdue ? '<span class="overdue-label">SLA overdue</span>' : ''}<span>AI confidence: ${t.aiConfidence || 0}%</span></div>` : ''}
         <div class="tk-track"><div class="stage-track">${trackDots}</div></div>
         <div class="ticket-note" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">${escapeHtml(t.note)}</div>
-        <div class="admin-controls">
+        ${deletedView ? `<div class="deleted-note">Moved to Deleted ${fmtDate(t.deletedAt)} · by ${escapeHtml(t.deletedByRole === 'student' ? 'student' : t.deletedByRole === 'staff' ? 'department staff' : 'super admin')}</div>` : `<div class="admin-controls">
           <select id="stageSelect-${safeId}">
             ${STAGES.map((s, si) => `<option value="${si}"${si === t.stageIndex ? ' selected' : ''}>${dropdownLabel(s)}</option>`).join('')}
           </select>
@@ -1434,20 +1596,22 @@ function renderAdminTicketList() {
           <button class="btn btn-ghost small" onclick="openAiRecommendations('${t.id.replace(/'/g, "\\'")}', this)">AI recommendations</button>
           <button class="btn btn-primary small" onclick="submitAdminStageUpdate('${t.id.replace(/'/g, "\\'")}', this)">${t.incident ? 'Update incident' : 'Update'}</button>
           <button class="btn btn-ghost small btn-delete" onclick="deleteAdminComplaint('${t.id.replace(/'/g, "\\'")}')">Delete</button>
-        </div>
+        </div>`}
       </div>
     </div>`;
   }).join('');
 }
 
 async function deleteAdminComplaint(code) {
-  if (!confirm(`Delete ${code}? This cannot be undone.`)) return;
+  if (!confirm(`Move ${code} to Deleted? Students and department staff can view it there.`)) return;
   try {
     await api('/api/admin/complaints/' + encodeURIComponent(code), { method: 'DELETE' });
-    adminTicketsCache = adminTicketsCache.filter(t => t.id !== code);
+    activeAdminFilterStage = 'Deleted';
+    await loadAdminTickets();
     renderAdminStatGrid();
+    renderAdminFilterRow();
     renderAdminTicketList();
-    showToast(code + ' deleted.');
+    showToast(code + ' moved to Deleted.');
   } catch (err) { showToast(err.message); }
 }
 
@@ -1515,6 +1679,10 @@ async function handleSuperAdminLogout() {
 }
 
 async function enterSuperAdminDashboard() {
+  if (!document.getElementById('view-superadmin-dashboard')) {
+    window.location.assign('/admin');
+    return;
+  }
   hideAllViewsExcept('view-superadmin-dashboard');
   syncRoleDashboardMenu('view-superadmin-dashboard');
   await Promise.all([
@@ -1926,7 +2094,7 @@ async function deleteSuperAdminComplaintFromModal(code) {
 }
 
 async function deleteSuperAdminComplaint(code) {
-  if (!confirm(`Delete ${code}? This cannot be undone.`)) return;
+  if (!confirm(`Move ${code} to Deleted? The student and assigned department staff can view it there.`)) return;
   try {
     await api('/api/superadmin/complaints/' + encodeURIComponent(code), { method: 'DELETE' });
     superAdminComplaintsError = null;
@@ -1940,7 +2108,7 @@ async function deleteSuperAdminComplaint(code) {
     ]);
     renderSuperAdminComplaints();
     renderSuperAdminStudentComplaints();
-    showToast(code + ' deleted.');
+    showToast(code + ' moved to Deleted.');
   } catch (err) { showToast(err.message); }
 }
 
@@ -2175,9 +2343,18 @@ function renderSuperAdminSearchResults() {
 }
 
 async function saveSuperAdminStudentCredentials(id) {
-  const collegeId = document.getElementById('studCollegeId-' + id).value;
-  const email = document.getElementById('studEmail-' + id).value;
+  const collegeId = document.getElementById('studCollegeId-' + id).value.trim().toUpperCase();
+  const email = document.getElementById('studEmail-' + id).value.trim();
   const password = document.getElementById('studPassword-' + id).value;
+
+  if (!isValidCollegeId(collegeId)) {
+    showToast('College ID must be VTU followed by exactly five digits.');
+    return;
+  }
+  if (email.toLowerCase() !== `${collegeId.toLowerCase()}@veltech.edu.in`) {
+    showToast('Email must match the College ID and end with @veltech.edu.in.');
+    return;
+  }
 
   try {
     const data = await api('/api/superadmin/students/' + id + '/credentials', {
@@ -2194,9 +2371,18 @@ async function saveSuperAdminStudentCredentials(id) {
 }
 
 async function saveSuperAdminStaffCredentials(id) {
-  const collegeId = document.getElementById('staffCollegeId-' + id).value;
-  const email = document.getElementById('staffEmail-' + id).value;
+  const collegeId = document.getElementById('staffCollegeId-' + id).value.trim().toUpperCase();
+  const email = document.getElementById('staffEmail-' + id).value.trim();
   const password = document.getElementById('staffPassword-' + id).value;
+
+  if (!isValidStaffCollegeId(collegeId)) {
+    showToast('Staff ID must be TTS followed by exactly five digits (e.g. TTS12345).');
+    return;
+  }
+  if (email.toLowerCase() !== `${collegeId.toLowerCase()}@veltech.edu.in`) {
+    showToast('Email must match the staff ID and end with @veltech.edu.in.');
+    return;
+  }
 
   try {
     const data = await api('/api/superadmin/staff/' + id + '/credentials', {
@@ -2352,16 +2538,37 @@ async function bootApp() {
   // always requires re-entering the shared key.
   try {
     const session = await api('/api/session');
+    const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
     if (session.user) {
+      if (currentPath === '/staff' || currentPath === '/admin') {
+        window.location.replace('/student');
+        return;
+      }
       currentUser = session.user;
       await loadMyTickets();
+      if (currentPath !== '/student') {
+        window.location.replace('/student');
+        return;
+      }
       enterDashboard();
       return;
     }
     if (session.admin) {
+      if (currentPath === '/student' || currentPath === '/admin') {
+        window.location.replace('/staff');
+        return;
+      }
       currentAdmin = session.admin;
       await loadAdminTickets();
+      if (currentPath !== '/staff') {
+        window.location.replace('/staff');
+        return;
+      }
       enterAdminDashboard();
+      return;
+    }
+    if (currentPath === '/student') {
+      window.location.replace('/');
     }
   } catch (err) {
     // Network error reaching /api/session — stay on the landing page.

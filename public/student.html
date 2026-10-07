@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Dashboard — Complaint Box</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/styles.css">
+</head><body class="page-loading">
+
+<div class="page-loader" id="pageLoader" role="status" aria-live="polite" aria-label="Loading CCMS">
+  <div class="page-loader-inner">
+    <div class="page-loader-spinner" aria-hidden="true"></div>
+    <p class="page-loader-text">Loading CCMS<span class="page-loader-dots" aria-hidden="true"></span></p>
+  </div>
+</div>
+
+<div class="page-shimmer" id="pageShimmer"></div>
+
+<!-- ================= DASHBOARD VIEW ================= -->
+<div id="view-dashboard" class="view">
+  <div class="dash-shell">
+    <aside class="sidebar" id="dashboardSidebar" aria-hidden="false">
+      <div class="brand"><span class="brand-mark"></span>Complaint Box</div>
+      <a class="side-link active" href="#" id="navDashboard" onclick="goToDashboardHome(); return false;">▣ Dashboard</a>
+      <a class="side-link" href="#" onclick="openNewComplaintForm(); return false;">✎ Raise complaint</a>
+      <a class="side-link" href="#" id="navNotifications" onclick="openNotificationsModal(); return false;">◔ Notifications</a>
+      <a class="side-link" href="#" id="navSettings" onclick="openSettingsModal(); return false;">⚙ Settings</a>
+      <div class="side-spacer"></div>
+      <a class="side-link" href="#" onclick="handleLogout(); return false;">← Log out</a>
+      <div class="side-foot" id="dashSideFoot">Logged in as Student · College ID —</div>
+    </aside>
+    <button class="dashboard-menu-backdrop" type="button" aria-label="Close dashboard menu" onclick="closeDashboardMenu()"></button>
+
+    <main class="dash-main">
+      <div class="topbar">
+        <button class="dash-menu-toggle" type="button" aria-label="Toggle dashboard menu" aria-controls="dashboardSidebar" aria-expanded="true" onclick="toggleDashboardMenu()">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="top-right">
+          <button class="bell" id="dashBell" type="button" aria-label="Open notifications" onclick="openNotificationsModal()"><span class="badge" id="bellBadge"></span>🔔</button>
+          <div class="user-block">
+            <div class="avatar" id="dashAvatar">ST</div>
+            <div>
+              <div class="user-name" id="dashUserName">Student</div>
+              <div class="user-sub" id="dashUserSub">Student</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-body">
+        <div class="dash-head">
+          <div>
+            <h1 id="dashWelcome">Welcome back</h1>
+            <p>Here's where all your complaints stand right now.</p>
+          </div>
+          <a class="btn btn-primary" href="#" onclick="openNewComplaintForm(); return false;">+ Raise a complaint</a>
+        </div>
+
+        <div class="stat-grid" id="statGrid"></div>
+
+        <div class="list-head">
+          <h2 id="studentComplaintListTitle">Your complaints</h2>
+          <div class="filter-row" id="filterRow"></div>
+        </div>
+
+        <div class="complaints-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="complaintSearchInput" type="search" placeholder="Search your complaints" aria-label="Search your complaints" oninput="filterTickets(this.value)">
+        </div>
+
+        <div id="ticketList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/Script.js"></script>
+</body>
+</html>

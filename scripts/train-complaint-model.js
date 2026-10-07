@@ -1,7 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { CATEGORIES, train, predictLabel } = require('../lib/category-classifier');
-const { suggestPriorityFromRules, priorityFeatureText } = require('../lib/complaint-ai');
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
 
@@ -49,11 +48,12 @@ function evaluate(model, rows, labelKey) {
 }
 
 const root = path.resolve(__dirname, '..');
-const datasetPath = path.join(root, 'data', 'complaint-category-dataset-v2.csv');
+const datasetPath = path.join(root, 'data', 'student_complaints_training.csv');
 const records = parseCsv(fs.readFileSync(datasetPath, 'utf8'));
 const splitByGroup = new Map();
 for (const row of records) {
   if (!CATEGORIES.includes(row.category)) throw new Error(`Unknown category in dataset: ${row.category}`);
+  if (!PRIORITIES.includes(row.severity)) throw new Error(`Unknown severity in dataset: ${row.severity}`);
   if (!['train', 'val', 'validation', 'test'].includes(row.split)) throw new Error(`Unknown split: ${row.split}`);
   if (row.split === 'val') row.split = 'validation';
   if (!row.group_id || !row.complaint_text) throw new Error(`Missing group_id or complaint_text in ${row.id || 'dataset row'}.`);
@@ -63,13 +63,10 @@ for (const row of records) {
 }
 if ([...splitByGroup.values()].some(splits => splits.size !== 1)) throw new Error('A group_id appears in multiple data splits.');
 
-// Priority labels are generated during preprocessing from the documented triage rubric.
-// They are weak labels for a prototype, not historical staff-confirmed outcomes.
 const preparedRows = records.map(row => ({
   ...row,
   complaint_text: row.complaint_text.trim().replace(/\s+/g, ' '),
-  priority: suggestPriorityFromRules(row.complaint_text).priority,
-  priority_features: priorityFeatureText(row.complaint_text)
+  priority: row.severity
 }));
 const eligible = preparedRows.filter(row => row.label_status !== 'needs_review');
 const trainingRows = eligible.filter(row => row.split === 'train');
@@ -77,7 +74,7 @@ if (!trainingRows.length) throw new Error('No eligible training rows found.');
 
 const models = [
   { key: 'category', labels: CATEGORIES, rowsKey: 'categoryCounts', file: 'complaint-category-model.json' },
-  { key: 'priority', labels: PRIORITIES, textKey: 'priority_features', file: 'complaint-priority-model.json' }
+  { key: 'priority', labels: PRIORITIES, file: 'complaint-priority-model.json' }
 ];
 for (const config of models) {
   const model = train(trainingRows, { labelKey: config.key, labels: config.labels, textKey: config.textKey || 'complaint_text' });
@@ -86,7 +83,7 @@ for (const config of models) {
     split: 'train',
     excludedNeedsReview: preparedRows.filter(row => row.split === 'train' && row.label_status === 'needs_review').length,
     labels: model.categoryCounts,
-    note: 'Source text is synthetic; evaluation scores do not establish real-campus performance.'
+    note: 'Evaluation reflects this dataset and does not establish performance on real-campus complaints.'
   };
   model.evaluation = {};
   for (const split of ['validation', 'test']) {

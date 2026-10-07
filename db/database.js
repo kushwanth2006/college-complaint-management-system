@@ -88,13 +88,13 @@ async function attachComplaintStudents(complaints) {
 }
 
 async function joinedComplaints(category) {
-  const filter = category ? { category } : {};
+  const filter = { deleted_at: null, ...(category ? { category } : {}) };
   const complaints = await collection('complaints').find(filter).project({ photo: 0 }).sort({ id: -1 }).toArray();
   return attachComplaintStudents(complaints);
 }
 
-async function pagedComplaints({ category, userId, page, pageSize }) {
-  const filter = {};
+async function pagedComplaints({ category, userId, page, pageSize, includeDeleted = false }) {
+  const filter = { deleted_at: includeDeleted ? { $ne: null } : null };
   if (category) filter.category = category;
   if (userId != null) filter.user_id = Number(userId);
   const [complaints, total] = await Promise.all([
@@ -106,6 +106,7 @@ async function pagedComplaints({ category, userId, page, pageSize }) {
 
 async function studentComplaintSummaryPage({ search, page, pageSize }) {
   const pipeline = [
+    { $match: { deleted_at: null } },
     { $group: { _id: '$user_id', complaintCount: { $sum: 1 } } },
     { $lookup: { from: 'users', localField: '_id', foreignField: 'id', as: 'student' } },
     { $unwind: { path: '$student', preserveNullAndEmptyArrays: true } }
@@ -138,7 +139,7 @@ const db = {
     try {
       await session.withTransaction(async () => {
         await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
-        const filter = complaint.incident_code ? { incident_code: complaint.incident_code } : { id: complaint.id };
+        const filter = complaint.incident_code ? { incident_code: complaint.incident_code, deleted_at: null } : { id: complaint.id, deleted_at: null };
         const members = await collection('complaints').find(filter, { session })
           .project({ id: 1, stage_index: 1, incident_urgent: 1, sla_deadline: 1 })
           .toArray();
@@ -161,7 +162,9 @@ const db = {
   async get(rawSql, ...params) {
     const sql = normalize(rawSql);
     const name = tableFrom(sql);
-    let cursor = collection(name).find(selectFilter(sql, params));
+    const filter = selectFilter(sql, params);
+    if (name === 'complaints') filter.deleted_at = null;
+    let cursor = collection(name).find(filter);
     if (/ORDER BY id DESC/i.test(sql)) cursor = cursor.sort({ id: -1 });
     return cursor.limit(1).next();
   },
@@ -181,15 +184,60 @@ const db = {
       return rows.sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending'));
     }
     const name = tableFrom(sql);
-    let cursor = collection(name).find(selectFilter(sql, params));
+    const filter = selectFilter(sql, params);
+    if (name === 'complaints') filter.deleted_at = null;
+    let cursor = collection(name).find(filter);
     if (/ORDER BY id DESC/i.test(sql)) cursor = cursor.sort({ id: -1 });
     return cursor.toArray();
+  },
+
+  async deletedComplaintRows({ userId, category }) {
+    const filter = { deleted_at: { $ne: null } };
+    if (userId != null) filter.user_id = Number(userId);
+    if (category) filter.category = category;
+    const rows = await collection('complaints').find(filter).project({ photo: 0 }).sort({ id: -1 }).toArray();
+    return attachComplaintStudents(rows);
+  },
+
+  async softDeleteComplaint({ complaintCode, userId, category, deletedByRole, deletedById }) {
+    const scope = { complaint_code: complaintCode, deleted_at: null };
+    if (userId != null) scope.user_id = Number(userId);
+    if (category) scope.category = category;
+    const session = client.startSession();
+    let deleted = false;
+    try {
+      await session.withTransaction(async () => {
+        await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
+        const complaint = await collection('complaints').findOne(scope, { session });
+        if (!complaint) return;
+        const deletedAt = new Date();
+        const result = await collection('complaints').updateOne({ id: complaint.id, deleted_at: null }, { $set: {
+          deleted_at: deletedAt, deleted_by_role: deletedByRole, deleted_by_id: deletedById ?? null
+        } }, { session });
+        if (!result.modifiedCount) return;
+        deleted = true;
+        if (complaint.incident_code) {
+          const activeMembers = await collection('complaints').find({ incident_code: complaint.incident_code, deleted_at: null }, { session })
+            .sort({ id: 1 }).toArray();
+          if (activeMembers.length) await collection('complaints').updateMany(
+            { incident_code: complaint.incident_code, deleted_at: null },
+            { $set: {
+              incident_seed_id: activeMembers[0].id,
+              incident_reports: activeMembers.length,
+              incident_affected: new Set(activeMembers.map(item => item.user_id)).size
+            } },
+            { session }
+          );
+        }
+      });
+    } finally { await session.endSession(); }
+    return deleted;
   },
 
   async recentOpenComplaints(limit = 500) {
     const boundedLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 500) : 500;
     return collection('complaints')
-      .find({ stage_index: { $lt: 3 } })
+      .find({ stage_index: { $lt: 3 }, deleted_at: null })
       .project({ id: 1, complaint_code: 1, title: 1, description: 1, stage_index: 1 })
       .sort({ id: -1 })
       .limit(boundedLimit)
@@ -199,7 +247,7 @@ const db = {
   async recentResolvedComplaints(category, limit = 150) {
     const boundedLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 300) : 150;
     return collection('complaints')
-      .find({ category, stage_index: { $gte: 3 } })
+      .find({ category, stage_index: { $gte: 3 }, deleted_at: null })
       .project({ id: 1, complaint_code: 1, title: 1, description: 1, category: 1, note: 1, stage_index: 1 })
       .sort({ id: -1 })
       .limit(boundedLimit)
@@ -233,7 +281,7 @@ const db = {
             // A shared write serializes matching across concurrent server processes.
             await collection('counters').updateOne({ _id: 'incident_lock' }, { $inc: { seq: 1 } }, { upsert: true, session });
             const rows = await collection('complaints')
-              .find({ stage_index: { $lt: 3 }, created_at: { $gte: new Date(document.created_at.getTime() - 600000) } }, { session })
+              .find({ stage_index: { $lt: 3 }, deleted_at: null, created_at: { $gte: new Date(document.created_at.getTime() - 600000) } }, { session })
               .project({ id: 1, complaint_code: 1, category: 1, title: 1, description: 1, location: 1, user_id: 1, created_at: 1,
                 stage_index: 1, note: 1, ai_priority: 1, sla_deadline: 1, incident_code: 1, incident_seed_id: 1,
                 incident_started_at: 1, incident_title: 1, incident_urgent: 1 })
@@ -248,7 +296,7 @@ const db = {
             Object.assign(document, group.metadata, { ai_priority: group.priority, sla_deadline: group.deadline });
             if (group.metadata.incident_urgent) document.ai_priority_reason = '20 or more students reported this incident within 10 minutes. Immediate attention required.';
             await collection(name).insertOne(document, { session });
-            await collection(name).updateMany({ incident_code: document.incident_code }, { $set: {
+            await collection(name).updateMany({ incident_code: document.incident_code, deleted_at: null }, { $set: {
               ...group.metadata, ai_priority: group.priority, sla_deadline: group.deadline,
               ...(group.metadata.incident_urgent ? { ai_priority_reason: document.ai_priority_reason } : {})
             } }, { session });

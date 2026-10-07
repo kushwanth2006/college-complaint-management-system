@@ -1,6 +1,6 @@
 # College Complaint Management System
 
-Campus complaint tracking for students, department staff, and super administrators. It uses Express, MongoDB Atlas, session authentication, email OTP password resets, complaint routing, and rule-based complaint analysis.
+Campus complaint tracking for students, department staff, and super administrators. It uses Express, MongoDB Atlas, session authentication, email OTP password resets, complaint routing, ML category prediction, and rule-based priority analysis.
 
 ## Requirements
 
@@ -15,15 +15,32 @@ Campus complaint tracking for students, department staff, and super administrato
 3. Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `EMAIL_FROM` for password-reset email. For local development without SMTP, set both `NODE_ENV=development` and `DEV_LOG_OTP=true` to explicitly enable terminal-only OTP logging. SMTP is required unless that development fallback is enabled.
 4. Run `npm start` and open `http://localhost:3000`.
 
+The interface uses separate page URLs: `/` for the landing and student sign-in, `/student` for the student dashboard, `/staff` for department staff, and `/admin` for the super-admin area.
+
 Complaint images are limited to PNG, JPEG, GIF, or WebP data under 4 MB.
 
-Department staff can download an Excel workbook containing individual complaints routed to their department. The super admin can download all complaints. Exports include complaint and triage details, but omit image payloads and student contact details.
+## Optional FastAPI model service
+
+The Node app can call a local FastAPI service for category predictions. The Python service loads the same trained category model from `lib/complaint-category-model.json`; no second training step or model copy is needed. Start it in another terminal:
+
+```sh
+python -m pip install -r requirements-fastapi.txt
+python -m uvicorn ml_service.main:app --host 127.0.0.1 --port 8000
+```
+
+Open `http://127.0.0.1:8000/docs` to view the API. Express uses `http://127.0.0.1:8000` by default; set `ML_SERVICE_URL` if the service runs at another address. If FastAPI is unavailable or returns an invalid response, Express uses the existing JavaScript classifier. Keep the Python service bound to localhost; add service authentication before exposing it on a network.
+
+Department staff can download an Excel workbook containing active complaints routed to their department. The super admin can download all active complaints. Exports include complaint and triage details, but omit image payloads and student contact details.
+
+Deleting a complaint moves it to a Deleted view instead of removing it from the database. Students see their own deleted complaints, and department staff see deleted complaints assigned to their department.
 
 ## Complaint prediction models
 
-Run `npm run train:model` to preprocess the complaint text, train category and priority multinomial Naive Bayes models on the training split, evaluate both on validation and test splits, and save them as `lib/complaint-category-model.json` and `lib/complaint-priority-model.json`. Rows marked `needs_review` are excluded, and duplicate groups must stay within one split. Accuracy, macro-F1, per-label scores, and confusion matrices are saved with each model; test metrics are printed by the command.
+Run `npm run train:model` to train category and priority multinomial Naive Bayes models from `data/student_complaints_training.csv`. The `category` and `severity` columns supply the labels; severity is used as the priority label. The script evaluates both models on validation and test splits, then saves them as `lib/complaint-category-model.json` and `lib/complaint-priority-model.json`. Rows marked `needs_review` are excluded, and duplicate groups must stay within one split. Accuracy, macro-F1, per-label scores, and confusion matrices are saved with each model; test metrics are printed by the command.
 
-The category labels are synthetic. The source data has no dependable priority labels, so preprocessing assigns priority labels using the app's existing safety and service-disruption rubric. The priority model therefore learns to approximate those weak labels, not historical staff decisions. Safety terms still force Critical priority directly. The dataset and both models are project prototypes; evaluate on real, staff-confirmed, de-identified complaints before operational use.
+Safety terms still force Critical priority directly. Evaluation scores reflect the supplied dataset and do not establish performance on real-campus complaints; review predictions against staff-confirmed, de-identified complaints before operational use.
+
+Complaint submission also has a server-side campus-relevance check. It rejects clear personal-advice requests and asks for campus details when a report is ambiguous; safety and student-conduct reports remain eligible. This prototype check uses rules rather than a trained relevance model, so review staff feedback for mistaken blocks and update its examples as needed.
 
 ## Tests
 

@@ -128,6 +128,10 @@ input[type=text], input[type=password], input[type=email], select, textarea{
   font-family:'Inter',sans-serif; font-size:14px; background:var(--paper); color:var(--text);
 }
 input:focus, select:focus, textarea:focus{outline:2px solid var(--brass); outline-offset:1px; border-color:var(--brass);}
+input[type=radio]:focus-visible{outline:2px solid var(--brass); outline-offset:3px;}
+.residency-options{display:flex; flex-wrap:wrap; gap:10px 20px; margin-top:4px;}
+.residency-option{display:flex; align-items:center; gap:8px; margin:0; color:var(--text); font-size:13px; font-weight:500; text-transform:none; letter-spacing:0; cursor:pointer;}
+.residency-option input{width:auto; margin:0; accent-color:var(--teal);}
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus{
@@ -154,6 +158,8 @@ input:-webkit-autofill:focus{
 .ai-result.show{display:grid; gap:3px;}
 .ai-result strong{color:var(--ink);}
 .ai-result small{margin-top:4px; color:var(--text-soft);}
+.nc-relevance{margin:10px 0 4px; padding:12px 14px; border:1px solid rgba(176,67,29,.3); border-radius:7px; background:rgba(176,67,29,.07); color:var(--rust); font-size:13px; line-height:1.5;}
+.nc-relevance[hidden]{display:none;}
 .ai-ticket-meta{margin:8px 0; padding:9px 11px; border-left:3px solid #146c9a; background:rgba(20,108,154,.06); border-radius:0 6px 6px 0; font-size:12.5px; color:var(--text-soft);}
 .ai-priority{display:inline-block; margin-left:7px; padding:2px 6px; border-radius:999px; background:rgba(20,108,154,.12); color:#0f587e; font-weight:700;}
 .overdue-label{color:var(--rust); font-weight:800;}
@@ -329,6 +335,9 @@ input[type=text], input[type=password], input[type=email], select, textarea{
 .stamp.pending{border-color:var(--rust); color:var(--rust); background:rgba(176,67,29,0.05);}
 .stamp.progress, .stamp.stage-progress{border-color:var(--brass-dark); color:var(--brass-dark); background:rgba(173,124,36,0.06);}
 .stamp.resolved, .stamp.stage-resolved{border-color:var(--green); color:var(--green); background:rgba(46,107,72,0.06);}
+.stamp.stage-deleted{border-color:var(--rust); color:var(--rust); background:rgba(176,67,29,0.05);}
+.status-dot.dot-deleted{background:var(--text-soft);}
+.deleted-note{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);color:var(--text-soft);font-size:12px;}
 
 /* Timeline */
 .timeline{margin-top:14px; border-top:1px dashed var(--line); padding-top:10px;}
