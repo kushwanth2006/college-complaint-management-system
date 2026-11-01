@@ -6,3 +6,5 @@ node_modules/
 # Keep complaint datasets local; rows may contain sensitive student reports.
 data/*.csv
 data/severity-dataset/*.csv
+.archify/
+IEEE AI Based College Complaint Management System revised.docx

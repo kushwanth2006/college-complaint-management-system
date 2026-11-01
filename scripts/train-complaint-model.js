@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { CATEGORIES, train, predictLabel } = require('../lib/category-classifier');
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
@@ -48,8 +49,108 @@ function evaluate(model, rows, labelKey) {
 }
 
 const root = path.resolve(__dirname, '..');
-const datasetPath = path.join(root, 'data', 'student_complaints_training.csv');
-const records = parseCsv(fs.readFileSync(datasetPath, 'utf8'));
+const datasetPath = process.argv[2]
+  ? path.resolve(process.argv[2])
+  : path.join(root, 'data', 'student_complaints_training.csv');
+const sourceRows = parseCsv(fs.readFileSync(datasetPath, 'utf8'));
+
+const CATEGORY_ALIASES = new Map([
+  ['hostel', 'Hostel'], ['mess', 'Mess'], ['academic', 'Academic'], ['academics', 'Academic'],
+  ['wi-fi & network', 'Wi-Fi & Network'], ['wifi and internet', 'Wi-Fi & Network'],
+  ['wifi & network', 'Wi-Fi & Network'], ['transport', 'Transport'], ['library', 'Library'], ['general', 'General']
+]);
+const normalizedText = value => String(value || '').toLowerCase().replace(/\bwi[\s-]+fi\b/g, 'wifi')
+  .replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+
+function splitImportedRows(rows) {
+  const grouped = new Map();
+  const exactLabels = new Map();
+  for (const row of rows) {
+    const text = normalizedText(row.complaint_text);
+    if (!text) throw new Error('A complaint row has empty text.');
+    const digest = crypto.createHash('sha256').update(text).digest('hex');
+    const pair = `${row.category}\u0000${row.severity}`;
+    if (exactLabels.has(digest) && exactLabels.get(digest) !== pair) {
+      throw new Error('The same normalized complaint text has conflicting department or severity labels.');
+    }
+    exactLabels.set(digest, pair);
+    const template = text.split(' ').slice(0, 5).join(' ');
+    const templateDigest = crypto.createHash('sha256').update(template).digest('hex');
+    const groupId = `template-${templateDigest.slice(0, 20)}`;
+    const group = grouped.get(groupId) || { id: groupId, keys: new Set(), rows: [] };
+    group.keys.add(pair);
+    group.rows.push(row);
+    grouped.set(groupId, group);
+  }
+
+  const groups = [...grouped.values()].sort((a, b) => crypto.createHash('sha256').update(`campusdesk-split-v2:${a.id}`).digest('hex')
+    .localeCompare(crypto.createHash('sha256').update(`campusdesk-split-v2:${b.id}`).digest('hex')));
+  const totalRows = rows.length;
+  let position = 0;
+  const assignments = new Map();
+  const groupCountsBySplit = { train: new Map(), validation: new Map(), test: new Map() };
+  for (const group of groups) {
+    const ratio = (position + group.rows.length / 2) / totalRows;
+    const split = ratio < 0.70 ? 'train' : ratio < 0.85 ? 'validation' : 'test';
+    assignments.set(group.id, split);
+    for (const key of group.keys) {
+      const counts = groupCountsBySplit[split];
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    position += group.rows.length;
+  }
+
+  const allKeys = [...new Set(rows.map(row => `${row.category}\u0000${row.severity}`))].sort();
+  for (const key of allKeys) {
+    if (groupCountsBySplit.validation.has(key)) continue;
+    const candidate = groups.filter(group => assignments.get(group.id) === 'train' && group.keys.has(key)
+      && [...group.keys].every(groupKey => (groupCountsBySplit.train.get(groupKey) || 0) > 1))
+      .sort((a, b) => a.rows.length - b.rows.length || a.id.localeCompare(b.id))[0];
+    if (!candidate) throw new Error(`Could not preserve validation coverage for department/severity label ${key.replace('\u0000', ' / ')}.`);
+    assignments.set(candidate.id, 'validation');
+    for (const groupKey of candidate.keys) {
+      const trainCount = groupCountsBySplit.train.get(groupKey) - 1;
+      if (trainCount) groupCountsBySplit.train.set(groupKey, trainCount);
+      else groupCountsBySplit.train.delete(groupKey);
+      groupCountsBySplit.validation.set(groupKey, (groupCountsBySplit.validation.get(groupKey) || 0) + 1);
+    }
+  }
+
+  for (const group of groups) {
+    const split = assignments.get(group.id);
+    for (const row of group.rows) {
+      row.group_id = group.id;
+      row.split = split;
+    }
+  }
+}
+
+let records;
+if (sourceRows.length && sourceRows[0].department !== undefined) {
+  const importedIds = new Set();
+  records = sourceRows.map((row, index) => {
+    const categoryKey = String(row.department || '').trim().toLowerCase();
+    const category = CATEGORY_ALIASES.get(categoryKey);
+    const severity = String(row.severity || '').trim();
+    if (!category) throw new Error(`Unknown department label at row ${index + 2}: ${row.department || '(blank)'}`);
+    if (!PRIORITIES.includes(severity)) throw new Error(`Unknown severity label at row ${index + 2}: ${severity || '(blank)'}`);
+    if (!String(row.complaint_text || '').trim()) throw new Error(`Complaint text is blank at row ${index + 2}.`);
+    const id = String(row.complaint_id || `row-${index + 2}`).trim();
+    if (importedIds.has(id)) throw new Error(`Duplicate complaint ID at row ${index + 2}.`);
+    importedIds.add(id);
+    return {
+      id,
+      complaint_text: String(row.complaint_text).trim().replace(/\s+/g, ' '),
+      category,
+      severity,
+      label_status: 'verified'
+    };
+  });
+  splitImportedRows(records);
+} else {
+  records = sourceRows;
+}
+
 const splitByGroup = new Map();
 for (const row of records) {
   if (!CATEGORIES.includes(row.category)) throw new Error(`Unknown category in dataset: ${row.category}`);
@@ -81,9 +182,10 @@ for (const config of models) {
   model.training = {
     dataset: path.basename(datasetPath),
     split: 'train',
+    splitMethod: 'Deterministic holdout grouped by the first five normalized tokens; validation coverage checked by department and severity.',
     excludedNeedsReview: preparedRows.filter(row => row.split === 'train' && row.label_status === 'needs_review').length,
     labels: model.categoryCounts,
-    note: 'Evaluation reflects this dataset and does not establish performance on real-campus complaints.'
+    note: 'Source and label provenance were not supplied. Held-out results do not establish performance on real-campus complaints.'
   };
   model.evaluation = {};
   for (const split of ['validation', 'test']) {
